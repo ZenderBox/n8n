@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZenderBox — Módulo Consolidados</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --border-bright: #2e2e4e;
+    --accent: #4f6ef7;
+    --accent-dim: #2a3a8a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #334155;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    letter-spacing: -1px;
+  }
+
+  .header-text h1 {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-text p {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+
+  .badge {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-header .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .card-header span {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .card-body { padding: 20px; }
+
+  /* Webhook config */
+  .webhook-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .method-badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .webhook-url {
+    flex: 1;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    cursor: pointer;
+    outline: none;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    width: 100%;
+  }
+
+  .edit-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    margin-top: 6px;
+    padding-left: 2px;
+  }
+
+  /* Agencia select */
+  .field { margin-bottom: 16px; }
+
+  .field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .agencia-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .ag-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+
+  .ag-btn:hover {
+    border-color: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .ag-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .agencia-custom {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .agencia-custom input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .agencia-custom input:focus {
+    border-color: var(--accent);
+  }
+
+  .agencia-custom input::placeholder { color: var(--text-dim); }
+
+  /* File drop */
+  .drop-zone {
+    border: 1px dashed var(--border-bright);
+    border-radius: 8px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(79, 110, 247, 0.04);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+  }
+
+  .drop-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .drop-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  .file-selected {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 10px;
+  }
+
+  .file-selected.visible { display: flex; }
+
+  .file-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .file-info { flex: 1; overflow: hidden; }
+
+  .file-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--green);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .file-size {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .file-clear {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .file-clear:hover { color: var(--red); }
+
+  /* Submit button */
+  .btn-procesar {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .btn-procesar:hover:not(:disabled) {
+    background: #6b83f8;
+    transform: translateY(-1px);
+  }
+
+  .btn-procesar:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Log / Status */
+  .log-card { display: none; }
+  .log-card.visible { display: block; }
+
+  .log-body {
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  .log-line {
+    display: flex;
+    gap: 12px;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.2s ease;
+  }
+
+  .log-line:last-child { border-bottom: none; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .log-time { color: var(--text-dim); flex-shrink: 0; }
+  .log-msg { color: var(--text-muted); }
+  .log-msg.ok { color: var(--green); }
+  .log-msg.err { color: var(--red); }
+  .log-msg.info { color: var(--accent); }
+  .log-msg.warn { color: var(--yellow); }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+
+  /* Download btn */
+  .btn-download {
+    display: none;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--green);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    margin-top: 12px;
+  }
+
+  .btn-download:hover {
+    background: rgba(34, 197, 94, 0.08);
+  }
+
+  .btn-download.visible { display: flex; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 32px;
+    letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="logo">ZB</div>
+    <div class="header-text">
+      <h1>ZenderBox</h1>
+      <p>Módulo Consolidados v1</p>
+    </div>
+    <div class="badge">n8n CLOUD</div>
+  </div>
+
+  <!-- Config webhook -->
+  <div class="card">
+    <div class="card-header">
+      <div class="dot"></div>
+      <span>Endpoint</span>
+    </div>
+    <div class="card-body">
+      <div class="webhook-row">
+        <span class="method-badge">POST</span>
+        <input class="webhook-url" id="webhookUrl"
+          value="https://zenderbox.app.n8n.cloud/webhook/consolidados"
+          title="Haz clic para editar" />
+      </div>
+      <p class="edit-hint">// Haz clic en la URL para editarla</p>
+    </div>
+  </div>
+
+  <!-- Agencia + Archivo -->
+  <div class="card">
+    <div class="card-header">
+      <div class="dot"></div>
+      <span>Procesar Archivo</span>
+    </div>
+    <div class="card-body">
+
+      <div class="field">
+        <label>Agencia</label>
+        <div class="agencia-grid" id="agenciaGrid">
+          <button class="ag-btn" onclick="selectAgencia(this, 'DAMAK')">DAMAK</button>
+          <button class="ag-btn" onclick="selectAgencia(this, 'CASILLERO')">CASILLERO</button>
+          <button class="ag-btn" onclick="selectAgencia(this, 'JL')">JL</button>
+          <button class="ag-btn" onclick="selectAgencia(this, 'COMERCIAL')">COMERCIAL</button>
+        </div>
+        <div class="agencia-custom">
+          <input type="text" id="agenciaCustom" placeholder="Otra agencia..."
+            oninput="onCustomAgencia(this)" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Archivo Fuente (.xlsx / .xls)</label>
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept=".xlsx,.xls"
+            onchange="onFileSelected(this)" />
+          <div class="drop-icon">📂</div>
+          <div class="drop-title">Arrastra el archivo aquí</div>
+          <div class="drop-sub">o haz clic para seleccionar</div>
+        </div>
+        <div class="file-selected" id="fileSelected">
+          <span class="file-icon">📄</span>
+          <div class="file-info">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+          </div>
+          <button class="file-clear" onclick="clearFile()" title="Quitar archivo">✕</button>
+        </div>
+      </div>
+
+      <button class="btn-procesar" id="btnProcesar" onclick="procesar()" disabled>
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">PROCESAR ARCHIVO</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card log-card" id="logCard">
+    <div class="card-header">
+      <div class="dot" id="logDot" style="background: var(--yellow)"></div>
+      <span id="logTitle">Log de ejecución</span>
+    </div>
+    <div class="log-body" id="logBody"></div>
+  </div>
+
+  <!-- Stats + Download -->
+  <div class="card log-card" id="statsCard">
+    <div class="card-header">
+      <div class="dot" style="background: var(--green)"></div>
+      <span>Resultado</span>
+    </div>
+    <div class="card-body">
+      <div class="stats-grid" id="statsGrid"></div>
+      <a class="btn-download" id="btnDownload" href="#" download>
+        ⬇ Descargar XLSX Aduana
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">ZENDERBOX COLOMBIA — MÓDULO CONSOLIDADOS v1 — 2026</div>
+</div>
+
+<script>
+  let selectedAgencia = '';
+  let selectedFile = null;
+
+  // --- Drag & drop ---
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) setFile(f);
+  });
+
+  function onFileSelected(input) {
+    if (input.files[0]) setFile(input.files[0]);
+  }
+
+  function setFile(f) {
+    selectedFile = f;
+    document.getElementById('fileName').textContent = f.name;
+    document.getElementById('fileSize').textContent = formatBytes(f.size);
+    document.getElementById('fileSelected').classList.add('visible');
+    checkReady();
+  }
+
+  function clearFile() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileSelected').classList.remove('visible');
+    checkReady();
+  }
+
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  // --- Agencia ---
+  function selectAgencia(btn, name) {
+    document.querySelectorAll('.ag-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedAgencia = name;
+    document.getElementById('agenciaCustom').value = '';
+    checkReady();
+  }
+
+  function onCustomAgencia(input) {
+    document.querySelectorAll('.ag-btn').forEach(b => b.classList.remove('active'));
+    selectedAgencia = input.value.trim().toUpperCase();
+    checkReady();
+  }
+
+  function checkReady() {
+    const ok = selectedAgencia && selectedFile;
+    document.getElementById('btnProcesar').disabled = !ok;
+  }
+
+  // --- Log helpers ---
+  function showLog() {
+    document.getElementById('logCard').classList.add('visible');
+    document.getElementById('statsCard').classList.remove('visible');
+  }
+
+  function addLog(msg, type = '') {
+    const body = document.getElementById('logBody');
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    const now = new Date();
+    const ts = now.toTimeString().split(' ')[0];
+    line.innerHTML = `<span class="log-time">${ts}</span><span class="log-msg ${type}">${msg}</span>`;
+    body.appendChild(line);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function setLoading(on) {
+    const btn = document.getElementById('btnProcesar');
+    const spinner = document.getElementById('spinner');
+    const txt = document.getElementById('btnText');
+    btn.disabled = on;
+    spinner.style.display = on ? 'block' : 'none';
+    txt.textContent = on ? 'PROCESANDO...' : 'PROCESAR ARCHIVO';
+  }
+
+  function setLogStatus(ok) {
+    document.getElementById('logDot').style.background = ok ? 'var(--green)' : 'var(--red)';
+    document.getElementById('logTitle').textContent = ok ? 'Ejecución completada' : 'Error en ejecución';
+  }
+
+  // --- Main ---
+  async function procesar() {
+    const url = document.getElementById('webhookUrl').value.trim();
+    if (!url) return;
+
+    showLog();
+    setLoading(true);
+    document.getElementById('logBody').innerHTML = '';
+
+    addLog('Iniciando proceso...', 'info');
+    addLog('Agencia: ' + selectedAgencia, 'info');
+    addLog('Archivo: ' + selectedFile.name + ' (' + formatBytes(selectedFile.size) + ')');
+
+    const formData = new FormData();
+    formData.append('data', selectedFile);
+
+    const endpoint = url + '?agencia=' + encodeURIComponent(selectedAgencia);
+    addLog('POST → ' + endpoint);
+
+    try {
+      addLog('Enviando archivo al webhook...');
+      const res = await fetch(endpoint, { method: 'POST', body: formData });
+
+      addLog('Respuesta HTTP: ' + res.status + ' ' + res.statusText,
+        res.ok ? 'ok' : 'err');
+
+      if (!res.ok) {
+        let errText = await res.text();
+        try { errText = JSON.stringify(JSON.parse(errText), null, 2); } catch(e) {}
+        addLog('Error: ' + errText, 'err');
+        setLogStatus(false);
+        setLoading(false);
+        checkReady();
+        return;
+      }
+
+      // Detectar si la respuesta es binario (XLSX) o JSON
+      const contentType = res.headers.get('Content-Type') || '';
+
+      if (contentType.includes('spreadsheetml') || contentType.includes('octet-stream')) {
+        // Etapa 2: respuesta es el XLSX para descargar
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const fname = 'Aduana_' + selectedAgencia + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+
+        addLog('Archivo generado: ' + fname, 'ok');
+        addLog('Descarga lista', 'ok');
+
+        showStats({ agencia: selectedAgencia, blob: blobUrl, filename: fname });
+        setLogStatus(true);
+
+      } else {
+        // JSON response
+        const data = await res.json();
+        addLog('Respuesta JSON recibida', 'ok');
+
+        if (data.error === false && data.mensaje) {
+          addLog('Aviso: ' + data.mensaje, 'warn');
+          setLogStatus(true);
+        } else if (data.resumen) {
+          addLog(data.resumen, 'ok');
+          if (data.stats) showStats(data.stats);
+          setLogStatus(true);
+        } else {
+          addLog(JSON.stringify(data), 'info');
+          setLogStatus(true);
+        }
+      }
+
+    } catch(err) {
+      addLog('Error de red: ' + err.message, 'err');
+      addLog('Verifica que el workflow esté activo en n8n', 'warn');
+      setLogStatus(false);
+    }
+
+    setLoading(false);
+    checkReady();
+  }
+
+  function showStats(stats) {
+    const card = document.getElementById('statsCard');
+    const grid = document.getElementById('statsGrid');
+    const btnDl = document.getElementById('btnDownload');
+
+    card.classList.add('visible');
+    grid.innerHTML = '';
+
+    const items = stats.blob ? [
+      { val: stats.agencia, label: 'Agencia' },
+      { val: '✓', label: 'Drive actualizado' },
+      { val: '⬇', label: 'XLSX listo' }
+    ] : [
+      { val: stats.agencia || '-', label: 'Agencia' },
+      { val: stats.totalProcesadas ?? '-', label: 'Filas procesadas' },
+      { val: stats.columnasDestino ?? '-', label: 'Columnas' }
+    ];
+
+    items.forEach(item => {
+      grid.innerHTML += `
+        <div class="stat-box">
+          <div class="stat-val">${item.val}</div>
+          <div class="stat-label">${item.label}</div>
+        </div>`;
+    });
+
+    if (stats.blob) {
+      btnDl.href = stats.blob;
+      btnDl.download = stats.filename;
+      btnDl.classList.add('visible');
+    } else {
+      btnDl.classList.remove('visible');
+    }
+  }
+</script>
+</body>
+</html>
