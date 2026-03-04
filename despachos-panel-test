@@ -296,7 +296,7 @@
 <div class="footer">zenderbox.app.n8n.cloud · despachos v1</div>
 
 <script>
-  const WEBHOOK_GENERAR = 'https://zenderbox.app.n8n.cloud/webhook/despachos';
+  const WEBHOOK_GENERAR = 'https://zenderbox.app.n8n.cloud/webhook-test/despachos-test';
   const WEBHOOK_BORRAR  = 'https://zenderbox.app.n8n.cloud/webhook/borrar-tcc';
 
   function setLoading(btnId, loading) {
