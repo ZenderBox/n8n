@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZenderBox — Panel de Despachos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #00e5a0;
+    --accent2: #ff4757;
+    --accent3: #ffd32a;
+    --text: #e8e8f0;
+    --muted: #5a5a7a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(0,229,160,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(255,71,87,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .header {
+    margin-bottom: 3rem;
+  }
+
+  .logo {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-label {
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 1.1rem 2rem;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .btn:active::after { opacity: 0.08; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0a0a0f;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,229,160,0.3);
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid rgba(255,71,87,0.3);
+  }
+
+  .btn-danger:hover {
+    background: rgba(255,71,87,0.08);
+    border-color: var(--accent2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,71,87,0.15);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .btn .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  .btn.loading .spinner { display: block; }
+  .btn.loading .btn-text { opacity: 0.7; }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .status-box {
+    margin-top: 1.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    display: none;
+    border: 1px solid;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .status-box.show { display: block; }
+
+  .status-box.success {
+    background: rgba(0,229,160,0.06);
+    border-color: rgba(0,229,160,0.25);
+    color: var(--accent);
+  }
+
+  .status-box.error {
+    background: rgba(255,71,87,0.06);
+    border-color: rgba(255,71,87,0.25);
+    color: var(--accent2);
+  }
+
+  .status-box.warning {
+    background: rgba(255,211,42,0.06);
+    border-color: rgba(255,211,42,0.25);
+    color: var(--accent3);
+  }
+
+  .status-box.info {
+    background: rgba(255,255,255,0.03);
+    border-color: var(--border);
+    color: var(--muted);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.5rem 0;
+  }
+
+  .last-run {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 0.4rem;
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">ZenderBox · Operaciones</div>
+    <h1>Panel de<br><span>Despachos</span></h1>
+    <div class="subtitle">// módulo TCC · Colombia</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">01 — Generar despachos del día</div>
+    <button class="btn btn-primary" id="btnGenerar" onclick="generarDespachos()">
+      <div class="spinner"></div>
+      <span class="btn-text">▶ Generar Despachos</span>
+    </button>
+    <div class="status-box" id="statusGenerar"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">02 — Limpiar hoja TCC HOY</div>
+    <button class="btn btn-danger" id="btnBorrar" onclick="confirmarBorrar()">
+      <div class="spinner"></div>
+      <span class="btn-text">⊘ Borrar TCC HOY</span>
+    </button>
+    <div class="status-box" id="statusBorrar"></div>
+  </div>
+
+  <div class="last-run" id="lastRun">
+    <span class="dot"></span>sistema listo
+  </div>
+</div>
+
+<div class="footer">zenderbox.app.n8n.cloud · despachos v1</div>
+
+<script>
+  const WEBHOOK_GENERAR = 'https://zenderbox.app.n8n.cloud/webhook/despachos';
+  const WEBHOOK_BORRAR  = 'https://zenderbox.app.n8n.cloud/webhook/borrar-tcc';
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (loading) btn.classList.add('loading');
+    else btn.classList.remove('loading');
+    btn.disabled = loading;
+  }
+
+  function showStatus(boxId, type, msg) {
+    const box = document.getElementById(boxId);
+    box.className = `status-box show ${type}`;
+    box.textContent = msg;
+  }
+
+  function updateLastRun(msg) {
+    const el = document.getElementById('lastRun');
+    const now = new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+    el.innerHTML = `<span class="dot"></span>${msg} · ${now}`;
+  }
+
+  async function generarDespachos() {
+    setLoading('btnGenerar', true);
+    showStatus('statusGenerar', 'info', '⏳ Ejecutando flujo... esto puede tomar 20-40 segundos');
+
+    try {
+      const res = await fetch(WEBHOOK_GENERAR, { method: 'GET' });
+      const text = await res.text();
+
+      let data;
+      try { data = JSON.parse(text); } catch(e) { data = null; }
+
+      if (res.ok) {
+        // Intentar extraer el resumen si viene en la respuesta
+        const resumen = data?.resumen || data?.[0]?.resumen || null;
+        if (resumen) {
+          showStatus('statusGenerar', 'success', '✓ Completado\n\n' + resumen.replace(/\|/g, '\n'));
+        } else {
+          showStatus('statusGenerar', 'success', '✓ Flujo ejecutado correctamente\n\nRevisa las hojas TCC HOY, CONTROL_TCC y EXCEPCIONES.');
+        }
+        updateLastRun('último despacho generado');
+      } else {
+        showStatus('statusGenerar', 'error', '✗ Error al ejecutar el flujo\n\n' + (text || 'Sin respuesta del servidor'));
+      }
+    } catch(err) {
+      showStatus('statusGenerar', 'error', '✗ No se pudo conectar\n\n' + err.message);
+    }
+
+    setLoading('btnGenerar', false);
+  }
+
+  function confirmarBorrar() {
+    showStatus('statusBorrar', 'warning', '⚠ ¿Seguro? Haz clic de nuevo para confirmar el borrado de TCC HOY.');
+    const btn = document.getElementById('btnBorrar');
+    btn.querySelector('.btn-text').textContent = '⊘ Confirmar borrado';
+    btn.onclick = ejecutarBorrar;
+  }
+
+  async function ejecutarBorrar() {
+    const btn = document.getElementById('btnBorrar');
+    btn.querySelector('.btn-text').textContent = '⊘ Borrar TCC HOY';
+    btn.onclick = confirmarBorrar;
+
+    setLoading('btnBorrar', true);
+    showStatus('statusBorrar', 'info', '⏳ Borrando filas de TCC HOY...');
+
+    try {
+      const res = await fetch(WEBHOOK_BORRAR, { method: 'GET' });
+
+      if (res.ok) {
+        showStatus('statusBorrar', 'success', '✓ TCC HOY limpiada correctamente\n\nLista para el próximo despacho.');
+        updateLastRun('TCC HOY borrada');
+      } else {
+        showStatus('statusBorrar', 'error', '✗ Error al borrar\n\nRevisa que el webhook de borrado esté configurado en n8n.');
+      }
+    } catch(err) {
+      showStatus('statusBorrar', 'error', '✗ No se pudo conectar\n\n' + err.message);
+    }
+
+    setLoading('btnBorrar', false);
+  }
+</script>
+</body>
+</html>
