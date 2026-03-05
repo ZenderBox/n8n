@@ -12,6 +12,7 @@
       --navy:  #081F3A;
       --cyan:  #009CC9;
       --lime:  #CCD32A;
+      --gold:  #F5A623;
       --white: #ffffff;
       --muted: rgba(255,255,255,0.4);
       --border: rgba(0,156,201,0.15);
@@ -60,7 +61,7 @@
 
     header {
       width: 100%;
-      max-width: 800px;
+      max-width: 1200px;
       margin-bottom: 56px;
       display: flex;
       flex-direction: column;
@@ -99,7 +100,7 @@
 
     .divider {
       width: 100%;
-      max-width: 800px;
+      max-width: 1200px;
       height: 1px;
       background: linear-gradient(90deg,
         transparent 0%, var(--cyan) 30%, var(--lime) 70%, transparent 100%);
@@ -108,10 +109,10 @@
 
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 20px;
       width: 100%;
-      max-width: 800px;
+      max-width: 1200px;
       margin-top: 44px;
     }
 
@@ -132,7 +133,8 @@
       animation: fadeUp .55s ease forwards;
     }
     .card:nth-child(1) { animation-delay: .18s; }
-    .card:nth-child(2) { animation-delay: .28s; }
+    .card:nth-child(2) { animation-delay: .26s; }
+    .card:nth-child(3) { animation-delay: .34s; }
 
     .card::before {
       content: '';
@@ -146,10 +148,12 @@
     }
     .card.cyan-card::before { background: radial-gradient(circle, rgba(0,156,201,.16), transparent 65%); }
     .card.lime-card::before { background: radial-gradient(circle, rgba(204,211,42,.13), transparent 65%); }
+    .card.gold-card::before { background: radial-gradient(circle, rgba(245,166,35,.14), transparent 65%); }
 
     .card:hover { transform: translateY(-6px); background: rgba(255,255,255,.055); }
     .card.cyan-card:hover { border-color: rgba(0,156,201,.5); }
     .card.lime-card:hover { border-color: rgba(204,211,42,.4); }
+    .card.gold-card:hover { border-color: rgba(245,166,35,.45); }
     .card:hover::before { opacity: 1; }
 
     .card-bar {
@@ -163,6 +167,7 @@
     }
     .cyan-card .card-bar { background: linear-gradient(90deg, var(--cyan), var(--lime)); }
     .lime-card .card-bar { background: linear-gradient(90deg, var(--lime), var(--cyan)); }
+    .gold-card .card-bar { background: linear-gradient(90deg, var(--gold), var(--lime)); }
     .card:hover .card-bar { transform: scaleX(1); }
 
     .module-tag {
@@ -186,12 +191,17 @@
       color: var(--lime);
       border: 1px solid rgba(204,211,42,.25);
     }
+    .gold-card .module-tag {
+      background: rgba(245,166,35,.10);
+      color: var(--gold);
+      border: 1px solid rgba(245,166,35,.25);
+    }
 
     .card-icon { font-size: 38px; margin-bottom: 18px; line-height: 1; }
 
     .card-title {
       font-family: 'Exo 2', sans-serif;
-      font-size: 30px;
+      font-size: 28px;
       font-weight: 800;
       line-height: 1.1;
       letter-spacing: -.5px;
@@ -199,7 +209,7 @@
     }
 
     .card-desc {
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.65;
       color: rgba(255,255,255,.45);
       flex: 1;
@@ -218,6 +228,7 @@
     }
     .cyan-card .card-cta { color: var(--cyan); }
     .lime-card .card-cta { color: var(--lime); }
+    .gold-card .card-cta { color: var(--gold); }
 
     .cta-arrow {
       display: flex;
@@ -229,6 +240,7 @@
     }
     .cyan-card .cta-arrow { background: rgba(0,156,201,.15); }
     .lime-card .cta-arrow { background: rgba(204,211,42,.12); }
+    .gold-card .cta-arrow { background: rgba(245,166,35,.12); }
     .card:hover .cta-arrow { transform: translateX(6px); }
 
     footer {
@@ -238,7 +250,7 @@
       align-items: center;
       gap: 10px;
       opacity: 0;
-      animation: fadeUp .5s ease .42s forwards;
+      animation: fadeUp .5s ease .5s forwards;
     }
 
     .footer-brand {
@@ -258,6 +270,10 @@
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 600px) {
@@ -322,6 +338,25 @@
       <div class="card-title">Consolidados<br>Colombia</div>
       <div class="card-desc">
         Seguimiento de consolidados de aduana. Estado de llegada a Bogotá y trazabilidad por manifiesto.
+      </div>
+      <div class="card-cta">
+        Abrir panel
+        <span class="cta-arrow">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </a>
+
+    <a class="card gold-card" href="https://zenderbox.github.io/n8n/preliquidador.html" target="_blank">
+      <div class="card-bar"></div>
+      <div class="module-tag">· Módulo 03 · Activo</div>
+      <div class="card-icon">🧾</div>
+      <div class="card-title">Pre-<br>Liquidaciones</div>
+      <div class="card-desc">
+        Estimación de impuestos aduaneros por guía. Referencia informativa del comportamiento de valores antes de la liquidación final.
       </div>
       <div class="card-cta">
         Abrir panel
