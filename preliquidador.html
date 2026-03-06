@@ -102,6 +102,7 @@
 </head>
 <body>
 <div class="wrapper">
+
   <header>
     <div class="logo-group">
       <div class="logo">ZenderBox Colombia</div>
@@ -176,7 +177,7 @@
   <!-- STEP 2 -->
   <div class="step-card" id="card-1">
     <div class="card-header"><span class="step-badge">STEP 02</span><span class="card-title">Subir Preliquidado</span></div>
-    <p class="card-desc">Sube el archivo PRELIQUIDADO (.xlsx). Se hará el lookup por GUIA HIJA → HAWB y se completarán Flete, Seguro, CIF, TRM.</p>
+    <p class="card-desc">Sube el archivo PRELIQUIDADO (.xlsx). Se hará el lookup por GUIA HIJA → HAWB y se completarán Flete, Seguro, CIF, TRM. Guías con novedad se informan al finalizar.</p>
     <div class="field">
       <label>Archivo Preliquidado (.xlsx) *</label>
       <div class="dropzone" id="drop2" ondragover="doDragOver(event,'drop2')" ondragleave="doDragLeave('drop2')" ondrop="doDrop(event,'drop2','file2')">
@@ -194,7 +195,7 @@
   <!-- STEP 3 -->
   <div class="step-card" id="card-2">
     <div class="card-header"><span class="step-badge">STEP 03</span><span class="card-title">Calcular Impuestos</span></div>
-    <p class="card-desc">Calcula Arancel, IVA y Total usando las reglas de la hoja PA. Si alguna partida arancelaria falta, se muestra un aviso detallado.</p>
+    <p class="card-desc">Calcula Arancel, IVA y Total usando las reglas de la hoja PA. Si alguna partida falta, se muestra un aviso detallado.</p>
     <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;">
         <span style="color:var(--amber);">Regla general</span> · FOB ≤ 200 → Arancel = 0 · IVA = 0 · Total = 0<br>
@@ -226,6 +227,7 @@
       <button class="btn-secondary" onclick="resetAll()" style="color:var(--red);border-color:rgba(255,77,109,.3);">↺ Nuevo lote</button>
     </div>
   </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -327,30 +329,6 @@ function showResponse(boxId, ok, data) {
     if (s.includes('VALIDACIÓN FALLIDA') || s.includes('artida') || s.includes('Partida')) showErrorModal(s);
   }
 }
-
-function showErrorModal(msg) {
-  let modal = document.getElementById('errorModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'errorModal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
-    modal.innerHTML = `
-      <div style="background:#111318;border:1px solid #ff4d6d;border-radius:12px;padding:28px;max-width:560px;width:100%;box-shadow:0 0 40px rgba(255,77,109,.2);">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-          <span style="font-size:22px;">⚠️</span>
-          <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#ff4d6d;text-transform:uppercase;letter-spacing:.1em;">Error de Validación PA</span>
-        </div>
-        <div id="errorModalBody" style="font-family:'Space Mono',monospace;font-size:11px;color:#e8eaf0;line-height:1.8;white-space:pre-wrap;max-height:300px;overflow-y:auto;background:#0a0c0f;border-radius:6px;padding:14px;margin-bottom:20px;"></div>
-        <button onclick="document.getElementById('errorModal').remove()" style="width:100%;padding:12px;background:#ff4d6d;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
-          Entendido — Revisar Partidas
-        </button>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-  }
-  document.getElementById('errorModalBody').textContent = msg;
-}
-
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   t.textContent = (type==='success'?'✓ ':'✗ ') + msg;
@@ -398,8 +376,18 @@ async function runStep2() {
     fd.append('file', file); fd.append('accion', 'subir-preliquidado');
     const res = await fetch(getUrl(), { method:'POST', body:fd });
     const data = await readBody(res);
-    if (res.ok) { showResponse('res2',true,data); showToast('Preliquidado aplicado correctamente'); setTimeout(()=>goStep(2),1200); }
-    else { showResponse('res2',false,data); showToast('Error al aplicar el Preliquidado','error'); }
+    if (res.ok) {
+      showResponse('res2', true, data);
+      const novedades = data?.novedades || [];
+      if (novedades.length > 0) {
+        showNovedadAlert(novedades);
+        showToast(`Preliquidado aplicado · ${novedades.length} guía(s) con novedad`);
+        setTimeout(() => goStep(2), 2500);
+      } else {
+        showToast('Preliquidado aplicado correctamente');
+        setTimeout(() => goStep(2), 1200);
+      }
+    } else { showResponse('res2',false,data); showToast('Error al aplicar el Preliquidado','error'); }
   } catch(e) { showResponse('res2',false,e.message); showToast('Error: '+e.message,'error'); }
   finally { setLoading('btn2',false); }
 }
@@ -442,12 +430,56 @@ async function runStep4() {
   finally { setLoading('btn4',false); }
 }
 
+function showNovedadAlert(novedades) {
+  let modal = document.getElementById('novedadModal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'novedadModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
+  const lista = novedades.map(g => `<div style="padding:6px 0;border-bottom:1px solid #2a2f3a;color:#ffcc66;">⚡ ${g}</div>`).join('');
+  modal.innerHTML = `
+    <div style="background:#111318;border:1px solid #f5a623;border-radius:12px;padding:28px;max-width:480px;width:100%;box-shadow:0 0 40px rgba(245,166,35,.2);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span style="font-size:22px;">⚡</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#f5a623;text-transform:uppercase;letter-spacing:.1em;">Novedades Aplicadas</span>
+      </div>
+      <p style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-bottom:16px;">Las siguientes guías tienen novedad — FOB, Partida, Arancel, IVA y Total fueron sobrescritos desde el Preliquidado.</p>
+      <div style="max-height:240px;overflow-y:auto;font-family:'Space Mono',monospace;font-size:11px;margin-bottom:20px;">${lista}</div>
+      <button onclick="document.getElementById('novedadModal').remove()" style="width:100%;padding:12px;background:#f5a623;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        Entendido → Continuar a Calcular
+      </button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+function showErrorModal(msg) {
+  let modal = document.getElementById('errorModal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'errorModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
+  modal.innerHTML = `
+    <div style="background:#111318;border:1px solid #ff4d6d;border-radius:12px;padding:28px;max-width:560px;width:100%;box-shadow:0 0 40px rgba(255,77,109,.2);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <span style="font-size:22px;">⚠️</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#ff4d6d;text-transform:uppercase;letter-spacing:.1em;">Error de Validación PA</span>
+      </div>
+      <div id="errorModalBody" style="font-family:'Space Mono',monospace;font-size:11px;color:#e8eaf0;line-height:1.8;white-space:pre-wrap;max-height:300px;overflow-y:auto;background:#0a0c0f;border-radius:6px;padding:14px;margin-bottom:20px;"></div>
+      <button onclick="document.getElementById('errorModal').remove()" style="width:100%;padding:12px;background:#ff4d6d;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        Entendido — Revisar Partidas
+      </button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.getElementById('errorModalBody').textContent = msg;
+}
+
 function resetAll() {
   if (!confirm('¿Iniciar un nuevo lote? Esto reinicia la interfaz (no borra datos del Sheet).')) return;
   document.getElementById('agencia').value = '';
   ['file1','file2'].forEach(id => document.getElementById(id).value = '');
   ['fname1','fname2'].forEach(id => document.getElementById(id).textContent = '');
-  // Restaurar PROMT fijos
   document.getElementById('promts-container').innerHTML = FIXED_PROMTS;
   promtCount = 4;
   ['res1','res2','res3','res4'].forEach(id => document.getElementById(id).className = 'response-box');
