@@ -467,6 +467,31 @@
         background: rgba(79, 110, 247, 0.08);
     }
 
+    .btn-limpiar {
+        width: 100%;
+        background: transparent;
+        border: 1px solid var(--red);
+        border-radius: 8px;
+        padding: 12px;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--red);
+        cursor: pointer;
+        transition: all 0.15s;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn-limpiar:hover {
+        background: rgba(239, 68, 68, 0.08);
+    }
+
     .log-card {
         display: none;
     }
@@ -639,6 +664,13 @@
                     </div>
                     <p class="edit-hint">// Endpoint consultar agencia</p>
                 </div>
+                <div style="margin-top:10px;">
+                    <div class="webhook-row">
+                        <span class="method-badge" style="background:#3a1a1a;color:#ef4444;">GET</span>
+                        <input class="webhook-url" id="webhookLimpiar" value="https://zenderbox.app.n8n.cloud/webhook/limpiar-resultado"/>
+                    </div>
+                    <p class="edit-hint">// Endpoint limpiar hoja Resultado</p>
+                </div>
             </div>
         </div>
 
@@ -694,6 +726,10 @@
 
                 <button class="btn-descargar" onclick="descargarHistorico()">
                         ⬇ DESCARGAR HISTÓRICO
+                      </button>
+
+                <button class="btn-limpiar" onclick="limpiarResultado()">
+                        🗑 LIMPIAR HOJA RESULTADO
                       </button>
 
             </div>
@@ -1020,6 +1056,38 @@
             a.click();
             URL.revokeObjectURL(blobUrl);
             addLog('Descargado: ' + fname, 'ok');
+            setLogStatus(true);
+        } catch (err) {
+            addLog('Error de red: ' + err.message, 'err');
+            setLogStatus(false);
+        }
+    }
+
+    async function limpiarResultado() {
+        const url = document.getElementById('webhookLimpiar').value.trim();
+        if (!url)
+            return;
+
+        if (!confirm('¿Seguro que quieres borrar todos los datos de la hoja Resultado? Esta acción no se puede deshacer.'))
+            return;
+
+        addLog('Limpiando hoja Resultado...', 'warn');
+        document.getElementById('logCard').classList.add('visible');
+
+        try {
+            const res = await fetch(url, {
+                method: 'GET'
+            });
+            addLog('Respuesta HTTP: ' + res.status + ' ' + res.statusText, res.ok ? 'ok' : 'err');
+
+            if (!res.ok) {
+                addLog('Error al limpiar la hoja', 'err');
+                setLogStatus(false);
+                return;
+            }
+
+            const data = await res.json();
+            addLog(data.mensaje || 'Hoja limpiada correctamente', 'ok');
             setLogStatus(true);
         } catch (err) {
             addLog('Error de red: ' + err.message, 'err');
