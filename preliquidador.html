@@ -713,15 +713,30 @@
             </div>
         </header>
 
+        <!-- ENV TOGGLE -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Ambiente</span>
+            <div id="envToggle" onclick="toggleEnv()" style="display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:6px;overflow:hidden;cursor:pointer;user-select:none;">
+                <div id="envPro" style="padding:6px 18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;transition:all .2s;">PRO</div>
+                <div id="envTest" style="padding:6px 18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;transition:all .2s;">TEST</div>
+            </div>
+            <span id="envLabel" style="font-family:var(--mono);font-size:10px;color:var(--muted);"></span>
+        </div>
+
         <div class="config-bar">
             <label>Webhook Principal</label>
-            <input type="url" id="webhookUrl" placeholder="https://tu-instancia.n8n.cloud/webhook/preliquidador" oninput="validateUrl(this)">
+            <input type="url" id="webhookUrl" readonly style="opacity:.7;cursor:default;">
             <div class="dot-status" id="dotStatus"></div>
         </div>
-        <div class="config-bar" style="margin-bottom:36px;">
+        <div class="config-bar">
             <label>Webhook Validar&nbsp;PA</label>
-            <input type="url" id="webhookPA" placeholder="https://tu-instancia.n8n.cloud/webhook/validar-pa" oninput="validateUrlPA(this)" value="https://zenderbox.app.n8n.cloud/webhook/validar-pa">
+            <input type="url" id="webhookPA" readonly style="opacity:.7;cursor:default;">
             <div class="dot-status" id="dotStatusPA"></div>
+        </div>
+        <div class="config-bar" style="margin-bottom:36px;">
+            <label>Webhook Limpiar</label>
+            <input type="url" id="webhookLimpiar" readonly style="opacity:.7;cursor:default;">
+            <div class="dot-status" id="dotStatusLimpiar"></div>
         </div>
 
         <!-- PROGRESS (5 pasos) -->
@@ -965,48 +980,143 @@
     ;
 
     // ── url validation ──────────────────────────────────────
-    function validateUrl(input) {
-        const dot = document.getElementById('dotStatus');
-        try {
-            new URL(input.value.trim());
-            dot.className = 'dot-status online';
+    const BASE = 'https://zenderbox.app.n8n.cloud/webhook';
+    const ENVS = {
+        pro: {
+            main: `${BASE}/preliquidador`,
+            pa: `${BASE}/validar-pa`,
+            limpiar: `${BASE}/limpiar-lote`
+        },
+        test: {
+            main: `${BASE}/preliquidador-test`,
+            pa: `${BASE}/validar-pa-test`,
+            limpiar: `${BASE}/limpiar-lote-test`
         }
-        catch {
-            dot.className = 'dot-status';
-        }
-        localStorage.setItem('zbWebhookUrl', input.value.trim());
+    };
+    let currentEnv = 'pro';
+
+    function setEnvUrls(env) {
+        currentEnv = env;
+        const cfg = ENVS[env];
+        const isPro = env === 'pro';
+
+        document.getElementById('webhookUrl').value = cfg.main;
+        document.getElementById('webhookPA').value = cfg.pa;
+        document.getElementById('webhookLimpiar').value = cfg.limpiar;
+
+        ['dotStatus', 'dotStatusPA', 'dotStatusLimpiar'].forEach(id => {
+            document.getElementById(id).className = 'dot-status online';
+        });
+
+        // Toggle visual
+        const proBg = isPro ? 'var(--amber)' : 'transparent';
+        const testBg = !isPro ? '#4da6ff' : 'transparent';
+        const proCol = isPro ? 'var(--bg)' : 'var(--muted)';
+        const testCol = !isPro ? 'var(--bg)' : 'var(--muted)';
+        document.getElementById('envPro').style.background = proBg;
+        document.getElementById('envPro').style.color = proCol;
+        document.getElementById('envTest').style.background = testBg;
+        document.getElementById('envTest').style.color = testCol;
+        document.getElementById('envLabel').textContent = isPro ? 'Producción activa' : 'Test activo — datos en sheets _test';
+        document.getElementById('envLabel').style.color = isPro ? 'var(--amber)' : '#4da6ff';
+
+        localStorage.setItem('zbEnv', env);
     }
-    function validateUrlPA(input) {
-        const dot = document.getElementById('dotStatusPA');
-        try {
-            new URL(input.value.trim());
-            dot.className = 'dot-status online';
+
+    const TEST_PIN = '1234'; // ← cambia este PIN
+
+    function toggleEnv() {
+        if (currentEnv === 'pro') {
+            // Intentando pasar a TEST — pedir PIN
+            showPinModal();
+        } else {
+            // Volver a PRO — sin restricción
+            setEnvUrls('pro');
         }
-        catch {
-            dot.className = 'dot-status';
-        }
-        localStorage.setItem('zbWebhookPA', input.value.trim());
     }
+
+    function showPinModal() {
+        let modal = document.getElementById('pinModal');
+        if (modal)
+            modal.remove();
+        modal = document.createElement('div');
+        modal.id = 'pinModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+        modal.innerHTML = `
+    <div style="background:#111318;border:2px solid #4da6ff;border-radius:12px;padding:32px;max-width:340px;width:100%;box-shadow:0 0 60px rgba(77,166,255,.2);text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+      <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#4da6ff;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Acceso Ambiente Test</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-bottom:24px;">Ingresa el PIN para activar el modo test</div>
+      <input id="pinInput" type="password" maxlength="8"
+        style="width:100%;background:#0a0c0f;border:1px solid #2a2f3a;border-radius:8px;padding:14px;font-family:'Space Mono',monospace;font-size:22px;color:#4da6ff;text-align:center;letter-spacing:.3em;outline:none;margin-bottom:16px;"
+        placeholder="••••"
+        onkeydown="if(event.key==='Enter') confirmPin()">
+      <div id="pinError" style="font-family:'Space Mono',monospace;font-size:10px;color:#ff4d6d;margin-bottom:12px;min-height:16px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('pinModal').remove()"
+          style="flex:1;padding:12px;background:transparent;color:#5a6070;border:1px solid #2a2f3a;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          Cancelar
+        </button>
+        <button onclick="confirmPin()"
+          style="flex:1;padding:12px;background:#4da6ff;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          Confirmar
+        </button>
+      </div>
+    </div>`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ;
+        document.body.appendChild(modal);
+        setTimeout(() => document.getElementById('pinInput')?.focus(), 100);
+        modal.addEventListener('click', e => {
+            if (e.target === modal)
+                modal.remove();
+        });
+    }
+
+    function confirmPin() {
+        const val = document.getElementById('pinInput')?.value || '';
+        if (val === TEST_PIN) {
+            document.getElementById('pinModal').remove();
+            setEnvUrls('test');
+            showToast('Modo TEST activado', 'error');
+        } else {
+            document.getElementById('pinError').textContent = 'PIN incorrecto — intenta de nuevo';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+        }
+    }
+
     function getUrl() {
         return document.getElementById('webhookUrl').value.trim();
     }
     function getUrlPA() {
         return document.getElementById('webhookPA').value.trim();
     }
+    function getUrlLimpiar() {
+        return document.getElementById('webhookLimpiar').value.trim();
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
-        const s = localStorage.getItem('zbWebhookUrl');
-        if (s) {
-            const i = document.getElementById('webhookUrl');
-            i.value = s;
-            validateUrl(i);
-        }
-        const p = localStorage.getItem('zbWebhookPA') || 'https://zenderbox.app.n8n.cloud/webhook/validar-pa';
-        if (p) {
-            const i = document.getElementById('webhookPA');
-            i.value = p;
-            validateUrlPA(i);
-        }
+        const savedEnv = localStorage.getItem('zbEnv') || 'pro';
+        setEnvUrls(savedEnv);
     });
 
     // ── step navigation ─────────────────────────────────────
@@ -1099,10 +1209,9 @@
         b.classList.toggle('loading', on);
         b.disabled = on;
     }
-    function assertUrl(url, field) {
+    function assertUrl(url) {
         if (!url) {
-            showToast('Ingresa la URL del webhook primero', 'error');
-            document.getElementById(field).focus();
+            showToast('URL de webhook no configurada', 'error');
             return false;
         }
         return true;
@@ -1124,7 +1233,7 @@
 
     // ── STEP 1 ──────────────────────────────────────────────
     async function runStep1() {
-        if (!assertUrl(getUrl(), 'webhookUrl'))
+        if (!assertUrl(getUrl()))
             return;
         const agencia = document.getElementById('agencia').value.trim();
         const file = document.getElementById('file1').files[0];
@@ -1168,7 +1277,7 @@
 
     // ── STEP 2 ──────────────────────────────────────────────
     async function runStep2() {
-        if (!assertUrl(getUrl(), 'webhookUrl'))
+        if (!assertUrl(getUrl()))
             return;
         const file = document.getElementById('file2').files[0];
         if (!file) {
@@ -1211,7 +1320,7 @@
 
     // ── STEP 3: Validar PA ──────────────────────────────────
     async function runValidarPA() {
-        if (!assertUrl(getUrlPA(), 'webhookPA'))
+        if (!assertUrl(getUrlPA()))
             return;
         setLoading('btn-vpa', true);
         try {
@@ -1257,7 +1366,7 @@
 
     // ── STEP 4: Calcular ────────────────────────────────────
     async function runStep3() {
-        if (!assertUrl(getUrl(), 'webhookUrl'))
+        if (!assertUrl(getUrl()))
             return;
         setLoading('btn3', true);
         try {
@@ -1291,7 +1400,7 @@
 
     // ── STEP 5: Exportar ────────────────────────────────────
     async function runStep4() {
-        if (!assertUrl(getUrl(), 'webhookUrl'))
+        if (!assertUrl(getUrl()))
             return;
         setLoading('btn4', true);
         document.getElementById('downloadArea').innerHTML = '';
@@ -1450,9 +1559,43 @@
     }
 
     // ── Reset ───────────────────────────────────────────────
-    function resetAll() {
-        if (!confirm('¿Iniciar un nuevo lote? Esto reinicia la interfaz (no borra datos del Sheet).'))
+    async function resetAll() {
+        if (!confirm('¿Iniciar un nuevo lote? Esto borrará los datos del Sheet y reiniciará la interfaz.'))
             return;
+
+        const url = getUrlLimpiar();
+        if (url) {
+            // Mostrar loading en el botón nuevo lote
+            const btn = document.querySelector('[onclick="resetAll()"]');
+            if (btn) {
+                btn.textContent = '⏳ Limpiando...';
+                btn.disabled = true;
+            }
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: '{}'
+                });
+                const data = await readBody(res);
+                if (res.ok && data.ok) {
+                    showToast('Sheet limpiado correctamente');
+                } else {
+                    showToast('Advertencia: no se pudo limpiar el Sheet', 'error');
+                }
+            } catch (e) {
+                showToast('No se pudo conectar al webhook de limpieza', 'error');
+            } finally {
+                if (btn) {
+                    btn.textContent = '↺ Nuevo lote';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // Reiniciar interfaz
         document.getElementById('agencia').value = '';
         ['file1', 'file2'].forEach(id => document.getElementById(id).value = '');
         ['fname1', 'fname2'].forEach(id => document.getElementById(id).textContent = '');
