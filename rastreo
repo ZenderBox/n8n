@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rastreo de Paquete · Zenderbox</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --zb-black: #0d0d0d;
+      --zb-white: #f5f3ee;
+      --zb-yellow: #f5c800;
+      --zb-yellow-dark: #d4a900;
+      --zb-gray: #1a1a1a;
+      --zb-gray-light: #2a2a2a;
+      --zb-text-muted: #888;
+    }
+
+    body {
+      background: var(--zb-black);
+      color: var(--zb-white);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 40px;
+      border-bottom: 1px solid #222;
+      position: sticky;
+      top: 0;
+      background: var(--zb-black);
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--zb-yellow);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--zb-white);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text span { color: var(--zb-yellow); }
+
+    .header-badge {
+      font-size: 12px;
+      color: var(--zb-text-muted);
+      font-weight: 300;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 80px 40px 60px;
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: center;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-label {
+      display: inline-block;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: var(--zb-yellow);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+    }
+
+    h1 span {
+      color: var(--zb-yellow);
+      position: relative;
+    }
+
+    .hero-sub {
+      color: var(--zb-text-muted);
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.6;
+      margin-bottom: 48px;
+    }
+
+    /* SEARCH */
+    .search-wrap {
+      display: flex;
+      gap: 0;
+      border: 1.5px solid #333;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+      background: #111;
+    }
+
+    .search-wrap:focus-within {
+      border-color: var(--zb-yellow);
+    }
+
+    #guia-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 18px 24px;
+      color: var(--zb-white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    #guia-input::placeholder { color: #555; }
+
+    #buscar-btn {
+      background: var(--zb-yellow);
+      color: var(--zb-black);
+      border: none;
+      padding: 18px 32px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    #buscar-btn:hover { background: var(--zb-yellow-dark); }
+    #buscar-btn:active { transform: scale(0.98); }
+    #buscar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* LOADING */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #222;
+      border-top-color: var(--zb-yellow);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading p { color: var(--zb-text-muted); font-size: 14px; }
+
+    /* ERROR */
+    .error-box {
+      display: none;
+      background: #1a0a0a;
+      border: 1px solid #3a1a1a;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      margin-top: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .error-box .error-icon { font-size: 32px; margin-bottom: 12px; }
+    .error-box p { color: #ff6b6b; font-size: 14px; }
+
+    /* RESULT */
+    #resultado {
+      display: none;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    /* STATUS CARD */
+    .status-card {
+      background: var(--zb-gray);
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--zb-yellow);
+    }
+
+    .status-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .guia-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--zb-text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .cliente-nombre {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .estado-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .estado-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .estado-no-asignado  { background: #1a1a2e; color: #6c7fd8; border: 1px solid #2a2a4e; }
+    .estado-no-asignado .estado-dot  { background: #6c7fd8; }
+    .estado-asignado     { background: #1a2a1a; color: #5dba6e; border: 1px solid #2a4a2a; }
+    .estado-asignado .estado-dot     { background: #5dba6e; }
+    .estado-en-ruta      { background: #2a1a0a; color: #f5a623; border: 1px solid #4a3a1a; }
+    .estado-en-ruta .estado-dot      { background: #f5a623; }
+    .estado-entregado    { background: #0a1a0a; color: #2ecc71; border: 1px solid #1a4a1a; }
+    .estado-entregado .estado-dot    { background: #2ecc71; }
+    .estado-default      { background: #1a1a1a; color: #888; border: 1px solid #333; }
+    .estado-default .estado-dot      { background: #888; }
+
+    .status-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid #333;
+    }
+
+    .detail-item {}
+    .detail-label {
+      font-size: 11px;
+      color: var(--zb-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .detail-value {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--zb-white);
+    }
+    .detail-value.highlight { color: var(--zb-yellow); }
+
+    /* MAP */
+    .map-card {
+      background: var(--zb-gray);
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .map-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .map-header-icon {
+      width: 32px;
+      height: 32px;
+      background: #222;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .map-header-text {}
+    .map-header-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .map-header-sub { font-size: 12px; color: var(--zb-text-muted); }
+
+    #map {
+      height: 320px;
+      width: 100%;
+      filter: brightness(0.85) saturate(0.7);
+    }
+
+    .no-map {
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--zb-text-muted);
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .no-map span { font-size: 40px; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid #1a1a1a;
+      color: #444;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .hero { padding: 48px 20px 40px; }
+      #resultado { padding: 0 20px 60px; }
+      .search-wrap { flex-direction: column; border-radius: 14px; }
+      #buscar-btn { border-radius: 0 0 12px 12px; padding: 16px; }
+      .status-top { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📦</div>
+    <div class="logo-text">Zender<span>box</span></div>
+  </div>
+  <div class="header-badge">Costa Rica</div>
+</header>
+
+<section class="hero">
+  <div class="hero-label">Rastreo en tiempo real</div>
+  <h1>¿Dónde está<br>tu <span>paquete</span>?</h1>
+  <p class="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega.</p>
+
+  <div class="search-wrap">
+    <input
+      id="guia-input"
+      type="text"
+      placeholder="Ej: SSW0208110485"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button id="buscar-btn" onclick="buscarGuia()">Rastrear →</button>
+  </div>
+
+  <div class="error-box" id="error-box">
+    <div class="error-icon">⚠️</div>
+    <p id="error-msg">No encontramos esa guía. Verifica el número e intenta de nuevo.</p>
+  </div>
+</section>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>Consultando estado del paquete…</p>
+</div>
+
+<div id="resultado">
+  <div class="status-card">
+    <div class="status-top">
+      <div>
+        <div class="guia-num" id="res-guia">—</div>
+        <div class="cliente-nombre" id="res-nombre">—</div>
+      </div>
+      <div class="estado-badge estado-default" id="res-badge">
+        <div class="estado-dot"></div>
+        <span id="res-estado">—</span>
+      </div>
+    </div>
+    <div class="status-details">
+      <div class="detail-item">
+        <div class="detail-label">Dirección de entrega</div>
+        <div class="detail-value" id="res-direccion">—</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Ciudad</div>
+        <div class="detail-value" id="res-ciudad">—</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Fecha de entrega</div>
+        <div class="detail-value highlight" id="res-fecha">—</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Conductor</div>
+        <div class="detail-value" id="res-conductor">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-card">
+    <div class="map-header">
+      <div class="map-header-icon">🗺️</div>
+      <div class="map-header-text">
+        <div class="map-header-title">Ubicación de entrega</div>
+        <div class="map-header-sub">Dirección registrada del destinatario</div>
+      </div>
+    </div>
+    <div id="map-container">
+      <div class="no-map" id="no-map">
+        <span>📍</span>
+        Sin coordenadas disponibles aún
+      </div>
+      <div id="map" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Zenderbox Costa Rica · Todos los derechos reservados
+</footer>
+
+<script>
+  // ⚠️ CAMBIAR por la URL real del webhook de n8n
+  const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
+
+  let mapInstance = null;
+
+  document.getElementById('guia-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') buscarGuia();
+  });
+
+  function getEstadoClass(estado) {
+    if (!estado) return 'estado-default';
+    const e = estado.toLowerCase();
+    if (e.includes('no asig')) return 'estado-no-asignado';
+    if (e.includes('asig') || e.includes('preparar')) return 'estado-asignado';
+    if (e.includes('ruta') || e.includes('camino') || e.includes('llegado') || e.includes('acept')) return 'estado-en-ruta';
+    if (e.includes('finaliz') || e.includes('entregad')) return 'estado-entregado';
+    return 'estado-default';
+  }
+
+  function formatFecha(fecha) {
+    if (!fecha) return '—';
+    try {
+      return new Date(fecha).toLocaleDateString('es-CR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+    } catch { return fecha; }
+  }
+
+  async function buscarGuia() {
+    const guia = document.getElementById('guia-input').value.trim().toUpperCase();
+    if (!guia) return;
+
+    // Reset UI
+    document.getElementById('resultado').style.display = 'none';
+    document.getElementById('error-box').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('buscar-btn').disabled = true;
+
+    try {
+      const res = await fetch(`${N8N_WEBHOOK_URL}?guia=${encodeURIComponent(guia)}`);
+      const data = await res.json();
+
+      document.getElementById('loading').style.display = 'none';
+
+      if (!data || data.error || !data.estado) {
+        showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
+        return;
+      }
+
+      // Llenar datos
+      document.getElementById('res-guia').textContent = guia;
+      document.getElementById('res-nombre').textContent = data.cliente || '—';
+      document.getElementById('res-estado').textContent = data.estado || '—';
+      document.getElementById('res-direccion').textContent = data.direccion || '—';
+      document.getElementById('res-ciudad').textContent = data.ciudad || '—';
+      document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
+      document.getElementById('res-conductor').textContent = data.conductor && data.conductor.trim() ? data.conductor : 'Por asignar';
+
+      // Badge color
+      const badge = document.getElementById('res-badge');
+      badge.className = `estado-badge ${getEstadoClass(data.estado)}`;
+
+      // Mapa
+      if (data.latitude && data.longitude) {
+        document.getElementById('no-map').style.display = 'none';
+        document.getElementById('map').style.display = 'block';
+
+        if (mapInstance) {
+          mapInstance.remove();
+          mapInstance = null;
+        }
+
+        mapInstance = L.map('map', { zoomControl: true }).setView([data.latitude, data.longitude], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap'
+        }).addTo(mapInstance);
+
+        const icon = L.divIcon({
+          html: '<div style="background:#f5c800;width:18px;height:18px;border-radius:50%;border:3px solid #0d0d0d;box-shadow:0 0 0 3px #f5c800aa"></div>',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+          className: ''
+        });
+
+        L.marker([data.latitude, data.longitude], { icon })
+          .addTo(mapInstance)
+          .bindPopup(`<b>${data.cliente || guia}</b><br>${data.direccion || ''}`)
+          .openPopup();
+
+      } else {
+        document.getElementById('no-map').style.display = 'flex';
+        document.getElementById('map').style.display = 'none';
+      }
+
+      document.getElementById('resultado').style.display = 'block';
+
+    } catch (e) {
+      document.getElementById('loading').style.display = 'none';
+      showError('Error al conectar con el servidor. Intenta de nuevo.');
+    }
+
+    document.getElementById('buscar-btn').disabled = false;
+  }
+
+  function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-box').style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
