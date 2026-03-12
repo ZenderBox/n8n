@@ -1,101 +1,126 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rastreo de Paquete · Zenderbox</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <title>Rastreo de Paquete · ZenderBox</title>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --zb-black: #0d0d0d;
-      --zb-white: #f5f3ee;
-      --zb-yellow: #f5c800;
-      --zb-yellow-dark: #d4a900;
-      --zb-gray: #1a1a1a;
-      --zb-gray-light: #2a2a2a;
-      --zb-text-muted: #888;
+      --zb-cyan:   #009CC9;
+      --zb-lime:   #CCD32A;
+      --zb-navy:   #081F3A;
+      --zb-dark:   #2D2D2D;
+      --zb-navy2:  #0c2847;
+      --zb-white:  #ffffff;
+      --zb-off:    #e8f4f8;
+      --zb-muted:  #7a9ab5;
+      --zb-grad:   linear-gradient(135deg, #009CC9 0%, #CCD32A 100%);
     }
 
     body {
-      background: var(--zb-black);
+      background: var(--zb-navy);
       color: var(--zb-white);
       font-family: 'DM Sans', sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,156,201,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,156,201,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     /* HEADER */
     header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,31,58,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,156,201,0.15);
+      padding: 16px 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 24px 40px;
-      border-bottom: 1px solid #222;
-      position: sticky;
-      top: 0;
-      background: var(--zb-black);
-      z-index: 100;
     }
 
     .logo {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       text-decoration: none;
     }
 
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--zb-yellow);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
+    /* SVG logo mark inline */
+    .logo-mark {
+      width: 42px;
+      height: 42px;
     }
 
     .logo-text {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Exo 2', sans-serif;
       font-weight: 800;
-      font-size: 20px;
-      color: var(--zb-white);
+      font-size: 22px;
       letter-spacing: -0.5px;
     }
 
-    .logo-text span { color: var(--zb-yellow); }
+    .logo-text .zender { color: var(--zb-cyan); }
+    .logo-text .box    { color: var(--zb-lime); }
 
-    .header-badge {
-      font-size: 12px;
-      color: var(--zb-text-muted);
-      font-weight: 300;
-      letter-spacing: 1px;
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cr-badge {
+      background: rgba(0,156,201,0.12);
+      border: 1px solid rgba(0,156,201,0.25);
+      color: var(--zb-cyan);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
     }
 
     /* HERO */
     .hero {
-      padding: 80px 40px 60px;
-      max-width: 680px;
-      margin: 0 auto;
+      position: relative;
+      z-index: 1;
       text-align: center;
+      padding: 80px 40px 56px;
+      max-width: 660px;
+      margin: 0 auto;
       animation: fadeUp 0.6s ease both;
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
+      from { opacity: 0; transform: translateY(28px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .hero-label {
-      display: inline-block;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      color: var(--zb-yellow);
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(204,211,42,0.08);
+      border: 1px solid rgba(204,211,42,0.2);
+      color: var(--zb-lime);
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 2px;
@@ -105,41 +130,56 @@
       margin-bottom: 28px;
     }
 
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--zb-lime);
+      border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+
     h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(36px, 6vw, 58px);
+      font-family: 'Exo 2', sans-serif;
+      font-size: clamp(34px, 6vw, 56px);
       font-weight: 800;
       line-height: 1.05;
-      letter-spacing: -2px;
+      letter-spacing: -1.5px;
       margin-bottom: 16px;
     }
 
-    h1 span {
-      color: var(--zb-yellow);
-      position: relative;
+    h1 .gradient-text {
+      background: var(--zb-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .hero-sub {
-      color: var(--zb-text-muted);
+      color: var(--zb-muted);
       font-size: 16px;
       font-weight: 300;
-      line-height: 1.6;
-      margin-bottom: 48px;
+      line-height: 1.65;
+      margin-bottom: 44px;
     }
 
     /* SEARCH */
     .search-wrap {
       display: flex;
-      gap: 0;
-      border: 1.5px solid #333;
+      border: 1.5px solid rgba(0,156,201,0.25);
       border-radius: 14px;
       overflow: hidden;
-      transition: border-color 0.2s;
-      background: #111;
+      background: rgba(12,40,71,0.8);
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .search-wrap:focus-within {
-      border-color: var(--zb-yellow);
+      border-color: var(--zb-cyan);
+      box-shadow: 0 0 0 4px rgba(0,156,201,0.1);
     }
 
     #guia-input {
@@ -149,252 +189,283 @@
       outline: none;
       padding: 18px 24px;
       color: var(--zb-white);
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Exo 2', sans-serif;
       font-size: 15px;
-      letter-spacing: 0.5px;
+      font-weight: 500;
+      letter-spacing: 1px;
     }
 
-    #guia-input::placeholder { color: #555; }
+    #guia-input::placeholder { color: #3a6080; }
 
     #buscar-btn {
-      background: var(--zb-yellow);
-      color: var(--zb-black);
+      background: var(--zb-grad);
+      color: var(--zb-navy);
       border: none;
       padding: 18px 32px;
-      font-family: 'Syne', sans-serif;
+      font-family: 'Exo 2', sans-serif;
       font-weight: 700;
       font-size: 14px;
       letter-spacing: 0.5px;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+      transition: opacity 0.2s, transform 0.1s;
       white-space: nowrap;
     }
 
-    #buscar-btn:hover { background: var(--zb-yellow-dark); }
-    #buscar-btn:active { transform: scale(0.98); }
-    #buscar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #buscar-btn:hover   { opacity: 0.9; }
+    #buscar-btn:active  { transform: scale(0.98); }
+    #buscar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* LOADING */
-    .loading {
+    #loading {
       display: none;
       text-align: center;
       padding: 60px 0;
+      position: relative;
+      z-index: 1;
       animation: fadeUp 0.4s ease both;
     }
 
     .spinner {
-      width: 48px;
-      height: 48px;
-      border: 3px solid #222;
-      border-top-color: var(--zb-yellow);
+      width: 52px; height: 52px;
+      border: 3px solid rgba(0,156,201,0.15);
+      border-top-color: var(--zb-cyan);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin: 0 auto 20px;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    .loading p { color: var(--zb-text-muted); font-size: 14px; }
+    #loading p { color: var(--zb-muted); font-size: 14px; }
 
     /* ERROR */
     .error-box {
       display: none;
-      background: #1a0a0a;
-      border: 1px solid #3a1a1a;
-      border-radius: 14px;
-      padding: 24px;
+      background: rgba(255,80,80,0.06);
+      border: 1px solid rgba(255,80,80,0.2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-top: 20px;
       text-align: center;
-      margin-top: 24px;
-      animation: fadeUp 0.4s ease both;
+      animation: fadeUp 0.3s ease both;
     }
-
-    .error-box .error-icon { font-size: 32px; margin-bottom: 12px; }
-    .error-box p { color: #ff6b6b; font-size: 14px; }
+    .error-box p { color: #ff8080; font-size: 14px; }
 
     /* RESULT */
     #resultado {
       display: none;
+      position: relative;
+      z-index: 1;
       max-width: 800px;
       margin: 0 auto;
       padding: 0 40px 80px;
       animation: fadeUp 0.5s ease both;
     }
 
-    /* STATUS CARD */
-    .status-card {
-      background: var(--zb-gray);
-      border: 1px solid #2a2a2a;
+    /* CARD */
+    .zb-card {
+      background: rgba(12,40,71,0.7);
+      border: 1px solid rgba(0,156,201,0.15);
       border-radius: 20px;
-      padding: 32px;
-      margin-bottom: 16px;
-      position: relative;
       overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
     }
 
-    .status-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
+    .card-top-bar {
       height: 3px;
-      background: var(--zb-yellow);
+      background: var(--zb-grad);
     }
 
-    .status-top {
+    .card-body { padding: 28px 32px; }
+
+    .status-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 16px;
       flex-wrap: wrap;
+      margin-bottom: 24px;
     }
 
-    .guia-num {
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
+    .guia-label {
+      font-size: 11px;
       font-weight: 600;
-      color: var(--zb-text-muted);
-      letter-spacing: 1px;
+      color: var(--zb-muted);
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
-    .cliente-nombre {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
+    .guia-value {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 20px;
       font-weight: 700;
-      letter-spacing: -0.5px;
+      color: var(--zb-cyan);
+      letter-spacing: 0.5px;
     }
 
+    /* Estado badge */
     .estado-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 20px;
+      padding: 8px 18px;
       border-radius: 100px;
-      font-family: 'Syne', sans-serif;
+      font-family: 'Exo 2', sans-serif;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      white-space: nowrap;
     }
 
     .estado-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px; height: 7px;
       border-radius: 50%;
-      animation: pulse 2s infinite;
     }
+
+    .estado-dot.pulse { animation: pulse 2s infinite; }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.5; transform:scale(0.8); }
     }
 
-    .estado-no-asignado  { background: #1a1a2e; color: #6c7fd8; border: 1px solid #2a2a4e; }
-    .estado-no-asignado .estado-dot  { background: #6c7fd8; }
-    .estado-asignado     { background: #1a2a1a; color: #5dba6e; border: 1px solid #2a4a2a; }
-    .estado-asignado .estado-dot     { background: #5dba6e; }
-    .estado-en-ruta      { background: #2a1a0a; color: #f5a623; border: 1px solid #4a3a1a; }
-    .estado-en-ruta .estado-dot      { background: #f5a623; }
-    .estado-entregado    { background: #0a1a0a; color: #2ecc71; border: 1px solid #1a4a1a; }
-    .estado-entregado .estado-dot    { background: #2ecc71; }
-    .estado-default      { background: #1a1a1a; color: #888; border: 1px solid #333; }
-    .estado-default .estado-dot      { background: #888; }
+    .s-no-asignado { background: rgba(108,127,216,0.1); color: #8090e0; border: 1px solid rgba(108,127,216,0.2); }
+    .s-no-asignado .estado-dot { background: #8090e0; }
+    .s-asignado    { background: rgba(0,156,201,0.1); color: var(--zb-cyan); border: 1px solid rgba(0,156,201,0.25); }
+    .s-asignado .estado-dot    { background: var(--zb-cyan); }
+    .s-en-ruta     { background: rgba(204,211,42,0.1); color: var(--zb-lime); border: 1px solid rgba(204,211,42,0.25); }
+    .s-en-ruta .estado-dot     { background: var(--zb-lime); }
+    .s-entregado   { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid rgba(46,204,113,0.25); }
+    .s-entregado .estado-dot   { background: #2ecc71; }
+    .s-default     { background: rgba(255,255,255,0.05); color: var(--zb-muted); border: 1px solid rgba(255,255,255,0.08); }
+    .s-default .estado-dot     { background: var(--zb-muted); }
 
-    .status-details {
+    /* Info grid */
+    .info-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 16px;
-      margin-top: 28px;
-      padding-top: 24px;
-      border-top: 1px solid #333;
+      gap: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,156,201,0.1);
     }
 
-    .detail-item {}
-    .detail-label {
-      font-size: 11px;
-      color: var(--zb-text-muted);
+    .info-item {}
+    .info-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--zb-muted);
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
+      letter-spacing: 1.2px;
+      margin-bottom: 5px;
     }
-    .detail-value {
-      font-size: 15px;
+    .info-value {
+      font-size: 14px;
       font-weight: 500;
       color: var(--zb-white);
+      line-height: 1.4;
     }
-    .detail-value.highlight { color: var(--zb-yellow); }
+    .info-value.accent { color: var(--zb-cyan); }
+    .info-value.lime   { color: var(--zb-lime); }
 
     /* MAP */
-    .map-card {
-      background: var(--zb-gray);
-      border: 1px solid #2a2a2a;
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
     .map-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid #2a2a2a;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0,156,201,0.1);
     }
 
-    .map-header-icon {
-      width: 32px;
-      height: 32px;
-      background: #222;
-      border-radius: 8px;
+    .map-icon {
+      width: 36px; height: 36px;
+      background: rgba(0,156,201,0.1);
+      border: 1px solid rgba(0,156,201,0.2);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 16px;
     }
 
-    .map-header-text {}
-    .map-header-title {
-      font-family: 'Syne', sans-serif;
+    .map-title {
+      font-family: 'Exo 2', sans-serif;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 15px;
     }
-    .map-header-sub { font-size: 12px; color: var(--zb-text-muted); }
+
+    .map-sub { font-size: 12px; color: var(--zb-muted); }
 
     #map {
       height: 320px;
-      width: 100%;
-      filter: brightness(0.85) saturate(0.7);
+      display: none;
+      filter: brightness(0.8) saturate(0.6) hue-rotate(180deg);
     }
 
     .no-map {
-      height: 200px;
+      height: 180px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--zb-text-muted);
-      gap: 12px;
-      font-size: 14px;
-    }
-
-    .no-map span { font-size: 40px; }
-
-    /* FOOTER */
-    footer {
-      text-align: center;
-      padding: 40px;
-      border-top: 1px solid #1a1a1a;
-      color: #444;
+      color: var(--zb-muted);
+      gap: 10px;
       font-size: 13px;
     }
 
+    .no-map .icon { font-size: 36px; opacity: 0.4; }
+
+    /* PHOTOS */
+    .photos-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0,156,201,0.1);
+    }
+
+    .photos-grid {
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .photos-grid img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(0,156,201,0.1);
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .photos-grid img:hover {
+      transform: scale(1.02);
+      border-color: var(--zb-cyan);
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 32px 40px;
+      border-top: 1px solid rgba(0,156,201,0.08);
+      color: var(--zb-muted);
+      font-size: 12px;
+    }
+
+    footer span { color: var(--zb-cyan); }
+
     @media (max-width: 600px) {
-      header { padding: 16px 20px; }
-      .hero { padding: 48px 20px 40px; }
-      #resultado { padding: 0 20px 60px; }
-      .search-wrap { flex-direction: column; border-radius: 14px; }
-      #buscar-btn { border-radius: 0 0 12px 12px; padding: 16px; }
-      .status-top { flex-direction: column; }
+      header { padding: 14px 20px; }
+      .hero  { padding: 48px 20px 36px; }
+      #resultado { padding: 0 16px 60px; }
+      .search-wrap { flex-direction: column; }
+      #buscar-btn  { padding: 16px; }
+      .card-body   { padding: 20px; }
     }
   </style>
 </head>
@@ -402,16 +473,30 @@
 
 <header>
   <div class="logo">
-    <div class="logo-icon">📦</div>
-    <div class="logo-text">Zender<span>box</span></div>
+    <!-- ZenderBox logo SVG inline (isotipo Z) -->
+    <svg class="logo-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="zbgrad" x1="0" y1="0" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#009CC9"/>
+          <stop offset="100%" stop-color="#CCD32A"/>
+        </linearGradient>
+      </defs>
+      <rect width="42" height="42" rx="10" fill="url(#zbgrad)"/>
+      <text x="7" y="31" font-family="'Exo 2',sans-serif" font-weight="900" font-size="26" fill="white">Z</text>
+    </svg>
+    <div class="logo-text">
+      <span class="zender">Zender</span><span class="box">Box</span>
+    </div>
   </div>
-  <div class="header-badge">Costa Rica</div>
+  <div class="header-right">
+    <div class="cr-badge">🇨🇷 Costa Rica</div>
+  </div>
 </header>
 
 <section class="hero">
-  <div class="hero-label">Rastreo en tiempo real</div>
-  <h1>¿Dónde está<br>tu <span>paquete</span>?</h1>
-  <p class="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega.</p>
+  <div class="hero-eyebrow">Rastreo en tiempo real</div>
+  <h1>¿Dónde está<br>tu <span class="gradient-text">paquete</span>?</h1>
+  <p class="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega en Costa Rica.</p>
 
   <div class="search-wrap">
     <input
@@ -425,72 +510,89 @@
   </div>
 
   <div class="error-box" id="error-box">
-    <div class="error-icon">⚠️</div>
     <p id="error-msg">No encontramos esa guía. Verifica el número e intenta de nuevo.</p>
   </div>
 </section>
 
-<div class="loading" id="loading">
+<div id="loading">
   <div class="spinner"></div>
   <p>Consultando estado del paquete…</p>
 </div>
 
 <div id="resultado">
-  <div class="status-card">
-    <div class="status-top">
-      <div>
-        <div class="guia-num" id="res-guia">—</div>
-        <div class="cliente-nombre" id="res-nombre">—</div>
+
+  <!-- STATUS CARD -->
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Número de guía</div>
+          <div class="guia-value" id="res-guia">—</div>
+        </div>
+        <div class="estado-badge s-default" id="res-badge">
+          <div class="estado-dot pulse"></div>
+          <span id="res-estado">—</span>
+        </div>
       </div>
-      <div class="estado-badge estado-default" id="res-badge">
-        <div class="estado-dot"></div>
-        <span id="res-estado">—</span>
-      </div>
-    </div>
-    <div class="status-details">
-      <div class="detail-item">
-        <div class="detail-label">Dirección de entrega</div>
-        <div class="detail-value" id="res-direccion">—</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Ciudad</div>
-        <div class="detail-value" id="res-ciudad">—</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Fecha de entrega</div>
-        <div class="detail-value highlight" id="res-fecha">—</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Conductor</div>
-        <div class="detail-value" id="res-conductor">—</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Dirección</div>
+          <div class="info-value" id="res-direccion">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Ciudad</div>
+          <div class="info-value accent" id="res-ciudad">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Fecha de entrega</div>
+          <div class="info-value lime" id="res-fecha">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Conductor</div>
+          <div class="info-value" id="res-conductor">—</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="map-card">
+  <!-- MAP CARD -->
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
     <div class="map-header">
-      <div class="map-header-icon">🗺️</div>
-      <div class="map-header-text">
-        <div class="map-header-title">Ubicación de entrega</div>
-        <div class="map-header-sub">Dirección registrada del destinatario</div>
+      <div class="map-icon">🗺️</div>
+      <div>
+        <div class="map-title">Ubicación de entrega</div>
+        <div class="map-sub">Dirección registrada del destinatario</div>
       </div>
     </div>
-    <div id="map-container">
-      <div class="no-map" id="no-map">
-        <span>📍</span>
-        Sin coordenadas disponibles aún
-      </div>
-      <div id="map" style="display:none"></div>
+    <div id="no-map" class="no-map">
+      <div class="icon">📍</div>
+      Sin coordenadas disponibles
     </div>
+    <div id="map"></div>
   </div>
+
+  <!-- PHOTOS CARD -->
+  <div class="zb-card" id="fotos-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div class="photos-header">
+      <div class="map-icon">📷</div>
+      <div>
+        <div class="map-title">Evidencia de entrega</div>
+        <div class="map-sub">Fotos tomadas por el conductor</div>
+      </div>
+    </div>
+    <div class="photos-grid" id="photos-grid"></div>
+  </div>
+
 </div>
 
 <footer>
-  © 2026 Zenderbox Costa Rica · Todos los derechos reservados
+  © 2026 <span>ZenderBox</span> Costa Rica · Todos los derechos reservados
 </footer>
 
 <script>
-  // ⚠️ CAMBIAR por la URL real del webhook de n8n
   const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
 
   let mapInstance = null;
@@ -500,13 +602,13 @@
   });
 
   function getEstadoClass(estado) {
-    if (!estado) return 'estado-default';
+    if (!estado) return 's-default';
     const e = estado.toLowerCase();
-    if (e.includes('no asig')) return 'estado-no-asignado';
-    if (e.includes('asig') || e.includes('preparar')) return 'estado-asignado';
-    if (e.includes('ruta') || e.includes('camino') || e.includes('llegado') || e.includes('acept')) return 'estado-en-ruta';
-    if (e.includes('finaliz') || e.includes('entregad')) return 'estado-entregado';
-    return 'estado-default';
+    if (e.includes('no asig')) return 's-no-asignado';
+    if (e.includes('asig') || e.includes('preparar')) return 's-asignado';
+    if (e.includes('ruta') || e.includes('llegado') || e.includes('acept') || e.includes('camino')) return 's-en-ruta';
+    if (e.includes('finaliz') || e.includes('entregad')) return 's-entregado';
+    return 's-default';
   }
 
   function formatFecha(fecha) {
@@ -522,7 +624,6 @@
     const guia = document.getElementById('guia-input').value.trim().toUpperCase();
     if (!guia) return;
 
-    // Reset UI
     document.getElementById('resultado').style.display = 'none';
     document.getElementById('error-box').style.display = 'none';
     document.getElementById('loading').style.display = 'block';
@@ -539,16 +640,13 @@
         return;
       }
 
-      // Llenar datos
       document.getElementById('res-guia').textContent = guia;
-      document.getElementById('res-nombre').textContent = data.cliente || '—';
       document.getElementById('res-estado').textContent = data.estado || '—';
       document.getElementById('res-direccion').textContent = data.direccion || '—';
       document.getElementById('res-ciudad').textContent = data.ciudad || '—';
       document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
-      document.getElementById('res-conductor').textContent = data.conductor && data.conductor.trim() ? data.conductor : 'Por asignar';
+      document.getElementById('res-conductor').textContent = data.conductor?.trim() || 'Por asignar';
 
-      // Badge color
       const badge = document.getElementById('res-badge');
       badge.className = `estado-badge ${getEstadoClass(data.estado)}`;
 
@@ -557,37 +655,54 @@
         document.getElementById('no-map').style.display = 'none';
         document.getElementById('map').style.display = 'block';
 
-        if (mapInstance) {
-          mapInstance.remove();
-          mapInstance = null;
-        }
+        if (mapInstance) { mapInstance.remove(); mapInstance = null; }
 
-        mapInstance = L.map('map', { zoomControl: true }).setView([data.latitude, data.longitude], 15);
-
+        mapInstance = L.map('map').setView([data.latitude, data.longitude], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap'
         }).addTo(mapInstance);
 
         const icon = L.divIcon({
-          html: '<div style="background:#f5c800;width:18px;height:18px;border-radius:50%;border:3px solid #0d0d0d;box-shadow:0 0 0 3px #f5c800aa"></div>',
-          iconSize: [18, 18],
-          iconAnchor: [9, 9],
-          className: ''
+          html: `<div style="
+            width:22px;height:22px;
+            background:linear-gradient(135deg,#009CC9,#CCD32A);
+            border-radius:50%;
+            border:3px solid #081F3A;
+            box-shadow:0 0 0 3px rgba(0,156,201,0.4)
+          "></div>`,
+          iconSize: [22,22], iconAnchor: [11,11], className: ''
         });
 
         L.marker([data.latitude, data.longitude], { icon })
           .addTo(mapInstance)
-          .bindPopup(`<b>${data.cliente || guia}</b><br>${data.direccion || ''}`)
+          .bindPopup(`<b>${guia}</b><br>${data.direccion || ''}`)
           .openPopup();
-
       } else {
         document.getElementById('no-map').style.display = 'flex';
         document.getElementById('map').style.display = 'none';
       }
 
+      // Fotos
+      const fotosCard = document.getElementById('fotos-card');
+      const fotosGrid = document.getElementById('photos-grid');
+      fotosGrid.innerHTML = '';
+
+      if (data.fotos && data.fotos.length > 0) {
+        fotosCard.style.display = 'block';
+        data.fotos.forEach(url => {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = 'Evidencia de entrega';
+          img.onclick = () => window.open(url, '_blank');
+          fotosGrid.appendChild(img);
+        });
+      } else {
+        fotosCard.style.display = 'none';
+      }
+
       document.getElementById('resultado').style.display = 'block';
 
-    } catch (e) {
+    } catch(e) {
       document.getElementById('loading').style.display = 'none';
       showError('Error al conectar con el servidor. Intenta de nuevo.');
     }
