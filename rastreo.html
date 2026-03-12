@@ -714,6 +714,16 @@
     document.getElementById('error-msg').textContent = msg;
     document.getElementById('error-box').style.display = 'block';
   }
+
+  // Auto-buscar si viene ?guia= en la URL
+  window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const guia = params.get('guia');
+    if (guia) {
+      document.getElementById('guia-input').value = guia.toUpperCase();
+      buscarGuia();
+    }
+  });
 </script>
 
 </body>
