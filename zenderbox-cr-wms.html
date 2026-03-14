@@ -592,10 +592,9 @@
       <span class="nav-label">Buscar Guía</span>
     </div>
 
-    <div class="nav-item" onclick="setModule('consolidados')">
+    <div class="nav-item" onclick="window.location.href='zenderbox-cr-wms.html'">
       <span class="nav-icon">📦</span>
       <span class="nav-label">Consolidados</span>
-      <span class="nav-coming">pronto</span>
     </div>
 
     <div class="nav-item" onclick="setModule('despachos')">
@@ -879,7 +878,7 @@ function setModule(m) {
 }
 
 // ══ Buscar ══════════════════════════════════════════════════════════════════
-function buscar() {
+async function buscar() {
   const q = document.getElementById('searchInput').value.trim().toUpperCase();
   if (!q) return;
 
