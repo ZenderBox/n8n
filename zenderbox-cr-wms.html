@@ -310,8 +310,11 @@ async function fetchData() {
     const timeout = setTimeout(() => controller.abort(), 30000);
     const res  = await fetch(WEBHOOK_URL, { method: 'GET', signal: controller.signal });
     clearTimeout(timeout);
-    const json = await res.json();
-    if (!json.ok) throw new Error('Error en webhook');
+    const text = await res.text();
+    if (!text || text.trim() === '') throw new Error('El webhook devolvió respuesta vacía — verifica que el workflow esté activo y sin errores en n8n.');
+    let json;
+    try { json = JSON.parse(text); } catch(e) { throw new Error('Respuesta inválida del webhook: ' + text.substring(0, 100)); }
+    if (!json.ok) throw new Error(json.message || 'Error en el workflow de n8n');
 
     CONSOLIDADOS = json.consolidados || [];
 
