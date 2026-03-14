@@ -417,13 +417,13 @@ function renderList() {
             <tbody>
               ${c.guias.map(g => `
                 <tr>
-                  <td class="td-guia" onclick="openDetail('${c.id}','${g.guia}')">${g.guia}</td>
-                  <td class="td-cliente">${g.cliente}</td>
-                  <td class="td-tel">${g.tel}</td>
+                  <td class="td-guia" onclick="openDetail('${c.id}','${g.guia}')">${g.guia||'—'}</td>
+                  <td class="td-cliente">${g.nombre||g.cliente||'—'}</td>
+                  <td class="td-tel">${g.tel||'—'}</td>
                   <td>${badgePago(g.pago)}</td>
                   <td>${badgeSQ(g.sq)}</td>
-                  <td class="td-cob">${g.cob}</td>
-                  <td class="td-cob">${g.peso} kg</td>
+                  <td class="td-cob">${g.cobertura||g.cob||'—'}</td>
+                  <td class="td-cob">${g.peso?g.peso+' kg':'—'}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -509,19 +509,19 @@ function openDetail(consId, guia) {
   document.getElementById('dp-body').innerHTML = `
     <div class="detail-section">
       <div class="detail-section-title">Cliente</div>
-      <div class="detail-row"><span class="detail-lbl">Nombre</span><span class="detail-val">${g.cliente}</span></div>
-      <div class="detail-row"><span class="detail-lbl">Teléfono</span><span class="detail-val mono">${g.tel}</span></div>
-      <div class="detail-row"><span class="detail-lbl">Cobertura</span><span class="detail-val">${g.cob}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Nombre</span><span class="detail-val">${g.nombre || g.cliente || '—'}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Teléfono</span><span class="detail-val mono">${g.tel||'—'}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Cobertura</span><span class="detail-val">${g.cobertura||g.cob||'—'}</span></div>
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Paquete</div>
       <div class="detail-row"><span class="detail-lbl">Consolidado</span><span class="detail-val mono blue">${consId}</span></div>
-      <div class="detail-row"><span class="detail-lbl">Peso</span><span class="detail-val">${g.peso} kg</span></div>
-      <div class="detail-row"><span class="detail-lbl">Piezas</span><span class="detail-val">${g.piezas}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Peso</span><span class="detail-val">${g.peso?g.peso+' kg':'—'}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Piezas</span><span class="detail-val">${g.piezas||'—'}</span></div>
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Pago</div>
-      <div class="detail-row"><span class="detail-lbl">Estado</span><span class="detail-val ${g.pago==='pagado'?'green':'yellow'}">${g.pago==='pagado'?'PAGADO':'SIN PAGO'}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Estado</span><span class="detail-val ${g.pago==='PAGADO'?'green':'yellow'}">${g.pago||'—'}</span></div>
     </div>
     <div class="detail-section">
       <div class="detail-section-title">SmartQuick</div>
