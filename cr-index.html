@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox WMS · Costa Rica</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #0b0c0e;
+        --surface: #13151a;
+        --surface2: #1a1d24;
+        --border: #21252f;
+        --border2: #2d3241;
+        --accent: #f5a623;
+        --accent-dim: rgba(245, 166, 35, 0.1);
+        --green: #22c55e;
+        --text: #e8eaf0;
+        --text-muted: #5a6070;
+        --text-mid: #9099b0;
+        --mono: 'IBM Plex Mono', monospace;
+        --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+    }
+
+    .sidebar-logo {
+        padding: 24px 20px 20px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo .zb {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .sidebar-logo h2 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: -0.3px;
+    }
+
+    .sidebar-logo .country {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    .nav-section {
+        padding: 16px 12px 8px;
+    }
+
+    .nav-section-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 0 8px;
+        margin-bottom: 4px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s;
+        margin-bottom: 2px;
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+
+    .nav-item:hover {
+        background: var(--surface2);
+    }
+
+    .nav-item.active {
+        background: var(--accent-dim);
+        border-color: rgba(245, 166, 35, 0.2);
+    }
+
+    .nav-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .nav-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-mid);
+    }
+
+    .nav-item.active .nav-label {
+        color: var(--accent);
+    }
+
+    .nav-coming {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        padding: 2px 6px;
+        background: var(--surface2);
+        border-radius: 3px;
+        margin-left: auto;
+    }
+
+    .nav-back {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        text-decoration: none;
+        transition: color .15s;
+    }
+
+    .nav-back:hover {
+        color: var(--accent);
+    }
+
+    .sidebar-footer {
+        margin-top: auto;
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+    }
+
+    .sidebar-footer .version {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+    }
+
+    .main {
+        margin-left: 220px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 32px;
+    }
+
+    .hub-title {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+
+    .hub-h1 {
+        font-size: 32px;
+        font-weight: 300;
+        letter-spacing: -1px;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+
+    .hub-h1 strong {
+        font-weight: 600;
+        color: var(--accent);
+    }
+
+    .hub-sub {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 48px;
+    }
+
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        width: 100%;
+        max-width: 700px;
+    }
+
+    .module-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 28px 24px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: block;
+    }
+
+    .module-card:hover {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+        transform: translateY(-2px);
+    }
+
+    .module-card.coming {
+        cursor: not-allowed;
+        opacity: 0.4;
+    }
+
+    .module-card.coming:hover {
+        border-color: var(--border);
+        background: var(--surface);
+        transform: none;
+    }
+
+    .mc-icon {
+        font-size: 28px;
+        margin-bottom: 16px;
+    }
+
+    .mc-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+
+    .mc-sub {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    .mc-badge {
+        display: inline-block;
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 9px;
+        padding: 2px 8px;
+        border-radius: 3px;
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(245, 166, 35, 0.3);
+    }
+
+    .mc-badge.soon {
+        background: var(--surface2);
+        color: var(--text-muted);
+        border-color: var(--border2);
+    }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <a class="nav-back" href="index.html">← Volver al inicio</a>
+        <div class="sidebar-logo">
+            <div class="zb">ZenderBox</div>
+            <h2>WMS · Costa Rica</h2>
+            <div class="country">Módulos operativos</div>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-label">Operaciones</div>
+            <a class="nav-item" href="cr-buscar.html">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">Buscar Guía</span>
+            </a>
+            <a class="nav-item" href="cr-consolidados.html">
+                <span class="nav-icon">📦</span>
+                <span class="nav-label">Consolidados</span>
+            </a>
+            <a class="nav-item" href="cr-despachos.html">
+                <span class="nav-icon">🚚</span>
+                <span class="nav-label">Despachos CR</span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-label">Comunicaciones</div>
+            <div class="nav-item">
+                <span class="nav-icon">📞</span>
+                <span class="nav-label">Llamadas IA</span>
+                <span class="nav-coming">pronto</span>
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label">WhatsApp</span>
+                <span class="nav-coming">pronto</span>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <div class="version">v1.0 · Datos: Google Sheets</div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="hub-title">ZenderBox · Costa Rica</div>
+        <h1 class="hub-h1">
+            Selecciona un 
+            <strong>módulo</strong>
+        </h1>
+        <p class="hub-sub">Panel operativo interno · Servicio al cliente</p>
+        <div class="modules-grid">
+            <a class="module-card" href="cr-buscar.html">
+                <div class="mc-icon">🔍</div>
+                <div class="mc-title">Buscar Guía</div>
+                <div class="mc-sub">Consulta estado completo por guía, teléfono o casillero</div>
+                <div class="mc-badge">ACTIVO</div>
+            </a>
+            <a class="module-card" href="cr-consolidados.html">
+                <div class="mc-icon">📦</div>
+                <div class="mc-title">Consolidados</div>
+                <div class="mc-sub">Vista por vuelo con guías agrupadas y estados SmartQuick</div>
+                <div class="mc-badge">ACTIVO</div>
+            </a>
+            <a class="module-card" href="cr-despachos.html">
+                <div class="mc-icon">🚚</div>
+                <div class="mc-title">Despachos CR</div>
+                <div class="mc-sub">Ejecutar motor y descargar CSV para SmartQuick</div>
+                <div class="mc-badge">ACTIVO</div>
+            </a>
+            <div class="module-card coming">
+                <div class="mc-icon">📞</div>
+                <div class="mc-title">Llamadas IA</div>
+                <div class="mc-sub">Historial y disparo de llamadas automáticas via Dapta</div>
+                <div class="mc-badge soon">PRONTO</div>
+            </div>
+            <div class="module-card coming">
+                <div class="mc-icon">💬</div>
+                <div class="mc-title">WhatsApp</div>
+                <div class="mc-sub">Mensajes automáticos por estado de paquete</div>
+                <div class="mc-badge soon">PRONTO</div>
+            </div>
+            <div class="module-card coming">
+                <div class="mc-icon">⚠️</div>
+                <div class="mc-title">Excepciones</div>
+                <div class="mc-sub">Gestión de guías con problemas y pendientes</div>
+                <div class="mc-badge soon">PRONTO</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
