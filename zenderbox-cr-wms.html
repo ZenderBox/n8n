@@ -110,7 +110,10 @@
   .cons-status-pill.bodega   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(79,142,247,0.25); }
   .cons-status-pill.transito { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
   .cons-status-pill.miami    { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(245,166,35,0.25); }
-  .cons-status-pill.entregado{ background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(34,197,94,0.25); }
+  .cons-status-pill.entregado  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(34,197,94,0.25); }
+  .cons-status-pill.retraso    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+  .cons-status-pill.aeropuerto { background: var(--purple-dim, rgba(167,139,250,0.1)); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+  .cons-status-pill.pendiente  { background: var(--surface2);   color: var(--text-muted); border: 1px solid var(--border2); }
 
   .cons-chips { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 4px; font-family: var(--mono); font-size: 10px; font-weight: 600; }
@@ -389,8 +392,7 @@ function renderList() {
     const despachadas = c.stats?.despachadas || c.guias.filter(g => g.sq   === 'DESPACHADO' || g.sq === 'EN RUTA').length;
     const sinpago     = c.stats?.sinPago     || c.guias.filter(g => g.pago === 'SIN PAGO').length;
     const isExp    = expandedCards.has(c.id);
-
-    const statusCls = { bodega:'bodega', transito:'transito', entregado:'entregado', miami:'miami' }[c.estado] || 'transito';
+    const statusCls = c.estado || 'pendiente';
 
     const flightSteps = [
       { label:'MIA', ok: c.miami },
@@ -446,6 +448,7 @@ function renderList() {
         <div class="cons-header" onclick="toggleCard('${c.id}')">
           <span class="cons-expand-icon">▶</span>
           <span class="cons-id">${c.id}</span>
+          ${c.fecha ? `<span style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">${c.fecha}</span>` : ''}
           <span class="cons-status-pill ${statusCls}">${c.estado_label}</span>
           <div class="cons-chips">
             <span class="chip total">📋 ${c.guias.length} guías</span>
