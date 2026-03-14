@@ -306,7 +306,10 @@ async function fetchData() {
     </div>`;
 
   try {
-    const res  = await fetch(WEBHOOK_URL, { method: 'GET' });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    const res  = await fetch(WEBHOOK_URL, { method: 'GET', signal: controller.signal });
+    clearTimeout(timeout);
     const json = await res.json();
     if (!json.ok) throw new Error('Error en webhook');
 
@@ -329,9 +332,13 @@ async function fetchData() {
       `Vista por vuelo · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
 
   } catch(err) {
+    const msg = err.name === 'AbortError' 
+      ? 'Timeout — el webhook tardó más de 30 segundos. Verifica que n8n esté activo.' 
+      : `Error: ${err.message}`;
     document.getElementById('consList').innerHTML = `
-      <div style="padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red);max-width:600px">
-        ✕ Error al cargar datos: ${err.message}
+      <div style="padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red);max-width:600px;display:flex;flex-direction:column;gap:12px">
+        <span>✕ ${msg}</span>
+        <button onclick="fetchData()" style="background:var(--accent);border:none;border-radius:4px;padding:8px 16px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer;width:fit-content">↻ Reintentar</button>
       </div>`;
   } finally {
     isLoading = false;
