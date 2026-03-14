@@ -465,11 +465,16 @@ function badgePago(p) {
 }
 
 function badgeSQ(s) {
-  const v = String(s || '').toUpperCase();
-  if (v === 'DESPACHADO') return '<span class="badge-sm desp">DESPACHADO</span>';
-  if (v === 'EN RUTA')    return '<span class="badge-sm ruta">EN RUTA</span>';
-  if (v === 'PENDIENTE')  return '<span class="badge-sm pendiente">PENDIENTE</span>';
-  return `<span class="badge-sm pendiente">${v||'—'}</span>`;
+  const v = String(s || '').trim();
+  if (!v || v === 'PENDIENTE') return '<span class="badge-sm pendiente">PENDIENTE</span>';
+  // Colores según estado SmartQuick
+  const vUp = v.toUpperCase();
+  if (vUp === 'FINALIZADO')   return `<span class="badge-sm" style="background:var(--green-dim);color:var(--green)">${v}</span>`;
+  if (vUp === 'ACEPTADO')     return `<span class="badge-sm" style="background:var(--blue-dim);color:var(--blue)">${v}</span>`;
+  if (vUp === 'NO ASIGNADO')  return `<span class="badge-sm" style="background:var(--accent-dim);color:var(--accent)">${v}</span>`;
+  if (vUp === 'DESPACHADO' || vUp === 'EN RUTA') return `<span class="badge-sm desp">${v}</span>`;
+  // Cualquier otro estado de SmartQuick — mostrar tal como viene
+  return `<span class="badge-sm" style="background:var(--surface2);color:var(--text-mid)">${v}</span>`;
 }
 
 function toggleCard(id) {
