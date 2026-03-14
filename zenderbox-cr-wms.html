@@ -882,30 +882,47 @@ async function buscar() {
   const q = document.getElementById('searchInput').value.trim().toUpperCase();
   if (!q) return;
 
-  // UI: limpiar y mostrar loading
   hide('emptyState');
   hide('resultCard');
   hide('notFound');
   show('loadingState');
 
-  setTimeout(() => {
+  try {
+    const json = await loadData();
     hide('loadingState');
 
-    // Buscar en mock (luego será Google Sheets API)
-    const key = Object.keys(MOCK_DATA).find(k => k.toUpperCase() === q);
-    const data = key ? MOCK_DATA[key] : null;
+    let found = null;
+    for (const cons of (json.consolidados || [])) {
+      for (const g of (cons.guias || [])) {
+        const mGuia = g.guia      && norm(g.guia)      === q;
+        const mTel  = g.tel       && norm(g.tel)        === q;
+        const mCas  = g.casillero && norm(g.casillero)  === q;
+        if (mGuia || mTel || mCas) {
+          found = { ...g, consolidado: cons.id, cons_estado: cons.estado_label };
+          break;
+        }
+      }
+      if (found) break;
+    }
 
-    if (!data) {
+    if (!found) {
       document.getElementById('notFoundMsg').textContent =
         `"${q}" — No encontrado en Consolidados, Epayco ni SmartQuick.`;
       show('notFound');
       return;
     }
 
-    renderResult(data);
+    renderResult(found);
     show('resultCard');
-  }, 600);
+
+  } catch(err) {
+    hide('loadingState');
+    document.getElementById('notFoundMsg').textContent = `Error: ${err.message}`;
+    show('notFound');
+  }
 }
+
+function norm(s) { return String(s || '').trim().toUpperCase(); }
 
 function renderResult(d) {
   // Header
