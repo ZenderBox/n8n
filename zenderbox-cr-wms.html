@@ -308,7 +308,7 @@ async function fetchData() {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
-    const res  = await fetch(WEBHOOK_URL, { method: 'GET', signal: controller.signal });
+    const res  = await fetch(WEBHOOK_URL + '?t=' + Date.now(), { method: 'GET', signal: controller.signal });
     clearTimeout(timeout);
     const text = await res.text();
     if (!text || text.trim() === '') throw new Error('El webhook devolvió respuesta vacía — verifica que el workflow esté activo y sin errores en n8n.');
