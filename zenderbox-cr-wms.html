@@ -417,7 +417,7 @@ function renderList() {
                 <th>TELÉFONO</th>
                 <th>PAGO</th>
                 <th>SMARTQUICK</th>
-                <th>COBERTURA</th>
+                <th>ACTUALIZADO</th>
                 <th>PESO</th>
               </tr>
             </thead>
@@ -429,7 +429,7 @@ function renderList() {
                   <td class="td-tel">${g.tel||'—'}</td>
                   <td>${badgePago(g.pago)}</td>
                   <td>${badgeSQ(g.sq)}</td>
-                  <td class="td-cob">${g.cobertura||g.cob||'—'}</td>
+                  <td class="td-cob">${g.actualizado||'—'}</td>
                   <td class="td-cob">${g.peso?g.peso+' kg':'—'}</td>
                 </tr>
               `).join('')}
@@ -523,7 +523,7 @@ function openDetail(consId, guia) {
       <div class="detail-section-title">Cliente</div>
       <div class="detail-row"><span class="detail-lbl">Nombre</span><span class="detail-val">${g.nombre || g.cliente || '—'}</span></div>
       <div class="detail-row"><span class="detail-lbl">Teléfono</span><span class="detail-val mono">${g.tel||'—'}</span></div>
-      <div class="detail-row"><span class="detail-lbl">Cobertura</span><span class="detail-val">${g.cobertura||g.cob||'—'}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Cobertura</span><span class="detail-val">${g.actualizado||'—'}</span></div>
     </div>
     <div class="detail-section">
       <div class="detail-section-title">Paquete</div>
