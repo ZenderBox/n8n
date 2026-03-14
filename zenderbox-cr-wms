@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZenderBox WMS · Costa Rica</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c0e;
+    --surface: #13151a;
+    --surface2: #1a1d24;
+    --surface3: #1e2230;
+    --border: #21252f;
+    --border2: #2d3241;
+    --accent: #f5a623;
+    --accent-dim: rgba(245,166,35,0.1);
+    --blue: #4f8ef7;
+    --blue-dim: rgba(79,142,247,0.1);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.1);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.1);
+    --yellow: #f59e0b;
+    --yellow-dim: rgba(245,158,11,0.1);
+    --purple: #a78bfa;
+    --text: #e8eaf0;
+    --text-muted: #5a6070;
+    --text-mid: #9099b0;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { width: 220px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; z-index: 10; }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo .zb { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+  .sidebar-logo h2 { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+  .sidebar-logo .country { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-section-label { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; cursor: pointer; transition: all 0.15s; margin-bottom: 2px; border: 1px solid transparent; }
+  .nav-item:hover { background: var(--surface2); }
+  .nav-item.active { background: var(--accent-dim); border-color: rgba(245,166,35,0.2); }
+  .nav-icon { font-size: 14px; flex-shrink: 0; }
+  .nav-label { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+  .nav-item.active .nav-label { color: var(--accent); }
+  .nav-coming { font-family: var(--mono); font-size: 9px; color: var(--text-muted); padding: 2px 6px; background: var(--surface2); border-radius: 3px; margin-left: auto; letter-spacing: 0.5px; }
+  .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .sidebar-footer .version { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+
+  /* ── MAIN ── */
+  .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { padding: 16px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: var(--surface); position: sticky; top: 0; z-index: 5; }
+  .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .topbar-sub { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+  .topbar-live { margin-left: auto; display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--green); }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ── MÓDULO TABS ── */
+  .module-tabs { display: flex; gap: 0; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; width: fit-content; }
+  .module-tab { padding: 9px 20px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 1px; cursor: pointer; color: var(--text-muted); border: none; background: transparent; transition: all 0.15s; }
+  .module-tab.active { background: var(--accent); color: #000; }
+  .module-tab:hover:not(.active) { background: var(--surface2); color: var(--text-mid); }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; }
+  .stat-label { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -1px; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-sub { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── FILTERS ── */
+  .filters-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 14px; border: 1px solid var(--border2); border-radius: 20px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; background: transparent; color: var(--text-muted); transition: all 0.15s; }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent-dim); border-color: rgba(245,166,35,0.4); color: var(--accent); }
+  .filter-btn.f-green.active { background: var(--green-dim); border-color: rgba(34,197,94,0.4); color: var(--green); }
+  .filter-btn.f-yellow.active { background: var(--yellow-dim); border-color: rgba(245,158,11,0.4); color: var(--yellow); }
+  .filter-btn.f-red.active { background: var(--red-dim); border-color: rgba(239,68,68,0.4); color: var(--red); }
+  .filter-btn.f-blue.active { background: var(--blue-dim); border-color: rgba(79,142,247,0.4); color: var(--blue); }
+  .filter-search { margin-left: auto; display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 6px 12px; }
+  .filter-search input { background: transparent; border: none; outline: none; font-family: var(--mono); font-size: 11px; color: var(--text); width: 180px; }
+  .filter-search input::placeholder { color: var(--text-muted); }
+
+  /* ── CONSOLIDADOS LIST ── */
+  .cons-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .cons-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.15s; }
+  .cons-card:hover { border-color: var(--border2); }
+  .cons-card.expanded { border-color: var(--border2); }
+
+  .cons-header { padding: 16px 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; user-select: none; }
+  .cons-header:hover { background: rgba(255,255,255,0.02); }
+
+  .cons-expand-icon { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
+  .cons-card.expanded .cons-expand-icon { transform: rotate(90deg); }
+
+  .cons-id { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--text); min-width: 60px; }
+
+  .cons-status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 12px; font-family: var(--mono); font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .cons-status-pill.bodega   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(79,142,247,0.25); }
+  .cons-status-pill.transito { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+  .cons-status-pill.miami    { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(245,166,35,0.25); }
+  .cons-status-pill.entregado{ background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(34,197,94,0.25); }
+
+  .cons-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 4px; font-family: var(--mono); font-size: 10px; font-weight: 600; }
+  .chip.total    { background: var(--surface2); color: var(--text-mid); }
+  .chip.pagadas  { background: var(--green-dim); color: var(--green); }
+  .chip.desp     { background: var(--blue-dim);  color: var(--blue); }
+  .chip.exc      { background: var(--red-dim);   color: var(--red); }
+  .chip.sinpago  { background: var(--yellow-dim);color: var(--yellow); }
+
+  .cons-flight { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
+  .flight-step { display: flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 10px; }
+  .flight-step .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .flight-step .dot.ok  { background: var(--green); }
+  .flight-step .dot.no  { background: var(--border2); }
+  .flight-step .dot.cur { background: var(--yellow); box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+  .flight-step span { color: var(--text-muted); }
+  .flight-arrow { color: var(--text-muted); font-size: 10px; }
+
+  /* ── GUIAS TABLE ── */
+  .guias-table-wrap { border-top: 1px solid var(--border); }
+  .guias-table { width: 100%; border-collapse: collapse; }
+  .guias-table th { padding: 10px 14px; text-align: left; font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .guias-table td { padding: 10px 14px; font-size: 12px; border-bottom: 1px solid var(--border); }
+  .guias-table tr:last-child td { border-bottom: none; }
+  .guias-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .guias-table .td-guia { font-family: var(--mono); font-size: 11px; color: var(--accent); cursor: pointer; }
+  .guias-table .td-guia:hover { text-decoration: underline; }
+  .guias-table .td-cliente { color: var(--text); font-weight: 500; }
+  .guias-table .td-tel { font-family: var(--mono); font-size: 11px; color: var(--text-mid); }
+  .guias-table .td-cob { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+  .badge-sm { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: var(--mono); font-size: 9px; font-weight: 600; }
+  .badge-sm.pagado   { background: var(--green-dim); color: var(--green); }
+  .badge-sm.sinpago  { background: var(--yellow-dim);color: var(--yellow); }
+  .badge-sm.desp     { background: var(--blue-dim);  color: var(--blue); }
+  .badge-sm.pendiente{ background: var(--surface2);  color: var(--text-muted); }
+  .badge-sm.ruta     { background: var(--accent-dim);color: var(--accent); }
+
+  /* ── EMPTY / LOADING ── */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 12px; }
+  .empty-icon { font-size: 40px; opacity: 0.3; }
+  .empty-text { font-family: var(--mono); font-size: 12px; color: var(--text-muted); letter-spacing: 1px; }
+
+  /* ── GUIA DETAIL PANEL (slide-in) ── */
+  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; }
+  .detail-overlay.visible { display: block; }
+  .detail-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 480px; background: var(--surface); border-left: 1px solid var(--border2); z-index: 51; overflow-y: auto; transform: translateX(100%); transition: transform 0.25s ease; }
+  .detail-panel.visible { transform: translateX(0); }
+  .detail-panel-hdr { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .detail-panel-hdr h3 { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .btn-close { background: transparent; border: 1px solid var(--border2); border-radius: 6px; padding: 6px 10px; color: var(--text-muted); cursor: pointer; font-size: 14px; transition: all 0.15s; }
+  .btn-close:hover { border-color: var(--red); color: var(--red); }
+  .detail-body { padding: 20px 24px; }
+  .detail-section { margin-bottom: 20px; }
+  .detail-section-title { font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .detail-row { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; }
+  .detail-lbl { font-family: var(--mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; min-width: 110px; flex-shrink: 0; }
+  .detail-val { font-size: 13px; color: var(--text); font-weight: 500; }
+  .detail-val.mono { font-family: var(--mono); font-size: 12px; }
+  .detail-val.green { color: var(--green); }
+  .detail-val.blue { color: var(--blue); }
+  .detail-val.yellow { color: var(--yellow); }
+
+  /* Timeline en panel */
+  .tl { display: flex; flex-direction: column; }
+  .tl-item { display: flex; gap: 10px; padding: 8px 0; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; width: 20px; flex-shrink: 0; }
+  .tl-dot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--border2); background: var(--surface2); flex-shrink: 0; z-index: 1; }
+  .tl-dot.done { background: var(--green); border-color: var(--green); }
+  .tl-dot.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 6px rgba(245,166,35,0.4); }
+  .tl-line { flex: 1; width: 2px; background: var(--border2); margin: 2px 0; }
+  .tl-line.done { background: rgba(34,197,94,0.3); }
+  .tl-content { flex: 1; }
+  .tl-title { font-size: 12px; font-weight: 500; color: var(--text); }
+  .tl-title.muted { color: var(--text-muted); }
+  .tl-date { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="zb">ZenderBox</div>
+    <h2>WMS Provisional</h2>
+    <div class="country">Costa Rica · v1.0</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Operaciones</div>
+    <div class="nav-item" onclick="switchModule('guias')">
+      <span class="nav-icon">🔍</span><span class="nav-label">Buscar Guía</span>
+    </div>
+    <div class="nav-item active" id="nav-consolidados">
+      <span class="nav-icon">📦</span><span class="nav-label">Consolidados</span>
+    </div>
+    <div class="nav-item" onclick="window.open('ZenderBox_CR_Panel.html','_blank')">
+      <span class="nav-icon">🚚</span><span class="nav-label">Despachos CR</span>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">Comunicaciones</div>
+    <div class="nav-item">
+      <span class="nav-icon">📞</span><span class="nav-label">Llamadas IA</span><span class="nav-coming">pronto</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">💬</span><span class="nav-label">WhatsApp</span><span class="nav-coming">pronto</span>
+    </div>
+  </div>
+  <div class="sidebar-footer"><div class="version">v1.0 · Datos: Google Sheets</div></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Consolidados</div>
+      <div class="topbar-sub">Vista por vuelo · guías agrupadas por consolidado</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-left:auto">
+      <button onclick="fetchData()" style="background:transparent;border:1px solid var(--border2);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:10px;color:var(--text-muted);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text-muted)'">↻ ACTUALIZAR</button>
+      <div class="topbar-live"><div class="live-dot"></div>CONECTADO</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Consolidados activos</div>
+        <div class="stat-value blue" id="stat-total">3</div>
+        <div class="stat-sub">últimos 60 días</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total guías</div>
+        <div class="stat-value" id="stat-guias">142</div>
+        <div class="stat-sub">en todos los consolidados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pagadas</div>
+        <div class="stat-value green" id="stat-pagadas">128</div>
+        <div class="stat-sub">Epayco + Consignación</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Sin despachar</div>
+        <div class="stat-value yellow" id="stat-sindesp">18</div>
+        <div class="stat-sub">pagadas · en bodega</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+      <button class="filter-btn active" id="f-todos" onclick="setFilter('todos')">TODOS</button>
+      <button class="filter-btn f-blue"   id="f-bodega"   onclick="setFilter('bodega')">📦 EN BODEGA</button>
+      <button class="filter-btn f-yellow" id="f-transito" onclick="setFilter('transito')">✈️ EN TRÁNSITO</button>
+      <button class="filter-btn f-green"  id="f-entregado"onclick="setFilter('entregado')">✓ ENTREGADOS</button>
+      <div class="filter-search">
+        <span style="color:var(--text-muted);font-size:13px">⌕</span>
+        <input id="filterSearch" placeholder="Buscar consolidado..." oninput="filterByText()">
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="cons-list" id="consList"></div>
+
+  </div>
+</div>
+
+<!-- DETAIL OVERLAY -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-panel-hdr">
+    <h3 id="dp-guia">—</h3>
+    <button class="btn-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="detail-body" id="dp-body"></div>
+</div>
+
+<script>
+// ══ CONFIG ══════════════════════════════════════════════════════════════════
+const WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/cr-consolidados-data';
+
+let CONSOLIDADOS = [];
+let isLoading    = false;
+
+async function fetchData() {
+  if (isLoading) return;
+  isLoading = true;
+
+  document.getElementById('consList').innerHTML = `
+    <div class="empty-state">
+      <div class="loader" style="width:24px;height:24px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div>
+      <div class="empty-text">Cargando consolidados...</div>
+    </div>`;
+
+  try {
+    const res  = await fetch(WEBHOOK_URL, { method: 'GET' });
+    const json = await res.json();
+    if (!json.ok) throw new Error('Error en webhook');
+
+    CONSOLIDADOS = json.consolidados || [];
+
+    // Actualizar stats
+    const r = json.resumen || {};
+    document.getElementById('stat-total').textContent   = r.consolidados   || 0;
+    document.getElementById('stat-guias').textContent   = r.totalGuias     || 0;
+    document.getElementById('stat-pagadas').textContent = r.totalPagadas   || 0;
+    document.getElementById('stat-sindesp').textContent = r.totalSinDesp   || 0;
+
+    // Auto-expandir el primero
+    if (CONSOLIDADOS.length > 0) expandedCards.add(CONSOLIDADOS[0].id);
+
+    renderList();
+
+    // Mostrar timestamp
+    document.querySelector('.topbar-sub').textContent =
+      `Vista por vuelo · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
+
+  } catch(err) {
+    document.getElementById('consList').innerHTML = `
+      <div style="padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red);max-width:600px">
+        ✕ Error al cargar datos: ${err.message}
+      </div>`;
+  } finally {
+    isLoading = false;
+  }
+}
+
+// ══ Estado ═══════════════════════════════════════════════════════════════════
+let currentFilter = 'todos';
+let expandedCards = new Set();
+
+function calcStats() {
+  // Stats se actualizan desde fetchData() con datos del webhook
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  ['todos','bodega','transito','entregado'].forEach(id => {
+    document.getElementById('f-'+id).classList.toggle('active', id === f);
+  });
+  renderList();
+}
+
+function filterByText() {
+  renderList();
+}
+
+function renderList() {
+  const search = document.getElementById('filterSearch').value.toLowerCase();
+  const list   = document.getElementById('consList');
+  list.innerHTML = '';
+
+  const filtered = CONSOLIDADOS.filter(c => {
+    if (currentFilter !== 'todos' && c.estado !== currentFilter) return false;
+    if (search && !c.id.includes(search) && !c.estado_label.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Sin resultados</div></div>';
+    return;
+  }
+
+  filtered.forEach(c => {
+    const pagadas     = c.stats?.pagadas     || c.guias.filter(g => g.pago === 'PAGADO').length;
+    const despachadas = c.stats?.despachadas || c.guias.filter(g => g.sq   === 'DESPACHADO' || g.sq === 'EN RUTA').length;
+    const sinpago     = c.stats?.sinPago     || c.guias.filter(g => g.pago === 'SIN PAGO').length;
+    const isExp    = expandedCards.has(c.id);
+
+    const statusCls = { bodega:'bodega', transito:'transito', entregado:'entregado', miami:'miami' }[c.estado] || 'transito';
+
+    const flightSteps = [
+      { label:'MIA', ok: c.miami },
+      { label:'SJO', ok: c.aeropuerto },
+      { label:'BODEGA', ok: c.bodega },
+    ];
+
+    const flightHtml = flightSteps.map((s, i) => `
+      <div class="flight-step">
+        <div class="dot ${s.ok ? 'ok' : (i === flightSteps.findIndex(x=>!x.ok) ? 'cur' : 'no')}"></div>
+        <span>${s.label}</span>
+      </div>
+      ${i < flightSteps.length-1 ? '<span class="flight-arrow">›</span>' : ''}
+    `).join('');
+
+    // Guías table
+    let guiasHtml = '';
+    if (isExp) {
+      const activeFilter = document.querySelector('.filter-btn.active')?.id;
+      guiasHtml = `
+        <div class="guias-table-wrap">
+          <table class="guias-table">
+            <thead>
+              <tr>
+                <th>GUÍA</th>
+                <th>CLIENTE</th>
+                <th>TELÉFONO</th>
+                <th>PAGO</th>
+                <th>SMARTQUICK</th>
+                <th>COBERTURA</th>
+                <th>PESO</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${c.guias.map(g => `
+                <tr>
+                  <td class="td-guia" onclick="openDetail('${c.id}','${g.guia}')">${g.guia}</td>
+                  <td class="td-cliente">${g.cliente}</td>
+                  <td class="td-tel">${g.tel}</td>
+                  <td>${badgePago(g.pago)}</td>
+                  <td>${badgeSQ(g.sq)}</td>
+                  <td class="td-cob">${g.cob}</td>
+                  <td class="td-cob">${g.peso} kg</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    list.innerHTML += `
+      <div class="cons-card ${isExp?'expanded':''}" id="card-${c.id}">
+        <div class="cons-header" onclick="toggleCard('${c.id}')">
+          <span class="cons-expand-icon">▶</span>
+          <span class="cons-id">${c.id}</span>
+          <span class="cons-status-pill ${statusCls}">${c.estado_label}</span>
+          <div class="cons-chips">
+            <span class="chip total">📋 ${c.guias.length} guías</span>
+            <span class="chip pagadas">✓ ${pagadas} pagadas</span>
+            <span class="chip desp">🚚 ${despachadas} despachadas</span>
+            ${sinpago > 0 ? `<span class="chip sinpago">⚠ ${sinpago} sin pago</span>` : ''}
+          </div>
+          <div class="cons-flight">${flightHtml}</div>
+        </div>
+        ${guiasHtml}
+      </div>`;
+  });
+}
+
+function badgePago(p) {
+  const v = String(p || '').toUpperCase();
+  if (v === 'PAGADO')   return '<span class="badge-sm pagado">PAGADO</span>';
+  if (v === 'SIN PAGO') return '<span class="badge-sm sinpago">SIN PAGO</span>';
+  return `<span class="badge-sm pendiente">${v||'—'}</span>`;
+}
+
+function badgeSQ(s) {
+  const v = String(s || '').toUpperCase();
+  if (v === 'DESPACHADO') return '<span class="badge-sm desp">DESPACHADO</span>';
+  if (v === 'EN RUTA')    return '<span class="badge-sm ruta">EN RUTA</span>';
+  if (v === 'PENDIENTE')  return '<span class="badge-sm pendiente">PENDIENTE</span>';
+  return `<span class="badge-sm pendiente">${v||'—'}</span>`;
+}
+
+function toggleCard(id) {
+  if (expandedCards.has(id)) expandedCards.delete(id);
+  else expandedCards.add(id);
+  renderList();
+}
+
+// ══ DETAIL PANEL ════════════════════════════════════════════════════════════
+function openDetail(consId, guia) {
+  const cons = CONSOLIDADOS.find(c => c.id === consId);
+  const g    = cons?.guias.find(x => x.guia === guia);
+  if (!g) return;
+
+  document.getElementById('dp-guia').textContent = guia;
+
+  const tl = [
+    { label:'Paquete recibido en Miami', date: cons.fecha_vuelo ? 'Anterior a '+cons.fecha_vuelo : '—', done: true },
+    { label:'Pago confirmado',           date: '—', done: g.pago === 'pagado' },
+    { label:'Vuelo Miami → San José',    date: cons.fecha_vuelo, done: cons.miami && cons.aeropuerto },
+    { label:'Entrada bodega destino',    date: '—', done: cons.bodega },
+    { label:'Despachado a SmartQuick',   date: '—', done: g.sq === 'desp' || g.sq === 'ruta', active: g.sq === 'desp' },
+    { label:'En ruta al destinatario',   date: '—', done: g.sq === 'ruta', active: g.sq === 'ruta' },
+    { label:'Entregado',                 date: '—', done: cons.estado === 'entregado' },
+  ];
+
+  const tlHtml = tl.map((item, i) => {
+    const isLast   = i === tl.length - 1;
+    const dotCls   = item.done ? 'tl-dot done' : item.active ? 'tl-dot active' : 'tl-dot';
+    const titleCls = (!item.done && !item.active) ? 'tl-title muted' : 'tl-title';
+    const lineCls  = item.done ? 'tl-line done' : 'tl-line';
+    return `<div class="tl-item">
+      <div class="tl-left">
+        <div class="${dotCls}"></div>
+        ${!isLast ? `<div class="${lineCls}"></div>` : ''}
+      </div>
+      <div class="tl-content">
+        <div class="${titleCls}">${item.label}</div>
+        <div class="tl-date">${item.date}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('dp-body').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section-title">Cliente</div>
+      <div class="detail-row"><span class="detail-lbl">Nombre</span><span class="detail-val">${g.cliente}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Teléfono</span><span class="detail-val mono">${g.tel}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Cobertura</span><span class="detail-val">${g.cob}</span></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Paquete</div>
+      <div class="detail-row"><span class="detail-lbl">Consolidado</span><span class="detail-val mono blue">${consId}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Peso</span><span class="detail-val">${g.peso} kg</span></div>
+      <div class="detail-row"><span class="detail-lbl">Piezas</span><span class="detail-val">${g.piezas}</span></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Pago</div>
+      <div class="detail-row"><span class="detail-lbl">Estado</span><span class="detail-val ${g.pago==='pagado'?'green':'yellow'}">${g.pago==='pagado'?'PAGADO':'SIN PAGO'}</span></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">SmartQuick</div>
+      <div class="detail-row"><span class="detail-lbl">Estado</span><span class="detail-val">${badgeSQ(g.sq)}</span></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Timeline</div>
+      <div class="tl">${tlHtml}</div>
+    </div>
+  `;
+
+  document.getElementById('detailOverlay').classList.add('visible');
+  document.getElementById('detailPanel').classList.add('visible');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('visible');
+  document.getElementById('detailPanel').classList.remove('visible');
+}
+
+function switchModule(m) {
+  if (m === 'guias') window.location.href = 'ZenderBox_WMS.html';
+}
+
+// ══ Init ════════════════════════════════════════════════════════════════════
+fetchData();
+</script>
+</body>
+</html>
