@@ -879,6 +879,10 @@
                 <span class="nav-icon">📦</span>
                 <span class="nav-label">Consolidados</span>
             </a>
+            <a class="nav-item" href="consolidados-wms.html">
+                <span class="nav-icon">📥</span>
+                <span class="nav-label">Cargar Manifiesto</span>
+            </a>
             <a class="nav-item" href="despachos-panel.html">
                 <span class="nav-icon">🚚</span>
                 <span class="nav-label">Despachos CR</span>
@@ -1045,14 +1049,14 @@
                 const dc = s.ok ? 'ok' : (i === fSteps.findIndex(x => !x.ok) ? 'cur' : 'no');
                 return `<div class="flight-step"><div class="dot ${dc}"></div><span>${s.label}</span></div>${i < fSteps.length - 1 ? '<span class="flight-arrow">›</span>' : ''}`;
             }).join('');
-            const guiasHtml = isExp ? `<div class="guias-table-wrap"><table class="guias-table"><thead><tr><th>GUÍA</th><th>CLIENTE</th><th>TELÉFONO</th><th>PAGO</th><th>SMARTQUICK</th><th>ACTUALIZADO</th><th>PESO</th></tr></thead><tbody>${c.guias.map(g => `<tr>
+            const guiasHtml = isExp ? `<div class="guias-table-wrap"><table class="guias-table"><thead><tr><th>GUÍA</th><th>CLIENTE</th><th>TELÉFONO</th><th>PAGO</th><th>SMARTQUICK</th><th>ACTUALIZADO</th><th>UBICACION</th></tr></thead><tbody>${c.guias.map(g => `<tr>
         <td class="td-guia" onclick="openDetail('${c.id}','${g.guia}')">${g.guia || '—'}</td>
         <td class="td-cliente">${g.nombre || '—'}</td>
         <td class="td-tel">${g.tel || '—'}</td>
         <td>${badgePago(g.pago)}</td>
         <td>${badgeSQ(g.sq)}</td>
         <td class="td-cob">${g.actualizado || '—'}</td>
-        <td class="td-cob">${g.peso ? g.peso + ' kg' : '—'}</td>
+        <td class="td-cob">${g.ubicacion || '—'}</td>
       </tr>`).join('')
             }</tbody></table></div>` : '';
             return `<div class="cons-card ${isExp ? 'expanded' : ''}" id="card-${c.id}">
