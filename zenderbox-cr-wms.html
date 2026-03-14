@@ -822,7 +822,7 @@
 <!-- ── MAIN ── -->
 <div class="main">
   <!-- ══ VISTA BUSCAR GUÍA ══ -->
-  <div id="view-guias">
+  <div id="view-guias" style="display:flex;flex-direction:column;flex:1">
 
   <div class="topbar">
     <div>
@@ -1044,7 +1044,7 @@
   </div><!-- /view-guias -->
 
   <!-- ══ VISTA CONSOLIDADOS ══ -->
-  <div id="view-consolidados">
+  <div id="view-consolidados" style="display:none;flex:1">
     <div class="content">
 
     <!-- Stats -->
@@ -1284,12 +1284,15 @@ function switchView(view) {
   if (view === 'guias') {
     vGuias.style.display = 'flex';
     vGuias.style.flexDirection = 'column';
+    vGuias.style.flex = '1';
     vCons.style.display  = 'none';
     nGuias.classList.add('active');
     nCons.classList.remove('active');
   } else {
     vGuias.style.display = 'none';
-    vCons.style.display  = 'block';
+    vCons.style.display  = 'flex';
+    vCons.style.flexDirection = 'column';
+    vCons.style.flex = '1';
     nGuias.classList.remove('active');
     nCons.classList.add('active');
     if (CONSOLIDADOS.length === 0) fetchData();
