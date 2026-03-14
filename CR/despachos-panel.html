@@ -942,9 +942,8 @@ async function enviarSQ() {
     try { json = JSON.parse(text); } catch(e) {}
 
     // Contar resultados
-    const items = Array.isArray(json) ? json : (json.data || []);
-    const creados = items.filter(i => i.estado === 'CREADO' || i.system_id).length;
-    const errores = items.filter(i => i.estado === 'ERROR' || !i.system_id).length;
+    const creados = json.creadas ?? 0;
+    const errores = json.errores ?? 0;
 
     document.getElementById(d).className = errores > 0 ? 'rdot err' : 'rdot ok';
     document.getElementById(l).textContent = `Completado · ${creados} órdenes creadas`;
