@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZenderBox · Buscar Guía CR</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b0c0e;--surface:#13151a;--surface2:#1a1d24;--border:#21252f;--border2:#2d3241;--accent:#f5a623;--accent-dim:rgba(245,166,35,0.1);--blue:#4f8ef7;--blue-dim:rgba(79,142,247,0.1);--green:#22c55e;--green-dim:rgba(34,197,94,0.1);--red:#ef4444;--red-dim:rgba(239,68,68,0.1);--yellow:#f59e0b;--text:#e8eaf0;--text-muted:#5a6070;--text-mid:#9099b0;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;}
+  .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;left:0;top:0;bottom:0;z-index:10;}
+  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
+  .sidebar-logo .zb{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:2px;}
+  .sidebar-logo h2{font-size:15px;font-weight:600;color:var(--text);}
+  .sidebar-logo .country{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px;}
+  .nav-section{padding:16px 12px 8px;}
+  .nav-section-label{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;transition:all 0.15s;margin-bottom:2px;border:1px solid transparent;text-decoration:none;}
+  .nav-item:hover{background:var(--surface2);}
+  .nav-item.active{background:var(--accent-dim);border-color:rgba(245,166,35,0.2);}
+  .nav-icon{font-size:14px;flex-shrink:0;}
+  .nav-label{font-size:13px;font-weight:500;color:var(--text-mid);}
+  .nav-item.active .nav-label{color:var(--accent);}
+  .nav-coming{font-family:var(--mono);font-size:9px;color:var(--text-muted);padding:2px 6px;background:var(--surface2);border-radius:3px;margin-left:auto;}
+  .nav-back{display:flex;align-items:center;gap:8px;padding:12px 20px;font-family:var(--mono);font-size:10px;color:var(--text-muted);border-bottom:1px solid var(--border);text-decoration:none;transition:color .15s;}
+  .nav-back:hover{color:var(--accent);}
+  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+  .sidebar-footer .version{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+  .topbar{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--surface);position:sticky;top:0;z-index:5;}
+  .topbar-title{font-size:15px;font-weight:600;color:var(--text);}
+  .topbar-sub{font-family:var(--mono);font-size:11px;color:var(--text-muted);}
+  .topbar-live{margin-left:auto;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--green);}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .content{padding:28px 32px;flex:1;}
+  .search-section{margin-bottom:32px;}
+  .search-label{font-family:var(--mono);font-size:10px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+  .search-box{display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden;max-width:680px;transition:border-color 0.15s;}
+  .search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,166,35,0.08);}
+  .search-icon{padding:0 16px;font-size:16px;color:var(--text-muted);display:flex;align-items:center;}
+  .search-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--mono);font-size:14px;color:var(--text);padding:14px 0;}
+  .search-input::placeholder{color:var(--text-muted);}
+  .search-btn{padding:0 24px;background:var(--accent);border:none;cursor:pointer;font-family:var(--mono);font-size:12px;font-weight:600;color:#000;letter-spacing:1px;}
+  .search-btn:hover{background:#e09820;}
+  .search-hint{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:8px;}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;gap:12px;}
+  .empty-icon{font-size:40px;opacity:0.3;}
+  .empty-text{font-family:var(--mono);font-size:12px;color:var(--text-muted);}
+  .loading-state{display:none;align-items:center;gap:12px;padding:40px 0;font-family:var(--mono);font-size:12px;color:var(--text-muted);}
+  .loading-state.visible{display:flex;}
+  .loader{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .not-found{display:none;align-items:center;gap:12px;padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red);max-width:680px;}
+  .not-found.visible{display:flex;}
+  .result-card{display:none;max-width:900px;}
+  .result-card.visible{display:block;}
+  .result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;}
+  .result-guia{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);}
+  .result-meta{font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-top:4px;}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0;}
+  .status-pill.despachado{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
+  .status-pill.bodega{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(79,142,247,0.25);}
+  .status-pill.transito{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(245,166,35,0.25);}
+  .status-pill.pendiente{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);}
+  .sections-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .section-card.full{grid-column:1/-1;}
+  .section-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+  .section-icon{font-size:13px;}
+  .section-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;}
+  .section-body{padding:16px;}
+  .field-row{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .field-row:last-child{border-bottom:none;}
+  .field-label{font-family:var(--mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;min-width:120px;flex-shrink:0;}
+  .field-value{font-size:13px;color:var(--text);font-weight:500;}
+  .field-value.mono{font-family:var(--mono);font-size:12px;}
+  .field-value.green{color:var(--green);}
+  .field-value.yellow{color:var(--yellow);}
+  .field-value.blue{color:var(--blue);}
+  .tl-item{display:flex;gap:12px;padding:10px 0;}
+  .tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:28px;}
+  .tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);background:var(--surface2);flex-shrink:0;}
+  .tl-dot.done{background:var(--green);border-color:var(--green);}
+  .tl-dot.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px rgba(245,166,35,0.4);}
+  .tl-line{flex:1;width:2px;background:var(--border2);margin:2px 0;}
+  .tl-line.done{background:rgba(34,197,94,0.4);}
+  .tl-title{font-size:13px;font-weight:500;color:var(--text);}
+  .tl-title.muted{color:var(--text-muted);}
+  .tl-date{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="sidebar" id="wms-sidebar"></div>
+    <div class="main">
+  <div class="topbar">
+    <div><div class="topbar-title">Buscar Guía</div><div class="topbar-sub">Consulta el estado completo de una guía</div></div>
+    <div class="topbar-live"><div class="live-dot"></div>CONECTADO</div>
+  </div>
+  <div class="content">
+    <div class="search-section">
+      <div class="search-label">Consultar guía</div>
+      <div class="search-box">
+        <div class="search-icon">⌕</div>
+        <input class="search-input" id="searchInput" placeholder="Número de guía, teléfono o código casillero..." onkeydown="if(event.key==='Enter') buscar()">
+        <button class="search-btn" onclick="buscar()">BUSCAR</button>
+      </div>
+      <div class="search-hint">Ejemplos: CLY0208110457 · 85519309 · CR-2093849</div>
+    </div>
+    <div class="loading-state" id="loadingState"><div class="loader"></div><span>Consultando hojas...</span></div>
+    <div class="not-found" id="notFound"><span>✕</span><span id="notFoundMsg">Guía no encontrada.</span></div>
+    <div class="empty-state" id="emptyState"><div class="empty-icon">📋</div><div class="empty-text">Ingresa una guía para comenzar</div></div>
+    <div class="result-card" id="resultCard">
+      <div class="result-header">
+        <div><div class="result-guia" id="r-guia">—</div><div class="result-meta" id="r-meta">—</div></div>
+        <div class="status-pill pendiente" id="r-status-pill">— ESTADO —</div>
+      </div>
+      <div class="sections-grid">
+        <div class="section-card">
+          <div class="section-hdr"><span class="section-icon">👤</span><span class="section-title">Cliente</span></div>
+          <div class="section-body">
+            <div class="field-row"><span class="field-label">Nombre</span><span class="field-value" id="r-nombre">—</span></div>
+            <div class="field-row"><span class="field-label">Teléfono</span><span class="field-value mono" id="r-telefono">—</span></div>
+            <div class="field-row"><span class="field-label">Casillero</span><span class="field-value mono blue" id="r-casillero">—</span></div>
+            <div class="field-row"><span class="field-label">Dirección</span><span class="field-value" id="r-direccion">—</span></div>
+            <div class="field-row"><span class="field-label">Ciudad</span><span class="field-value" id="r-ciudad">—</span></div>
+            <div class="field-row"><span class="field-label">Actualizado</span><span class="field-value" id="r-actualizado">—</span></div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-hdr"><span class="section-icon">💳</span><span class="section-title">Pago</span></div>
+          <div class="section-body">
+            <div class="field-row"><span class="field-label">Estado</span><span class="field-value" id="r-pago-estado">—</span></div>
+            <div class="field-row"><span class="field-label">Fuente</span><span class="field-value" id="r-pago-fuente">—</span></div>
+            <div class="field-row"><span class="field-label">Fecha</span><span class="field-value mono" id="r-pago-fecha">—</span></div>
+            <div class="field-row"><span class="field-label">Valor</span><span class="field-value" id="r-pago-valor">—</span></div>
+            <div class="field-row"><span class="field-label">Piezas</span><span class="field-value" id="r-piezas">—</span></div>
+            <div class="field-row"><span class="field-label">Peso</span><span class="field-value" id="r-peso">—</span></div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-hdr"><span class="section-icon">✈️</span><span class="section-title">Consolidado · Vuelo</span></div>
+          <div class="section-body">
+            <div class="field-row"><span class="field-label">Consolidado</span><span class="field-value mono" id="r-consolidado">—</span></div>
+            <div class="field-row"><span class="field-label">Estado vuelo</span><span class="field-value yellow" id="r-vuelo-estado">—</span></div>
+            <div class="field-row"><span class="field-label">Ciudad</span><span class="field-value" id="r-ciudad2">—</span></div>
+            <div class="field-row"><span class="field-label">Contenido</span><span class="field-value" id="r-contenido">—</span></div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-hdr"><span class="section-icon">🚚</span><span class="section-title">SmartQuick</span></div>
+          <div class="section-body">
+            <div class="field-row"><span class="field-label">ID</span><span class="field-value mono" id="r-sq-id">—</span></div>
+            <div class="field-row"><span class="field-label">Estado</span><span class="field-value" id="r-sq-estado">—</span></div>
+          </div>
+        </div>
+        <div class="section-card full">
+          <div class="section-hdr"><span class="section-icon">📍</span><span class="section-title">Timeline</span></div>
+          <div class="section-body"><div id="timeline"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/cr-consolidados-data';
+let _cache = null;
+
+async function loadData() {
+  if (_cache) return _cache;
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 30000);
+  const res = await fetch(WEBHOOK_URL + '?t=' + Date.now(), { method:'GET', signal:ctrl.signal });
+  clearTimeout(t);
+  const text = await res.text();
+  if (!text||!text.trim()) throw new Error('Respuesta vacía');
+  const json = JSON.parse(text);
+  if (!json.ok) throw new Error('Error en workflow');
+  _cache = json;
+  return json;
+}
+
+function nQ(s){ return String(s||'').trim().toUpperCase(); }
+function hide(id){ document.getElementById(id)?.classList.remove('visible'); }
+function show(id){ document.getElementById(id)?.classList.add('visible'); }
+function set(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
+
+async function buscar() {
+  const q = nQ(document.getElementById('searchInput').value);
+  if (!q) return;
+  hide('emptyState'); hide('resultCard'); hide('notFound'); show('loadingState');
+  try {
+    const json = await loadData();
+    hide('loadingState');
+    let found = null;
+    for (const cons of (json.consolidados||[])) {
+      for (const g of (cons.guias||[])) {
+        if (nQ(g.guia)===q || nQ(g.tel)===q || nQ(g.casillero)===q) {
+          found = {...g, consolidado:cons.id, cons_estado:cons.estado_label};
+          break;
+        }
+      }
+      if (found) break;
+    }
+    if (!found) { document.getElementById('notFoundMsg').textContent=`"${q}" — No encontrado.`; show('notFound'); return; }
+    renderResult(found); show('resultCard');
+  } catch(err) {
+    hide('loadingState');
+    document.getElementById('notFoundMsg').textContent=`Error: ${err.message}`; show('notFound');
+  }
+}
+
+function renderResult(d) {
+  set('r-guia', d.guia||'—');
+  set('r-meta', `Consolidado ${d.consolidado||'—'} · ${d.cons_estado||''} · ${new Date().toLocaleTimeString('es-CR')}`);
+  const pill = document.getElementById('r-status-pill');
+  const sq = nQ(d.sq||'');
+  if (sq==='FINALIZADO'){pill.className='status-pill despachado';pill.textContent='✓ FINALIZADO';}
+  else if (sq==='ACEPTADO'){pill.className='status-pill despachado';pill.textContent='🚚 ACEPTADO';}
+  else if (sq&&sq!=='PENDIENTE'){pill.className='status-pill bodega';pill.textContent='🚚 '+d.sq;}
+  else if (nQ(d.cons_estado).includes('BODEGA')){pill.className='status-pill bodega';pill.textContent='📦 '+(d.cons_estado||'BODEGA');}
+  else if (nQ(d.cons_estado).includes('TRANSIT')||nQ(d.cons_estado).includes('AEROLINEA')){pill.className='status-pill transito';pill.textContent='✈️ '+(d.cons_estado||'EN TRÁNSITO');}
+  else{pill.className='status-pill pendiente';pill.textContent='⏳ PENDIENTE';}
+  set('r-nombre',d.nombre||'—'); set('r-telefono',d.tel||'—'); set('r-casillero',d.casillero||'—');
+  set('r-direccion',d.direccion||'—'); set('r-ciudad',d.ciudad||'—'); set('r-actualizado',d.actualizado||'—');
+  const pe=document.getElementById('r-pago-estado');
+  pe.className='field-value '+(d.pago==='PAGADO'?'green':'yellow');
+  set('r-pago-estado',d.pago||'—'); set('r-pago-fuente',d.sq_fuente||'—');
+  set('r-pago-fecha',d.sq_fecha||'—'); set('r-pago-valor',d.valor||'—');
+  set('r-piezas',d.piezas||'—'); set('r-peso',d.peso?d.peso+' kg':'—');
+  set('r-consolidado',d.consolidado||'—'); set('r-vuelo-estado',d.cons_estado||'—');
+  set('r-ciudad2',d.ciudad||'—'); set('r-contenido',d.contenido||'—');
+  set('r-sq-id',d.sq_system_id||'—'); set('r-sq-estado',d.sq||'—');
+  const cs=nQ(d.cons_estado||'');
+  const tl=[
+    {l:'Paquete recibido en Miami',d:'—',done:true},
+    {l:'Pago confirmado',d:d.sq_fecha||'—',done:d.pago==='PAGADO'},
+    {l:'Vuelo Miami → San José',d:'—',done:cs.includes('AEROLINEA')||cs.includes('AEROPUERTO')||cs.includes('BODEGA')},
+    {l:'Llegada aeropuerto SJO',d:'—',done:cs.includes('AEROPUERTO')||cs.includes('BODEGA')},
+    {l:'Entrada bodega destino',d:'—',done:cs.includes('BODEGA DESTINO')},
+    {l:'Despachado a SmartQuick',d:d.sq_fecha||'—',done:!!d.sq_system_id,active:sq==='NO ASIGNADO'},
+    {l:'Aceptado por courier',d:'—',done:sq==='ACEPTADO'||sq==='FINALIZADO',active:sq==='ACEPTADO'},
+    {l:'Entregado',d:'—',done:sq==='FINALIZADO',active:sq==='FINALIZADO'},
+  ];
+  document.getElementById('timeline').innerHTML=tl.map((item,i)=>{
+    const isLast=i===tl.length-1;
+    const dc=item.done?'done':item.active?'active':'';
+    const tc=(!item.done&&!item.active)?'muted':'';
+    const lc=item.done?'done':'';
+    return `<div class="tl-item"><div class="tl-left"><div class="tl-dot ${dc}"></div>${!isLast?`<div class="tl-line ${lc}"></div>`:''}</div><div><div class="tl-title ${tc}">${item.l}</div><div class="tl-date">${item.d}</div></div></div>`;
+  }).join('');
+}
+</script>
+    <script src="sidebar.js"></script>
+</body>
+</html>
