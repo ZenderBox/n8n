@@ -1068,7 +1068,7 @@
         <td>${badgePago(g.pago)}</td>
         <td>${badgeSQ(g.sq)}</td>
         <td>${buildTemplateSelect(g.pago, g.sq_system_id, g.guia)}</td>
-        <td>${g.sq_system_id || g.pago === 'SIN PAGO' ? `<button class="btn-wa" style="padding:5px 12px;font-size:12px" onclick="enviarWAFromRow('${g.tel}','${g.guia}',this)" title="Enviar WhatsApp">💬 Enviar</button>` : '<span style="color:var(--text-muted);font-size:11px">—</span>'}</td>
+        <td>${`<button class="btn-wa" style="padding:5px 12px;font-size:12px" onclick="enviarWAFromRow('${g.tel}','${g.guia}',this)" title="Enviar WhatsApp">💬 Enviar</button>`}</td>
       </tr>`).join('')
             }</tbody></table></div>` : '';
             return `<div class="cons-card ${isExp ? 'expanded' : ''}" id="card-${c.id}">
@@ -1293,7 +1293,8 @@
         btn.disabled = true;
         btn.innerHTML = '⏳';
         try {
-            const url = `${WA_WEBHOOK}?tel=${encodeURIComponent(tel)}&guia=${encodeURIComponent(guia)}&sid=${encodeURIComponent(sid)}&vars=${encodeURIComponent(JSON.stringify(contentVariables))}`;
+            const nombre = opt?.text || sid;
+        const url = `${WA_WEBHOOK}?tel=${encodeURIComponent(tel)}&guia=${encodeURIComponent(guia)}&sid=${encodeURIComponent(sid)}&nombre=${encodeURIComponent(nombre)}&vars=${encodeURIComponent(JSON.stringify(contentVariables))}`;
             const res  = await fetch(url);
             const json = await res.json().catch(() => ({}));
             if (json.ok === false || !res.ok) throw new Error(json.message || 'Error');
