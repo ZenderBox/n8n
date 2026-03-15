@@ -954,14 +954,6 @@
                     <div class="stat-sub">pagadas · en bodega</div>
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:12px 32px;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:0">
-                <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;white-space:nowrap">TEMPLATE WA</span>
-                <select id="templateSelect" onchange="onTemplateChange()" style="flex:1;max-width:420px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:4px;padding:7px 12px;font-family:var(--mono);font-size:12px;outline:none">
-                    <option value="">Cargando templates...</option>
-                </select>
-                <span id="templateVars" style="font-family:var(--mono);font-size:10px;color:var(--text-muted)"></span>
-                <span id="templatePreview" style="font-size:11px;color:var(--text-mid);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-            </div>
             <div class="filters-row">
                 <button class="filter-btn active" id="f-todos" onclick="setFilter('todos')">TODOS</button>
                 <button class="filter-btn f-blue" id="f-bodega" onclick="setFilter('bodega')">📦 EN BODEGA</button>
@@ -1069,14 +1061,14 @@
                 const dc = s.ok ? 'ok' : (i === fSteps.findIndex(x => !x.ok) ? 'cur' : 'no');
                 return `<div class="flight-step"><div class="dot ${dc}"></div><span>${s.label}</span></div>${i < fSteps.length - 1 ? '<span class="flight-arrow">›</span>' : ''}`;
             }).join('');
-            const guiasHtml = isExp ? `<div class="guias-table-wrap"><table class="guias-table"><thead><tr><th>GUÍA</th><th>CLIENTE</th><th>TELÉFONO</th><th>DIRECCIÓN</th><th>PAGO</th><th>SMARTQUICK</th><th>WHATSAPP</th></tr></thead><tbody>${c.guias.map(g => `<tr>
+            const guiasHtml = isExp ? `<div class="guias-table-wrap"><table class="guias-table"><thead><tr><th>GUÍA</th><th>CLIENTE</th><th>TELÉFONO</th><th>PAGO</th><th>SMARTQUICK</th><th>TEMPLATE</th><th>WHATSAPP</th></tr></thead><tbody>${c.guias.map(g => `<tr>
         <td class="td-guia" onclick="openDetail('${c.id}','${g.guia}')">${g.guia || '—'}</td>
         <td class="td-cliente">${g.nombre || '—'}</td>
         <td class="td-tel">${g.tel || '—'}</td>
-        <td class="td-cob" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g.direccion || ''}">${g.direccion || '—'}</td>
         <td>${badgePago(g.pago)}</td>
         <td>${badgeSQ(g.sq)}</td>
-        <td>${g.sq_system_id || g.pago === 'SIN PAGO' ? `<button class="btn-wa" style="padding:5px 12px;font-size:12px" onclick="enviarWA('${g.tel}','${g.guia}','${g.pago}','${g.sq_system_id}',this)" title="Enviar WhatsApp">💬 Enviar</button>` : '<span style="color:var(--text-muted);font-size:11px">—</span>'}</td>
+        <td>${buildTemplateSelect(g.pago, g.sq_system_id, g.guia)}</td>
+        <td>${g.sq_system_id || g.pago === 'SIN PAGO' ? `<button class="btn-wa" style="padding:5px 12px;font-size:12px" onclick="enviarWAFromRow('${g.tel}','${g.guia}',this)" title="Enviar WhatsApp">💬 Enviar</button>` : '<span style="color:var(--text-muted);font-size:11px">—</span>'}</td>
       </tr>`).join('')
             }</tbody></table></div>` : '';
             return `<div class="cons-card ${isExp ? 'expanded' : ''}" id="card-${c.id}">
@@ -1251,35 +1243,33 @@
             // Default: template de rastreo si existe
             const rastreoOpt = TEMPLATES.findIndex(t => t.sid === SID_RASTREO || KW_RASTREO.some(k => t.nombre.toLowerCase().includes(k)));
             if (rastreoOpt >= 0) sel.selectedIndex = rastreoOpt;
-            onTemplateChange();
         } catch(e) {
-            document.getElementById('templateSelect').innerHTML = '<option value="">Error cargando templates</option>';
+            console.error('Error cargando templates:', e);
         }
-    }
-
-    function onTemplateChange() {
-        const sel  = document.getElementById('templateSelect');
-        const opt  = sel.options[sel.selectedIndex];
-        if (!opt) return;
-        const vars = JSON.parse(opt.dataset.vars || '[]');
-        const body = opt.dataset.body || '';
-        document.getElementById('templateVars').textContent = vars.length ? `Variables: {{${vars.join('}}, {{')}}}` : 'Sin variables';
-        document.getElementById('templatePreview').textContent = body ? '→ ' + body.substring(0, 80) + (body.length > 80 ? '...' : '') : '';
+        // Re-renderizar para que los dropdowns por fila se generen con templates ya cargados
+        renderList();
     }
 
     function getDefaultSid(pago, sqId) {
-        // Si tiene SmartQuick → rastreo, si sin pago → pago pendiente
-        const nombre_lower = (t) => (t.nombre || '').toLowerCase();
+        const nl = (t) => (t.nombre || '').toLowerCase();
         if (sqId) {
-            const t = TEMPLATES.find(t => t.sid === SID_RASTREO || KW_RASTREO.some(k => nombre_lower(t).includes(k)));
+            const t = TEMPLATES.find(t => t.sid === SID_RASTREO || KW_RASTREO.some(k => nl(t).includes(k)));
             if (t) return t.sid;
         }
         if (pago === 'SIN PAGO') {
-            const t = TEMPLATES.find(t => KW_PAGO.some(k => nombre_lower(t).includes(k)));
+            const t = TEMPLATES.find(t => KW_PAGO.some(k => nl(t).includes(k)));
             if (t) return t.sid;
         }
-        // Fallback: el seleccionado en dropdown
-        return document.getElementById('templateSelect').value;
+        return TEMPLATES[0]?.sid || '';
+    }
+
+    function buildTemplateSelect(pago, sqId, guia) {
+        if (!TEMPLATES.length) return '<span style="color:var(--text-muted);font-size:10px">Cargando...</span>';
+        const defaultSid = getDefaultSid(pago, sqId);
+        const options = TEMPLATES.map(t =>
+            `<option value="${t.sid}" data-vars='${JSON.stringify(t.variables)}' ${t.sid === defaultSid ? 'selected' : ''}>${t.nombre}</option>`
+        ).join('');
+        return `<select id="tpl-${guia}" style="background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:4px;padding:4px 8px;font-family:var(--mono);font-size:10px;max-width:160px;outline:none">${options}</select>`;
     }
 
     function updateWAStats() {
@@ -1288,17 +1278,15 @@
         document.getElementById('stat-wa-err').className = waErr > 0 ? 'stat-value yellow' : 'stat-value';
     }
 
-    async function enviarWA(tel, guia, pago, sqId, btn) {
-        if (!tel || !guia) return;
-        // Determinar template: usar default inteligente o el del dropdown
-        const sid = getDefaultSid(pago, sqId) || document.getElementById('templateSelect').value;
+    async function enviarWAFromRow(tel, guia, btn) {
+        // Leer el select de esa fila específica
+        const sel = document.getElementById('tpl-' + guia);
+        const sid = sel ? sel.value : '';
         if (!sid) { alert('Selecciona un template primero'); return; }
 
-        // Construir variables según template seleccionado
-        const template = TEMPLATES.find(t => t.sid === sid);
-        const vars = template?.variables || [];
+        const opt  = sel?.options[sel.selectedIndex];
+        const vars = JSON.parse(opt?.dataset?.vars || '[]');
         const rastreoUrl = `https://zenderbox.github.io/n8n/rastreo.html?guia=${encodeURIComponent(guia)}`;
-        // Variable {{1}} = link rastreo por defecto, agregar más según necesidad
         const contentVariables = {};
         if (vars.includes('1')) contentVariables['1'] = rastreoUrl;
 
