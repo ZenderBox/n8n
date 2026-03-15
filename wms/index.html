@@ -1,1 +1,159 @@
-c
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox · WMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #040d18; --surface: #081F3A; --surface2: #0d2748;
+        --border: #0f3058; --border2: #1a4575;
+        --accent: #CCD32A; --accent-dim: rgba(204,211,42,0.12);
+        --blue: #009CC9; --blue-dim: rgba(0,156,201,0.12);
+        --green: #22c55e; --green-dim: rgba(34,197,94,0.1);
+        --red: #ef4444; --red-dim: rgba(239,68,68,0.1);
+        --yellow: #f59e0b; --yellow-dim: rgba(245,158,11,0.1);
+        --text: #e8f0f8; --text-muted: #5a7a9a; --text-mid: #8aaac8;
+        --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; }
+
+    /* SIDEBAR */
+    .sidebar {
+        width: 220px; min-height: 100vh; background: var(--surface);
+        border-right: 1px solid var(--border); display: flex; flex-direction: column;
+        flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; z-index: 10; overflow-y: auto;
+    }
+    .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo .zb { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+    .nav-section { padding: 12px 12px 4px; }
+    .nav-section-label { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; transition: all 0.15s; margin-bottom: 2px; border: 1px solid transparent; text-decoration: none; }
+    .nav-item:hover { background: var(--surface2); }
+    .nav-item.active { background: var(--accent-dim); border-color: rgba(204,211,42,0.2); }
+    .nav-icon { font-size: 14px; flex-shrink: 0; }
+    .nav-label { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+    .nav-item.active .nav-label { color: var(--accent); }
+    .nav-coming { font-family: var(--mono); font-size: 9px; color: var(--text-muted); padding: 2px 6px; background: var(--surface2); border-radius: 3px; margin-left: auto; }
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .sidebar-footer .version { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+
+    /* MAIN */
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { padding: 16px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: var(--surface); position: sticky; top: 0; z-index: 5; }
+    .topbar-title { font-size: 15px; font-weight: 600; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .content { padding: 32px; flex: 1; }
+
+    /* CARDS GRID */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .module-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+        padding: 20px; text-decoration: none; transition: all 0.15s; cursor: pointer;
+        display: flex; flex-direction: column; gap: 10px;
+    }
+    .module-card:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-1px); }
+    .module-card.coming { opacity: 0.45; cursor: default; pointer-events: none; }
+    .module-card .card-icon { font-size: 24px; }
+    .module-card .card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .module-card .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+    .module-card .card-tag { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 3px; width: fit-content; }
+    .module-card .card-tag.active-tag { background: var(--accent-dim); color: var(--accent); }
+    .module-card .card-tag.coming-tag { background: var(--surface2); color: var(--text-muted); }
+
+    .section-title { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 16px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="wms-sidebar"></div>
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Dashboard</div>
+            </div>
+            <div class="topbar-right">
+                <div class="live-dot"></div>
+                WMS · MULTIAGENCIA
+            </div>
+        </div>
+        <div class="content">
+            <div class="section-title">Operaciones</div>
+            <div class="grid">
+                <a class="module-card" href="buscar.html">
+                    <span class="card-icon">🔍</span>
+                    <div class="card-title">Buscar Guía</div>
+                    <div class="card-desc">Consulta estado de guías por número, teléfono o casillero</div>
+                    <span class="card-tag active-tag">ACTIVO</span>
+                </a>
+                <a class="module-card" href="consolidados.html">
+                    <span class="card-icon">📦</span>
+                    <div class="card-title">Consolidados</div>
+                    <div class="card-desc">Vista de vuelos y guías agrupadas por consolidado</div>
+                    <span class="card-tag active-tag">ACTIVO</span>
+                </a>
+                <a class="module-card" href="manifiesto.html">
+                    <span class="card-icon">📥</span>
+                    <div class="card-title">Cargar Manifiesto</div>
+                    <div class="card-desc">Carga masiva de guías desde archivo de manifiesto</div>
+                    <span class="card-tag active-tag">ACTIVO</span>
+                </a>
+                <a class="module-card" href="despachos.html">
+                    <span class="card-icon">🚚</span>
+                    <div class="card-title">Despachos</div>
+                    <div class="card-desc">Motor de despachos y creación de órdenes SmartQuick</div>
+                    <span class="card-tag active-tag">ACTIVO</span>
+                </a>
+                <a class="module-card" href="whatsapp.html">
+                    <span class="card-icon">💬</span>
+                    <div class="card-title">WhatsApp</div>
+                    <div class="card-desc">Envío de notificaciones a clientes por consolidado</div>
+                    <span class="card-tag active-tag">ACTIVO</span>
+                </a>
+            </div>
+
+            <div class="section-title">IA · Inteligencia Artificial</div>
+            <div class="grid">
+                <a class="module-card" href="ia/llamadas.html">
+                    <span class="card-icon">📞</span>
+                    <div class="card-title">Llamadas</div>
+                    <div class="card-desc">Monitoreo de llamadas automáticas a casilleros por agente Dapta</div>
+                    <span class="card-tag active-tag">ACTIVO</span>
+                </a>
+                <div class="module-card coming">
+                    <span class="card-icon">💰</span>
+                    <div class="card-title">Cobros</div>
+                    <div class="card-desc">Agente de cobro para guías con pago pendiente</div>
+                    <span class="card-tag coming-tag">PRONTO</span>
+                </div>
+                <div class="module-card coming">
+                    <span class="card-icon">🎁</span>
+                    <div class="card-title">Primer Paquete</div>
+                    <div class="card-desc">Llamada automática al cliente tras primera entrega</div>
+                    <span class="card-tag coming-tag">PRONTO</span>
+                </div>
+                <div class="module-card coming">
+                    <span class="card-icon">📍</span>
+                    <div class="card-title">Ubicación</div>
+                    <div class="card-desc">Captura de coordenadas para clientes sin ubicación</div>
+                    <span class="card-tag coming-tag">PRONTO</span>
+                </div>
+            </div>
+
+            <div class="section-title">Sistema</div>
+            <div class="grid">
+                <div class="module-card coming">
+                    <span class="card-icon">⚙️</span>
+                    <div class="card-title">Settings</div>
+                    <div class="card-desc">Configuración de agencias, usuarios y permisos</div>
+                    <span class="card-tag coming-tag">PRONTO</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="sidebar.js"></script>
+</body>
+</html>
+
