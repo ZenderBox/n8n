@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox · Pre-liquidador</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #0a0c0f;
+        --surface: #111318;
+        --border: #1e2229;
+        --border2: #2a2f3a;
+        --amber: #f5a623;
+        --amber2: #ffcc66;
+        --green: #3dffa0;
+        --red: #ff4d6d;
+        --blue: #4da6ff;
+        --text: #e8eaf0;
+        --muted: #5a6070;
+        --mono: 'Space Mono', monospace;
+        --sans: 'Syne', sans-serif;
+    }
+
+
+    /* WMS Sidebar compatibility */
+    .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: #081F3A;
+        border-right: 1px solid #0f3058;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+        overflow-y: auto;
+    }
+    .sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid #0f3058; }
+    .sidebar-logo .zb { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 600; color: #CCD32A; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+    .nav-section { padding: 12px 12px 4px; }
+    .nav-section-label { font-family: 'Space Mono', monospace; font-size: 9px; color: #5a7a9a; letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; transition: all 0.15s; margin-bottom: 2px; border: 1px solid transparent; text-decoration: none; color: #8aaac8; }
+    .nav-item:hover { background: #0d2748; }
+    .nav-item.active { background: rgba(204,211,42,0.12); border-color: rgba(204,211,42,0.2); }
+    .nav-item.active .nav-label { color: #CCD32A; }
+    .nav-icon { font-size: 14px; flex-shrink: 0; }
+    .nav-label { font-size: 13px; font-weight: 500; }
+    .nav-coming { font-family: 'Space Mono', monospace; font-size: 9px; color: #5a7a9a; padding: 2px 6px; background: #0d2748; border-radius: 3px; margin-left: auto; }
+    .nav-collapsible { display: flex; align-items: center; justify-content: space-between; padding-right: 8px; cursor: pointer; }
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid #0f3058; }
+    .sidebar-footer .version { font-family: 'Space Mono', monospace; font-size: 10px; color: #5a7a9a; }
+    .agency-opt { display: block; width: 100%; text-align: left; padding: 6px 10px; font-family: 'Space Mono', monospace; font-size: 11px; border: 1px solid #0f3058; border-radius: 4px; background: transparent; color: #5a7a9a; cursor: pointer; transition: all 0.15s; margin-bottom: 4px; }
+    .agency-opt:hover { background: #0d2748; color: #e8f0f8; }
+    .agency-opt.active { background: rgba(204,211,42,0.12); border-color: #CCD32A; color: #CCD32A; font-weight: 600; }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: linear-gradient(rgba(245, 166, 35, .03) 1px, transparent 1px), linear-gradient(90deg, rgba(245, 166, 35, .03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .wrapper {
+        position: relative;
+        z-index: 1;
+        max-width: 820px;
+        margin: 0 auto;
+        margin-left: 240px;
+        padding: 48px 24px 80px;
+    }
+
+    header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 48px;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .logo-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .logo {
+        font-family: var(--sans);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .18em;
+        color: var(--amber);
+        text-transform: uppercase;
+    }
+
+    h1 {
+        font-family: var(--sans);
+        font-size: clamp(26px, 5vw, 38px);
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--text);
+    }
+
+    h1 span {
+        color: var(--amber);
+    }
+
+    .config-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 10px;
+    }
+
+    .config-bar label {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+    }
+
+    .config-bar input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--amber2);
+        min-width: 0;
+    }
+
+    .config-bar input::placeholder {
+        color: var(--muted);
+    }
+
+    .dot-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+        flex-shrink: 0;
+        transition: background .3s;
+    }
+
+    .dot-status.online {
+        background: var(--green);
+        box-shadow: 0 0 8px var(--green);
+    }/* progress */
+
+    .progress-track {
+        display: flex;
+        align-items: center;
+        margin: 36px 0 40px;
+        gap: 0;
+    }
+
+    .prog-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        position: relative;
+        cursor: default;
+    }
+
+    .prog-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--border2);
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        transition: all .3s;
+        position: relative;
+        z-index: 2;
+    }
+
+    .prog-step.active .prog-circle {
+        border-color: var(--amber);
+        color: var(--amber);
+        box-shadow: 0 0 16px rgba(245, 166, 35, .3);
+    }
+
+    .prog-step.done .prog-circle {
+        border-color: var(--green);
+        background: rgba(61, 255, 160, .1);
+        color: var(--green);
+    }
+
+    .prog-label {
+        font-size: 8px;
+        font-family: var(--mono);
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    .prog-step.active .prog-label {
+        color: var(--amber);
+    }
+
+    .prog-step.done .prog-label {
+        color: var(--green);
+    }
+
+    .prog-line {
+        flex: 1;
+        height: 2px;
+        background: var(--border2);
+        margin-bottom: 22px;
+        transition: background .4s;
+    }
+
+    .prog-line.done {
+        background: var(--green);
+    }/* cards */
+
+    .step-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 16px;
+        display: none;
+        animation: fadeUp .3s ease;
+    }
+
+    .step-card.visible {
+        display: block;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .step-badge {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--bg);
+        background: var(--amber);
+        padding: 3px 8px;
+        border-radius: 4px;
+        letter-spacing: .1em;
+        white-space: nowrap;
+    }
+
+    .step-badge.blue {
+        background: var(--blue);
+    }
+
+    .card-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .card-desc {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .field {
+        margin-bottom: 16px;
+    }
+
+    .field label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        margin-bottom: 6px;
+    }
+
+    .field input[type="text"], .field input[type="url"] {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text);
+        outline: none;
+        transition: border-color .2s;
+    }
+
+    .field input:focus {
+        border-color: var(--amber);
+    }
+
+    .field input::placeholder {
+        color: var(--muted);
+    }
+
+    .dropzone {
+        border: 2px dashed var(--border2);
+        border-radius: 8px;
+        padding: 32px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all .2s;
+        position: relative;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+        border-color: var(--amber);
+        background: rgba(245, 166, 35, .04);
+    }
+
+    .dropzone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .drop-icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .drop-text {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+    }
+
+    .drop-text strong {
+        color: var(--amber);
+        font-weight: 700;
+    }
+
+    .drop-filename {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--green);
+        margin-top: 10px;
+        word-break: break-all;
+    }
+
+    .promts-section {
+        margin-top: 16px;
+    }
+
+    .promts-title {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .promts-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    .promt-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
+        margin-bottom: 8px;
+        align-items: center;
+    }
+
+    .promt-row input {
+        background: var(--bg);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text);
+        outline: none;
+        width: 100%;
+        transition: border-color .2s;
+    }
+
+    .promt-row input:focus {
+        border-color: var(--amber);
+    }
+
+    .promt-row input::placeholder {
+        color: var(--muted);
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--border);
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .2s;
+        flex-shrink: 0;
+    }
+
+    .btn-icon:hover {
+        background: rgba(255, 77, 109, .15);
+        color: var(--red);
+    }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--amber);
+        color: var(--bg);
+        border: none;
+        border-radius: 8px;
+        padding: 13px 28px;
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: .04em;
+        transition: all .2s;
+        width: 100%;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    .btn-primary:hover {
+        background: var(--amber2);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+        background: var(--border2);
+        color: var(--muted);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-primary.blue-btn {
+        background: var(--blue);
+    }
+
+    .btn-primary.blue-btn:hover {
+        background: #80c4ff;
+    }
+
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--border2);
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-family: var(--mono);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--amber);
+        color: var(--amber);
+    }
+
+    .btn-add-promt {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--amber);
+        background: none;
+        border: 1px dashed var(--amber);
+        border-radius: 6px;
+        padding: 6px 14px;
+        cursor: pointer;
+        transition: all .2s;
+        opacity: .7;
+    }
+
+    .btn-add-promt:hover {
+        opacity: 1;
+        background: rgba(245, 166, 35, .06);
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(10, 12, 15, .4);
+        border-top-color: var(--bg);
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+        display: none;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .btn-primary.loading .spinner {
+        display: block;
+    }
+
+    .btn-primary.loading .btn-label {
+        opacity: .6;
+    }
+
+    .response-box {
+        margin-top: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border2);
+        overflow: hidden;
+        display: none;
+    }
+
+    .response-box.visible {
+        display: block;
+        animation: fadeUp .3s ease;
+    }
+
+    .response-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .response-box.success .response-header {
+        background: rgba(61, 255, 160, .08);
+        color: var(--green);
+    }
+
+    .response-box.error .response-header {
+        background: rgba(255, 77, 109, .08);
+        color: var(--red);
+    }
+
+    .response-body {
+        padding: 14px 16px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.7;
+        background: var(--bg);
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(61, 255, 160, .1);
+        color: var(--green);
+        border: 1px solid var(--green);
+        border-radius: 8px;
+        padding: 13px 28px;
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+        margin-top: 8px;
+        text-decoration: none;
+        transition: all .2s;
+    }
+
+    .btn-download:hover {
+        background: rgba(61, 255, 160, .18);
+    }
+
+    .step-nav {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: flex-end;
+    }
+
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: rgba(245, 166, 35, .1);
+        color: var(--amber);
+        border: 1px solid rgba(245, 166, 35, .2);
+    }
+
+    .toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 8px;
+        padding: 14px 18px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 100;
+        transform: translateY(80px);
+        opacity: 0;
+        transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+        max-width: 320px;
+    }
+
+    .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .toast.success {
+        border-color: var(--green);
+    }
+
+    .toast.error {
+        border-color: var(--red);
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+    }
+
+    .action-bar .btn-primary {
+        flex: 1;
+        min-width: 160px;
+        margin-top: 0;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 3px;
+    }
+    </style>
+</head>
+<body>
+<div class="sidebar" id="wms-sidebar"></div>
+    <div class="wrapper">
+
+        <header>
+            <div class="logo-group">
+                <div class="logo">ZenderBox Colombia</div>
+                <h1>
+                    Pre-
+                    <span>liquidador</span>
+                </h1>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding-top:6px;">
+                <span class="tag">n8n · Google Sheets</span>
+                <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">Módulo Despachos Internacionales</span>
+            </div>
+        </header>
+
+        <!-- ENV TOGGLE -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Ambiente</span>
+            <div id="envToggle" onclick="toggleEnv()" style="display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:6px;overflow:hidden;cursor:pointer;user-select:none;">
+                <div id="envPro" style="padding:6px 18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;transition:all .2s;">PRO</div>
+                <div id="envTest" style="padding:6px 18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;transition:all .2s;">TEST</div>
+            </div>
+            <span id="envLabel" style="font-family:var(--mono);font-size:10px;color:var(--muted);"></span>
+        </div>
+
+        <div class="config-bar">
+            <label>Webhook Principal</label>
+            <input type="url" id="webhookUrl" readonly style="opacity:.7;cursor:default;">
+            <div class="dot-status" id="dotStatus"></div>
+        </div>
+        <div class="config-bar">
+            <label>Webhook Validar&nbsp;PA</label>
+            <input type="url" id="webhookPA" readonly style="opacity:.7;cursor:default;">
+            <div class="dot-status" id="dotStatusPA"></div>
+        </div>
+        <div class="config-bar" style="margin-bottom:36px;">
+            <label>Webhook Limpiar</label>
+            <input type="url" id="webhookLimpiar" readonly style="opacity:.7;cursor:default;">
+            <div class="dot-status" id="dotStatusLimpiar"></div>
+        </div>
+
+        <!-- PROGRESS (5 pasos) -->
+        <div class="progress-track">
+            <div class="prog-step active" id="prog-0">
+                <div class="prog-circle">1</div>
+                <div class="prog-label">
+                    Subir
+                    <br>
+                    Original
+                </div>
+            </div>
+            <div class="prog-line" id="line-0"></div>
+            <div class="prog-step" id="prog-1">
+                <div class="prog-circle">2</div>
+                <div class="prog-label">
+                    Subir
+                    <br>
+                    Preliq.
+                </div>
+            </div>
+            <div class="prog-line" id="line-1"></div>
+            <div class="prog-step" id="prog-2">
+                <div class="prog-circle">3</div>
+                <div class="prog-label">
+                    Validar
+                    <br>
+                    PA
+                </div>
+            </div>
+            <div class="prog-line" id="line-2"></div>
+            <div class="prog-step" id="prog-3">
+                <div class="prog-circle">4</div>
+                <div class="prog-label">
+                    Calcular
+                    <br>
+                    Impuestos
+                </div>
+            </div>
+            <div class="prog-line" id="line-3"></div>
+            <div class="prog-step" id="prog-4">
+                <div class="prog-circle">5</div>
+                <div class="prog-label">
+                    Exportar
+                    <br>
+                    Archivo
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="step-card visible" id="card-0">
+            <div class="card-header">
+                <span class="step-badge">STEP 01</span>
+                <span class="card-title">Subir Archivo Original</span>
+            </div>
+            <p class="card-desc">Sube el archivo ORIGINAL (.xlsx). Define la agencia y completa los valores PROMT requeridos.</p>
+            <div class="field">
+                <label>Agencia *</label>
+                <input type="text" id="agencia" placeholder="Nombre exacto según hoja Variables">
+            </div>
+            <div class="field">
+                <label>Archivo Original (.xlsx) *</label>
+                <div class="dropzone" id="drop1" ondragover="doDragOver(event,'drop1')" ondragleave="doDragLeave('drop1')" ondrop="doDrop(event,'drop1','file1')">
+                    <input type="file" id="file1" accept=".xlsx,.xls" onchange="onFileChange('file1','drop1')">
+                    <div class="drop-icon">📂</div>
+                    <div class="drop-text">
+                        <strong>Arrastra el archivo aquí</strong>
+                        <br>
+                        o haz clic para seleccionar · .xlsx
+                    </div>
+                    <div class="drop-filename" id="fname1"></div>
+                </div>
+            </div>
+            <div class="promts-section">
+                <div class="promts-title">Valores PROMT</div>
+                <div id="promts-container">
+                    <div class="promt-row">
+                        <input type="text" value="AIRWAYBILL" id="promt-key-1" readonly style="opacity:.5;cursor:default;">
+                        <input type="text" placeholder="ej: 4060024549" id="promt-val-1">
+                        <div style="width:32px;flex-shrink:0;"></div>
+                    </div>
+                    <div class="promt-row">
+                        <input type="text" value="FECHA DIAN" id="promt-key-2" readonly style="opacity:.5;cursor:default;">
+                        <input type="text" placeholder="ej: 02/28/2026" id="promt-val-2">
+                        <div style="width:32px;flex-shrink:0;"></div>
+                    </div>
+                    <div class="promt-row">
+                        <input type="text" value="REGISTRO DIAN" id="promt-key-3" readonly style="opacity:.5;cursor:default;">
+                        <input type="text" placeholder="ej: 1165750167" id="promt-val-3">
+                        <div style="width:32px;flex-shrink:0;"></div>
+                    </div>
+                    <div class="promt-row">
+                        <input type="text" value="DATE" id="promt-key-4" readonly style="opacity:.5;cursor:default;">
+                        <input type="text" placeholder="ej: 2/28/2026 6:00:00 PM" id="promt-val-4">
+                        <div style="width:32px;flex-shrink:0;"></div>
+                    </div>
+                </div>
+                <button class="btn-add-promt" onclick="addPromt()">+ Agregar campo extra</button>
+            </div>
+            <button class="btn-primary" id="btn1" onclick="runStep1()">
+                <span class="spinner"></span>
+                <span class="btn-label">Cargar Original →</span>
+            </button>
+            <div class="response-box" id="res1"></div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-card" id="card-1">
+            <div class="card-header">
+                <span class="step-badge">STEP 02</span>
+                <span class="card-title">Subir Preliquidado</span>
+            </div>
+            <p class="card-desc">Sube el archivo PRELIQUIDADO (.xlsx). Se hará el lookup por GUIA HIJA → HAWB y se completarán Flete, Seguro, CIF, TRM. Guías con novedad se informan al finalizar.</p>
+            <div class="field">
+                <label>Archivo Preliquidado (.xlsx) *</label>
+                <div class="dropzone" id="drop2" ondragover="doDragOver(event,'drop2')" ondragleave="doDragLeave('drop2')" ondrop="doDrop(event,'drop2','file2')">
+                    <input type="file" id="file2" accept=".xlsx,.xls" onchange="onFileChange('file2','drop2')">
+                    <div class="drop-icon">📋</div>
+                    <div class="drop-text">
+                        <strong>Arrastra el archivo aquí</strong>
+                        <br>
+                        o haz clic para seleccionar · .xlsx
+                    </div>
+                    <div class="drop-filename" id="fname2"></div>
+                </div>
+            </div>
+            <button class="btn-primary" id="btn2" onclick="runStep2()">
+                <span class="spinner"></span>
+                <span class="btn-label">Aplicar Preliquidado →</span>
+            </button>
+            <div class="response-box" id="res2"></div>
+            <div class="step-nav">
+                <button class="btn-secondary" onclick="goStep(0)">← Volver</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Validar PA -->
+        <div class="step-card" id="card-2">
+            <div class="card-header">
+                <span class="step-badge blue">STEP 03</span>
+                <span class="card-title">Validar Posiciones Arancelarias</span>
+            </div>
+            <p class="card-desc">Verifica que todas las partidas del lote existan en la hoja PA. Si falta alguna, se muestra el detalle y no se puede continuar al cálculo.</p>
+            <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px 18px;margin-bottom:16px;">
+                <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;">
+                    <span style="color:var(--blue);">FOB ≤ 200</span>
+                     · No requiere partida arancelaria
+                    <br>
+                    <span style="color:var(--blue);">FOB > 200</span>
+                     · La partida debe existir en hoja PA
+                    <br>
+                    <span style="color:var(--blue);">Si falta</span>
+                     · Agrega la partida en PA y vuelve a validar
+                          
+                </div>
+            </div>
+            <button class="btn-primary blue-btn" id="btn-vpa" onclick="runValidarPA()">
+                <span class="spinner"></span>
+                <span class="btn-label">🔍 Validar Partidas →</span>
+            </button>
+            <div class="response-box" id="res-vpa"></div>
+            <div class="step-nav">
+                <button class="btn-secondary" onclick="goStep(1)">← Volver</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Calcular -->
+        <div class="step-card" id="card-3">
+            <div class="card-header">
+                <span class="step-badge">STEP 04</span>
+                <span class="card-title">Calcular Impuestos</span>
+            </div>
+            <p class="card-desc">Calcula Arancel, IVA y Total para el lote activo usando las reglas de la hoja PA.</p>
+            <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px 18px;margin-bottom:8px;">
+                <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;">
+                    <span style="color:var(--amber);">Regla general</span>
+                     · FOB ≤ 200 → Arancel = 0 · IVA = 0 · Total = 0
+                    <br>
+                    <span style="color:var(--amber);">Regla por partida</span>
+                     · FOB > 200 → Arancel + IVA según hoja PA
+                          
+                </div>
+            </div>
+            <button class="btn-primary" id="btn3" onclick="runStep3()">
+                <span class="spinner"></span>
+                <span class="btn-label">Calcular Impuestos →</span>
+            </button>
+            <div class="response-box" id="res3"></div>
+            <div class="step-nav">
+                <button class="btn-secondary" onclick="goStep(2)">← Volver</button>
+            </div>
+        </div>
+
+        <!-- STEP 5: Exportar -->
+        <div class="step-card" id="card-4">
+            <div class="card-header">
+                <span class="step-badge">STEP 05</span>
+                <span class="card-title">Exportar Archivo</span>
+            </div>
+            <p class="card-desc">Genera el archivo .xlsx listo para el servidor. Columnas numéricas con 2 decimales fijos.</p>
+            <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px 18px;margin-bottom:8px;">
+                <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;">
+
+                            Columnas a texto: 
+                    <span style="color:var(--amber2);">FOB · Peso · Flete · Seguro · CIF · TRM · Base impuestos · Arancel · IVA · Total</span>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="btn-primary" id="btn4" onclick="runStep4()">
+                    <span class="spinner"></span>
+                    <span class="btn-label">⬇ Generar y Descargar</span>
+                </button>
+            </div>
+            <div id="downloadArea"></div>
+            <div class="response-box" id="res4"></div>
+            <div class="step-nav">
+                <button class="btn-secondary" onclick="goStep(3)">← Volver</button>
+                <button class="btn-secondary" onclick="resetAll()" style="color:var(--red);border-color:rgba(255,77,109,.3);">↺ Nuevo lote</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ── state ──────────────────────────────────────────────
+    let currentStep = 0;
+    const STEPS = ['card-0', 'card-1', 'card-2', 'card-3', 'card-4'];
+    const TOTAL_STEPS = 5;
+
+    const FIXED_PROMTS = `
+<div class="promt-row"><input type="text" value="AIRWAYBILL" id="promt-key-1" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 4060024549" id="promt-val-1"><div style="width:32px;flex-shrink:0;"></div></div>
+<div class="promt-row"><input type="text" value="FECHA DIAN" id="promt-key-2" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 02/28/2026" id="promt-val-2"><div style="width:32px;flex-shrink:0;"></div></div>
+<div class="promt-row"><input type="text" value="REGISTRO DIAN" id="promt-key-3" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 1165750167" id="promt-val-3"><div style="width:32px;flex-shrink:0;"></div></div>
+<div class="promt-row"><input type="text" value="DATE" id="promt-key-4" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 2/28/2026 6:00:00 PM" id="promt-val-4"><div style="width:32px;flex-shrink:0;"></div></div>`
+
+
+
+    ;
+
+    // ── url validation ──────────────────────────────────────
+    const BASE = 'https://zenderbox.app.n8n.cloud/webhook';
+    const ENVS = {
+        pro: {
+            main: `${BASE}/preliquidador`,
+            pa: `${BASE}/validar-pa`,
+            limpiar: `${BASE}/limpiar-lote`
+        },
+        test: {
+            main: `${BASE}/preliquidador-test`,
+            pa: `${BASE}/validar-pa-test`,
+            limpiar: `${BASE}/limpiar-lote-test`
+        }
+    };
+    let currentEnv = 'pro';
+
+    function setEnvUrls(env) {
+        currentEnv = env;
+        const cfg = ENVS[env];
+        const isPro = env === 'pro';
+
+        document.getElementById('webhookUrl').value = cfg.main;
+        document.getElementById('webhookPA').value = cfg.pa;
+        document.getElementById('webhookLimpiar').value = cfg.limpiar;
+
+        ['dotStatus', 'dotStatusPA', 'dotStatusLimpiar'].forEach(id => {
+            document.getElementById(id).className = 'dot-status online';
+        });
+
+        // Toggle visual
+        const proBg = isPro ? 'var(--amber)' : 'transparent';
+        const testBg = !isPro ? '#4da6ff' : 'transparent';
+        const proCol = isPro ? 'var(--bg)' : 'var(--muted)';
+        const testCol = !isPro ? 'var(--bg)' : 'var(--muted)';
+        document.getElementById('envPro').style.background = proBg;
+        document.getElementById('envPro').style.color = proCol;
+        document.getElementById('envTest').style.background = testBg;
+        document.getElementById('envTest').style.color = testCol;
+        document.getElementById('envLabel').textContent = isPro ? 'Producción activa' : 'Test activo — datos en sheets _test';
+        document.getElementById('envLabel').style.color = isPro ? 'var(--amber)' : '#4da6ff';
+
+        localStorage.setItem('zbEnv', env);
+    }
+
+    const TEST_PIN = '1234'; // ← cambia este PIN
+
+    function toggleEnv() {
+        if (currentEnv === 'pro') {
+            // Intentando pasar a TEST — pedir PIN
+            showPinModal();
+        } else {
+            // Volver a PRO — sin restricción
+            setEnvUrls('pro');
+        }
+    }
+
+    function showPinModal() {
+        let modal = document.getElementById('pinModal');
+        if (modal)
+            modal.remove();
+        modal = document.createElement('div');
+        modal.id = 'pinModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+        modal.innerHTML = `
+    <div style="background:#111318;border:2px solid #4da6ff;border-radius:12px;padding:32px;max-width:340px;width:100%;box-shadow:0 0 60px rgba(77,166,255,.2);text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+      <div style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#4da6ff;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Acceso Ambiente Test</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-bottom:24px;">Ingresa el PIN para activar el modo test</div>
+      <input id="pinInput" type="password" maxlength="8"
+        style="width:100%;background:#0a0c0f;border:1px solid #2a2f3a;border-radius:8px;padding:14px;font-family:'Space Mono',monospace;font-size:22px;color:#4da6ff;text-align:center;letter-spacing:.3em;outline:none;margin-bottom:16px;"
+        placeholder="••••"
+        onkeydown="if(event.key==='Enter') confirmPin()">
+      <div id="pinError" style="font-family:'Space Mono',monospace;font-size:10px;color:#ff4d6d;margin-bottom:12px;min-height:16px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('pinModal').remove()"
+          style="flex:1;padding:12px;background:transparent;color:#5a6070;border:1px solid #2a2f3a;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          Cancelar
+        </button>
+        <button onclick="confirmPin()"
+          style="flex:1;padding:12px;background:#4da6ff;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          Confirmar
+        </button>
+      </div>
+    </div>`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ;
+        document.body.appendChild(modal);
+        setTimeout(() => document.getElementById('pinInput')?.focus(), 100);
+        modal.addEventListener('click', e => {
+            if (e.target === modal)
+                modal.remove();
+        });
+    }
+
+    function confirmPin() {
+        const val = document.getElementById('pinInput')?.value || '';
+        if (val === TEST_PIN) {
+            document.getElementById('pinModal').remove();
+            setEnvUrls('test');
+            showToast('Modo TEST activado', 'error');
+        } else {
+            document.getElementById('pinError').textContent = 'PIN incorrecto — intenta de nuevo';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+        }
+    }
+
+    function getUrl() {
+        return document.getElementById('webhookUrl').value.trim();
+    }
+    function getUrlPA() {
+        return document.getElementById('webhookPA').value.trim();
+    }
+    function getUrlLimpiar() {
+        return document.getElementById('webhookLimpiar').value.trim();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedEnv = localStorage.getItem('zbEnv') || 'pro';
+        setEnvUrls(savedEnv);
+    });
+
+    // ── step navigation ─────────────────────────────────────
+    function goStep(n) {
+        currentStep = n;
+        STEPS.forEach((id, i) => document.getElementById(id).classList.toggle('visible', i === n));
+        for (let i = 0; i < TOTAL_STEPS; i++) {
+            const el = document.getElementById(`prog-${i}`);
+            if (el)
+                el.className = 'prog-step' + (i < n ? ' done' : i === n ? ' active' : '');
+            if (i < TOTAL_STEPS - 1) {
+                const ln = document.getElementById(`line-${i}`);
+                if (ln)
+                    ln.className = 'prog-line' + (i < n ? ' done' : '');
+            }
+        }
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // ── file drop ───────────────────────────────────────────
+    function onFileChange(inputId, dropId) {
+        const f = document.getElementById(inputId).files[0];
+        document.getElementById(inputId.replace('file', 'fname')).textContent = f ? '✓ ' + f.name : '';
+        document.getElementById(dropId).classList.remove('dragover');
+    }
+    function doDragOver(e, d) {
+        e.preventDefault();
+        document.getElementById(d).classList.add('dragover');
+    }
+    function doDragLeave(d) {
+        document.getElementById(d).classList.remove('dragover');
+    }
+    function doDrop(e, dropId, inputId) {
+        e.preventDefault();
+        document.getElementById(dropId).classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            const t = new DataTransfer();
+            t.items.add(e.dataTransfer.files[0]);
+            document.getElementById(inputId).files = t.files;
+            onFileChange(inputId, dropId);
+        }
+    }
+
+    // ── promt fields ────────────────────────────────────────
+    let promtCount = 4;
+    function addPromt() {
+        promtCount++;
+        const c = document.getElementById('promts-container');
+        const row = document.createElement('div');
+        row.className = 'promt-row';
+        row.id = `promt-row-${promtCount}`;
+        row.innerHTML = `<input type="text" placeholder="nombre_campo" id="promt-key-${promtCount}"><input type="text" placeholder="valor" id="promt-val-${promtCount}"><button class="btn-icon" onclick="removePromt(${promtCount})">×</button>`;
+        c.appendChild(row);
+    }
+    function removePromt(id) {
+        document.getElementById(`promt-row-${id}`)?.remove();
+    }
+    function getPromtFields() {
+        const fields = {};
+        document.querySelectorAll('[id^="promt-key-"]').forEach(el => {
+            const n = el.id.replace('promt-key-', ''),
+                k = el.value.trim();
+            const v = document.getElementById(`promt-val-${n}`)?.value.trim() || '';
+            if (k)
+                fields[`promt_${k}`] = v;
+        });
+        return fields;
+    }
+
+    // ── helpers ─────────────────────────────────────────────
+    function showResponse(boxId, ok, data) {
+        const box = document.getElementById(boxId);
+        box.className = 'response-box visible ' + (ok ? 'success' : 'error');
+        const body = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        box.innerHTML = `<div class="response-header">${ok ? '✓' : '✗'} ${ok ? 'OK' : 'Error'}</div><div class="response-body">${body.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
+    }
+    function showToast(msg, type='success') {
+        const t = document.getElementById('toast');
+        t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg;
+        t.className = `toast show ${type}`;
+        setTimeout(() => {
+            t.className = 'toast';
+        }, 3500);
+    }
+    function setLoading(btnId, on) {
+        const b = document.getElementById(btnId);
+        b.classList.toggle('loading', on);
+        b.disabled = on;
+    }
+    function assertUrl(url) {
+        if (!url) {
+            showToast('URL de webhook no configurada', 'error');
+            return false;
+        }
+        return true;
+    }
+    async function readBody(res) {
+        const clone = res.clone();
+        try {
+            const text = await clone.text();
+            try {
+                return JSON.parse(text);
+            } catch {
+                return text;
+            }
+        }
+        catch (e) {
+            return 'Error: ' + e.message;
+        }
+    }
+
+    // ── STEP 1 ──────────────────────────────────────────────
+    async function runStep1() {
+        if (!assertUrl(getUrl()))
+            return;
+        const agencia = document.getElementById('agencia').value.trim();
+        const file = document.getElementById('file1').files[0];
+        if (!agencia) {
+            showToast('Ingresa el nombre de la agencia', 'error');
+            return;
+        }
+        if (!file) {
+            showToast('Selecciona el archivo ORIGINAL', 'error');
+            return;
+        }
+        setLoading('btn1', true);
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('agencia', agencia);
+            fd.append('accion', 'subir-original');
+            Object.entries(getPromtFields()).forEach(([k, v]) => fd.append(k, v));
+            const res = await fetch(getUrl(), {
+                method: 'POST',
+                body: fd
+            });
+            const data = await readBody(res);
+            if (res.ok) {
+                showResponse('res1', true, data);
+                showToast('Original cargado');
+                setTimeout(() => goStep(1), 1200);
+            }
+            else {
+                showResponse('res1', false, data);
+                showToast('Error al cargar el Original', 'error');
+            }
+        } catch (e) {
+            showResponse('res1', false, e.message);
+            showToast('Error: ' + e.message, 'error');
+        }
+        finally {
+            setLoading('btn1', false);
+        }
+    }
+
+    // ── STEP 2 ──────────────────────────────────────────────
+    async function runStep2() {
+        if (!assertUrl(getUrl()))
+            return;
+        const file = document.getElementById('file2').files[0];
+        if (!file) {
+            showToast('Selecciona el archivo PRELIQUIDADO', 'error');
+            return;
+        }
+        setLoading('btn2', true);
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('accion', 'subir-preliquidado');
+            const res = await fetch(getUrl(), {
+                method: 'POST',
+                body: fd
+            });
+            const data = await readBody(res);
+            if (res.ok) {
+                showResponse('res2', true, data);
+                const novedades = data?.novedades || [];
+                if (novedades.length > 0) {
+                    showNovedadAlert(novedades);
+                    showToast(`Preliquidado aplicado · ${novedades.length} guía(s) con novedad`);
+                    setTimeout(() => goStep(2), 2500);
+                } else {
+                    showToast('Preliquidado aplicado');
+                    setTimeout(() => goStep(2), 1200);
+                }
+            } else {
+                showResponse('res2', false, data);
+                showToast('Error al aplicar Preliquidado', 'error');
+            }
+        } catch (e) {
+            showResponse('res2', false, e.message);
+            showToast('Error: ' + e.message, 'error');
+        }
+        finally {
+            setLoading('btn2', false);
+        }
+    }
+
+    // ── STEP 3: Validar PA ──────────────────────────────────
+    async function runValidarPA() {
+        if (!assertUrl(getUrlPA()))
+            return;
+        setLoading('btn-vpa', true);
+        try {
+            const res = await fetch(getUrlPA(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: '{}'
+            });
+            let data = await readBody(res);
+
+            // n8n a veces envuelve la respuesta en un array
+            if (Array.isArray(data))
+                data = data[0];
+
+            // Acceder al json si viene como { json: { ok: ... } }
+            if (data && data.json !== undefined)
+                data = data.json;
+
+            console.log('Validar PA response:', data);
+
+            const isOk = data && (data.ok === true || data.ok === 'true');
+
+            if (res.ok && isOk) {
+                showResponse('res-vpa', true, '✓ ' + (data.message || 'Todas las partidas OK'));
+                showToast('Partidas OK — puedes calcular');
+                setTimeout(() => goStep(3), 1200);
+            } else {
+                const msg = (data && (data.message || data.error)) || JSON.stringify(data);
+                showResponse('res-vpa', false, msg);
+                const faltantes = (data && data.faltantes) || [];
+                showPAErrorModal(faltantes, msg);
+                showToast('Partidas faltantes en hoja PA', 'error');
+            }
+        } catch (e) {
+            showResponse('res-vpa', false, e.message);
+            showToast('Error: ' + e.message, 'error');
+        } finally {
+            setLoading('btn-vpa', false);
+        }
+    }
+
+    // ── STEP 4: Calcular ────────────────────────────────────
+    async function runStep3() {
+        if (!assertUrl(getUrl()))
+            return;
+        setLoading('btn3', true);
+        try {
+            const res = await fetch(getUrl(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    accion: 'calcular'
+                })
+            });
+            const data = await readBody(res);
+            if (res.ok) {
+                showResponse('res3', true, data);
+                showToast('Impuestos calculados');
+                setTimeout(() => goStep(4), 1200);
+            }
+            else {
+                showResponse('res3', false, data);
+                showToast('Error en cálculo', 'error');
+            }
+        } catch (e) {
+            showResponse('res3', false, e.message);
+            showToast('Error: ' + e.message, 'error');
+        }
+        finally {
+            setLoading('btn3', false);
+        }
+    }
+
+    // ── STEP 5: Exportar ────────────────────────────────────
+    async function runStep4() {
+        if (!assertUrl(getUrl()))
+            return;
+        setLoading('btn4', true);
+        document.getElementById('downloadArea').innerHTML = '';
+        try {
+            const res = await fetch(getUrl(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    accion: 'exportar'
+                })
+            });
+            const contentType = res.headers.get('Content-Type') || '';
+            if (!res.ok) {
+                const d = await readBody(res.clone());
+                showResponse('res4', false, d);
+                showToast('Error al exportar', 'error');
+                return;
+            }
+            if (contentType.includes('application/json') || contentType.includes('text/')) {
+                const d = await readBody(res.clone());
+                showResponse('res4', false, typeof d === 'string' ? d : JSON.stringify(d, null, 2));
+                showToast('El servidor no devolvió un archivo', 'error');
+                return;
+            }
+            let filename = 'Export_ZenderBox.xlsx';
+            const m = (res.headers.get('Content-Disposition') || '').match(/filename="?([^"]+)"?/);
+            if (m)
+                filename = m[1];
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            document.getElementById('downloadArea').innerHTML = `<a class="btn-download" href="${url}" download="${filename}">⬇ Descargar ${filename}</a>`;
+            showToast('Archivo listo');
+            document.getElementById('res4').className = 'response-box';
+        } catch (e) {
+            showResponse('res4', false, e.message);
+            showToast('Error: ' + e.message, 'error');
+        }
+        finally {
+            setLoading('btn4', false);
+        }
+    }
+
+    // ── Modales ─────────────────────────────────────────────
+    function showPAErrorModal(faltantes, msg) {
+        let modal = document.getElementById('paModal');
+        if (modal)
+            modal.remove();
+        modal = document.createElement('div');
+        modal.id = 'paModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
+        let lista = '';
+        if (Array.isArray(faltantes) && faltantes.length) {
+            lista = faltantes.map(f => `
+      <div style="padding:7px 0;border-bottom:1px solid #1e2229;display:flex;gap:10px;align-items:flex-start;">
+        <span style="flex-shrink:0;font-size:14px;">🚫</span>
+        <div>
+          <span style="color:#ff4d6d;font-weight:700;font-size:12px;">${
+
+
+            f.partida || 'Sin partida'}</span>
+          <span style="color:#5a6070;margin-left:8px;font-size:11px;">HAWB: ${f.hawb || '-'}</span>
+          <div style="color:#5a6070;font-size:10px;margin-top:2px;">${f.error || ''}</div>
+        </div>
+      </div>`
+
+            ).join('');
+        } else {
+            lista = `<div style="color:#e8eaf0;font-size:11px;">${msg || 'Error desconocido'}</div>`;
+        }
+        modal.innerHTML = `
+    <div style="background:#111318;border:2px solid #ff4d6d;border-radius:12px;padding:28px;max-width:560px;width:100%;box-shadow:0 0 60px rgba(255,77,109,.25);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <span style="font-size:28px;">🚫</span>
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:#ff4d6d;text-transform:uppercase;letter-spacing:.1em;">Partidas Faltantes en Hoja PA</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-top:2px;">No se puede calcular hasta corregir las partidas</div>
+        </div>
+      </div>
+      <div style="max-height:260px;overflow-y:auto;font-family:'Space Mono',monospace;margin:16px 0;background:#0a0c0f;border-radius:8px;padding:12px;">${
+
+
+
+
+
+
+
+        lista}</div>
+      <div style="background:rgba(255,77,109,.07);border:1px solid rgba(255,77,109,.2);border-radius:8px;padding:12px;margin-bottom:16px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:#ff4d6d;font-weight:700;margin-bottom:4px;">¿CÓMO CORREGIR?</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;line-height:1.9;">
+          1. Abre la hoja <span style="color:#ffcc66;">PA</span> en Google Sheets<br>
+          2. Agrega las partidas faltantes con su % Arancel e IVA<br>
+          3. Vuelve aquí y haz clic en <span style="color:#4da6ff;">Validar Partidas</span> de nuevo
+        </div>
+      </div>
+      <button onclick="document.getElementById('paModal').remove()" style="width:100%;padding:13px;background:#ff4d6d;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        Entendido — Voy a Revisar la Hoja PA
+      </button>
+    </div>`
+
+
+
+
+
+
+
+
+
+
+
+        ;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => {
+            if (e.target === modal)
+                modal.remove();
+        });
+    }
+
+    function showNovedadAlert(novedades) {
+        let modal = document.getElementById('novedadModal');
+        if (modal)
+            modal.remove();
+        modal = document.createElement('div');
+        modal.id = 'novedadModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;';
+        const lista = novedades.map(g => `<div style="padding:6px 0;border-bottom:1px solid #2a2f3a;color:#ffcc66;">⚡ ${g}</div>`).join('');
+        modal.innerHTML = `
+    <div style="background:#111318;border:1px solid #f5a623;border-radius:12px;padding:28px;max-width:480px;width:100%;box-shadow:0 0 40px rgba(245,166,35,.2);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span style="font-size:22px;">⚡</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#f5a623;text-transform:uppercase;letter-spacing:.1em;">Novedades Aplicadas</span>
+      </div>
+      <p style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-bottom:16px;">Las siguientes guías tienen novedad — FOB, Partida, Arancel, IVA y Total fueron sobrescritos desde el Preliquidado.</p>
+      <div style="max-height:240px;overflow-y:auto;font-family:'Space Mono',monospace;font-size:11px;margin-bottom:20px;">${
+
+
+
+
+
+        lista}</div>
+      <button onclick="document.getElementById('novedadModal').remove()" style="width:100%;padding:12px;background:#f5a623;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        Entendido → Continuar a Validar PA
+      </button>
+    </div>`
+
+
+
+        ;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => {
+            if (e.target === modal)
+                modal.remove();
+        });
+    }
+
+    // ── Reset ───────────────────────────────────────────────
+    async function resetAll() {
+        if (!confirm('¿Iniciar un nuevo lote? Esto borrará los datos del Sheet y reiniciará la interfaz.'))
+            return;
+
+        const url = getUrlLimpiar();
+        if (url) {
+            // Mostrar loading en el botón nuevo lote
+            const btn = document.querySelector('[onclick="resetAll()"]');
+            if (btn) {
+                btn.textContent = '⏳ Limpiando...';
+                btn.disabled = true;
+            }
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: '{}'
+                });
+                const data = await readBody(res);
+                if (res.ok && data.ok) {
+                    showToast('Sheet limpiado correctamente');
+                } else {
+                    showToast('Advertencia: no se pudo limpiar el Sheet', 'error');
+                }
+            } catch (e) {
+                showToast('No se pudo conectar al webhook de limpieza', 'error');
+            } finally {
+                if (btn) {
+                    btn.textContent = '↺ Nuevo lote';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // Reiniciar interfaz
+        document.getElementById('agencia').value = '';
+        ['file1', 'file2'].forEach(id => document.getElementById(id).value = '');
+        ['fname1', 'fname2'].forEach(id => document.getElementById(id).textContent = '');
+        document.getElementById('promts-container').innerHTML = FIXED_PROMTS;
+        promtCount = 4;
+        ['res1', 'res2', 'res-vpa', 'res3', 'res4'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el)
+                el.className = 'response-box';
+        });
+        document.getElementById('downloadArea').innerHTML = '';
+        goStep(0);
+    }
+    </script>
+    <script src="sidebar.js"></script>
+</body>
+</html>
