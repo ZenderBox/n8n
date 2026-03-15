@@ -35,11 +35,22 @@ const WMS_NAV = [
   }
 ];
 
-// Detectar página activa por nombre de archivo
+// Detectar página activa y profundidad de carpeta
 function getActivePage() {
   const path = window.location.pathname;
   const file = path.split('/').pop().replace('.html', '');
   return file || 'index';
+}
+
+// Detectar si estamos en subcarpeta (ej: /wms/ia/)
+function getBaseUrl() {
+  const path = window.location.pathname;
+  // Si path contiene /wms/ia/ u otra subcarpeta dentro de wms
+  const wmsIdx = path.indexOf('/wms/');
+  if (wmsIdx < 0) return '';
+  const afterWms = path.substring(wmsIdx + 5); // después de /wms/
+  const depth = afterWms.split('/').length - 1; // niveles de subcarpeta
+  return depth > 0 ? '../'.repeat(depth) : '';
 }
 
 // Agencias disponibles
@@ -85,7 +96,7 @@ function renderSidebar() {
     const itemsHtml = group.items.map(item => {
       const isActive = activePage === item.id || activePage.includes(item.id);
       return `<a class="nav-item${isActive ? ' active' : ''}${item.coming ? ' nav-coming-item' : ''}"
-        href="${item.coming ? '#' : item.href}"
+        href="${item.coming ? '#' : (getBaseUrl() + item.href)}"
         onclick="${item.coming ? 'return false' : ''}"
         style="${item.coming ? 'cursor:default;pointer-events:none;opacity:0.45' : ''}">
         <span class="nav-icon">${item.icon}</span>
