@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nueva Guía — ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --surface2:  #1e2630;
+    --border:    #2a3441;
+    --border2:   #3d4f61;
+    --cyan:      #00c9b1;
+    --cyan-dim:  rgba(0,201,177,.12);
+    --cyan-glow: rgba(0,201,177,.25);
+    --lime:      #a3e635;
+    --lime-dim:  rgba(163,230,53,.12);
+    --amber:     #f59e0b;
+    --amber-dim: rgba(245,158,11,.12);
+    --red:       #ef4444;
+    --text:      #e2e8f0;
+    --text2:     #8b9cb0;
+    --text3:     #4f6070;
+    --r:         8px;
+    --r-lg:      12px;
+    --shadow:    0 4px 24px rgba(0,0,0,.4);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+  input, select, textarea, button { font-family: inherit; }
+
+  /* ── Top bar ── */
+  .topbar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-logo {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: .3px;
+  }
+  .topbar-logo span { color: var(--cyan); }
+  .topbar-sep { flex: 1; }
+  .agencia-select {
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--text); border-radius: 6px; padding: 6px 11px;
+    font-size: 13px; cursor: pointer; outline: none; transition: border-color .2s;
+  }
+  .agencia-select:focus { border-color: var(--cyan); }
+
+  /* ── Step indicator ── */
+  .steps {
+    display: flex; align-items: center; gap: 0;
+    padding: 0 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .step {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 20px; font-size: 12px; color: var(--text3);
+    border-bottom: 2px solid transparent;
+    transition: color .2s;
+  }
+  .step.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+  .step.done   { color: var(--text2); }
+  .step-num {
+    width: 20px; height: 20px; border-radius: 50%; border: 1px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+  }
+  .step.active .step-num { background: var(--cyan-dim); border-color: var(--cyan); }
+  .step-arrow { color: var(--text3); padding: 0 4px; font-size: 11px; }
+
+  /* ── Main ── */
+  .main {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px; padding: 24px;
+    max-width: 1280px; width: 100%; margin: 0 auto;
+    align-items: start;
+  }
+  @media (max-width: 860px) { .main { grid-template-columns: 1fr; } }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
+  }
+  .panel-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+  }
+  .panel-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); }
+  .panel-dot.amber { background: var(--amber); }
+  .panel-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px; font-weight: 700;
+    color: var(--text); letter-spacing: .8px; text-transform: uppercase;
+  }
+  .panel-badge {
+    margin-left: auto; font-size: 11px;
+    padding: 2px 9px; border-radius: 20px;
+    display: none; align-items: center; gap: 4px;
+  }
+  .panel-badge.show { display: flex; }
+  .panel-badge.existing { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,201,177,.2); }
+  .panel-badge.new      { background: var(--lime-dim); color: var(--lime); border: 1px solid rgba(163,230,53,.2); }
+  .panel-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* ── Search row ── */
+  .search-row { position: relative; display: flex; gap: 8px; }
+  .search-wrap { flex: 1; position: relative; }
+  .search-ico {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text3); pointer-events: none; font-size: 15px; line-height: 1;
+  }
+  .search-input {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border2); border-radius: var(--r);
+    color: var(--text); padding: 9px 10px 9px 32px;
+    font-size: 13px; outline: none;
+    transition: border-color .2s, background .2s;
+  }
+  .search-input:focus { border-color: var(--cyan); background: var(--bg); }
+  .search-input::placeholder { color: var(--text3); }
+  .btn-limpiar {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text2); border-radius: var(--r); padding: 9px 13px;
+    cursor: pointer; font-size: 12px; transition: all .2s; white-space: nowrap;
+  }
+  .btn-limpiar:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── Autocomplete ── */
+  .ac-list {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--r); z-index: 300;
+    max-height: 240px; overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    display: none;
+  }
+  .ac-list.open { display: block; }
+  .ac-item {
+    padding: 10px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item:focus { background: var(--cyan-dim); outline: none; }
+  .ac-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .ac-sub  { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .ac-new  { color: var(--lime); }
+  .ac-hint { padding: 10px 14px; font-size: 12px; color: var(--text3); }
+
+  /* ── Sugerencias de pares ── */
+  .sugerencias {
+    display: none; flex-direction: column; gap: 8px;
+  }
+  .sugerencias.show { display: flex; }
+  .sug-label {
+    font-size: 11px; color: var(--text3); letter-spacing: .3px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sug-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .sug-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .sug-chip {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 6px 12px 6px 8px;
+    cursor: pointer; transition: all .2s; max-width: 100%;
+  }
+  .sug-chip:hover {
+    border-color: var(--amber); background: var(--amber-dim);
+  }
+  .sug-avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--amber-dim); border: 1px solid rgba(245,158,11,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--amber);
+    flex-shrink: 0;
+  }
+  .sug-info { display: flex; flex-direction: column; min-width: 0; }
+  .sug-nombre { font-size: 12px; color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sug-veces  { font-size: 10px; color: var(--text3); }
+
+  /* ── Fields grid ── */
+  .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .f-full { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 10px; font-weight: 600; color: var(--text3);
+    letter-spacing: .5px; text-transform: uppercase;
+  }
+  .field label .req { color: var(--cyan); }
+  .field input, .field select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--r); color: var(--text);
+    padding: 9px 11px; font-size: 13px; outline: none;
+    transition: border-color .2s, background .2s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--cyan); background: var(--bg); }
+  .field input::placeholder { color: var(--text3); }
+  .field input.prefilled { border-color: rgba(0,201,177,.3); }
+
+  /* ── ID field ── */
+  .id-row { display: flex; align-items: center; gap: 6px; }
+  .id-row input { flex: 1; font-size: 12px; color: var(--text2); }
+  .id-tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    background: var(--lime-dim); color: var(--lime);
+    border: 1px solid rgba(163,230,53,.2); white-space: nowrap; display: none;
+  }
+
+  /* ── Notify toggle ── */
+  .notify-row {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 0 0;
+  }
+  .notify-row input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--cyan); cursor: pointer; }
+  .notify-row label { font-size: 12px; color: var(--text2); cursor: pointer; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+
+  /* ── Bottom bar ── */
+  .bottombar {
+    position: sticky; bottom: 0; z-index: 100;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+  }
+  .summary { flex: 1; display: flex; gap: 20px; font-size: 12px; color: var(--text2); flex-wrap: wrap; }
+  .summary strong { color: var(--text); font-weight: 500; }
+  .btn {
+    border-radius: var(--r); padding: 10px 22px;
+    font-size: 13px; cursor: pointer; transition: all .2s; border: none;
+  }
+  .btn-secondary {
+    background: transparent; border: 1px solid var(--border2); color: var(--text2);
+  }
+  .btn-secondary:hover { border-color: var(--text2); color: var(--text); }
+  .btn-primary {
+    background: var(--cyan); color: #0d1117;
+    font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 14px;
+    letter-spacing: .3px; box-shadow: 0 0 20px var(--cyan-glow);
+  }
+  .btn-primary:hover { background: #00e6cc; box-shadow: 0 0 32px var(--cyan-glow); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--r-lg); padding: 11px 20px;
+    font-size: 13px; color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    z-index: 999; opacity: 0; pointer-events: none;
+    transition: opacity .25s, bottom .25s; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; bottom: 82px; }
+  .toast.ok  { border-color: var(--cyan); color: var(--cyan); }
+  .toast.err { border-color: var(--red);  color: var(--red);  }
+
+  /* ── Overlay ── */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(13,17,23,.75);
+    z-index: 500; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .overlay.show { opacity: 1; pointer-events: all; }
+  .spin-card {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--r-lg); padding: 28px 36px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .spinner {
+    width: 30px; height: 30px; border: 3px solid var(--border2);
+    border-top-color: var(--cyan); border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin-lbl { font-size: 13px; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-logo"><span>ZB</span> — Nueva Guía</div>
+  <div class="topbar-sep"></div>
+  <span style="font-size:12px;color:var(--text2)">Agencia</span>
+  <select class="agencia-select" id="agencia" onchange="onAgencia()">
+    <option value="CR">ZenderBox Costa Rica</option>
+    <option value="CO">ZenderBox Colombia</option>
+  </select>
+</div>
+
+<!-- Step indicator -->
+<div class="steps">
+  <div class="step active"><div class="step-num">1</div> Remitente & Destinatario</div>
+  <div class="step-arrow">›</div>
+  <div class="step"><div class="step-num">2</div> Servicio & Peso</div>
+  <div class="step-arrow">›</div>
+  <div class="step"><div class="step-num">3</div> Contenido & Pago</div>
+  <div class="step-arrow">›</div>
+  <div class="step"><div class="step-num">4</div> Confirmar</div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- ══ REMITENTE ══ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-dot"></div>
+      <div class="panel-title">Remitente</div>
+      <div class="panel-badge" id="badge-rem"></div>
+    </div>
+    <div class="panel-body">
+
+      <div class="search-row">
+        <div class="search-wrap">
+          <span class="search-ico">⌕</span>
+          <input class="search-input" id="rem-nombre" type="text"
+            placeholder="Nombre, correo o teléfono…" autocomplete="off"
+            oninput="onSearch('rem',this.value)" onfocus="openAc('rem')">
+          <div class="ac-list" id="ac-rem"></div>
+        </div>
+        <button class="btn-limpiar" onclick="clearPanel('rem')">✕</button>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field f-full">
+          <label>Dirección <span class="req">*</span></label>
+          <input type="text" id="rem-direccion" placeholder="Dirección completa">
+        </div>
+        <div class="field">
+          <label>Ciudad <span class="req">*</span></label>
+          <input type="text" id="rem-ciudad" placeholder="Ciudad">
+        </div>
+        <div class="field">
+          <label>Estado / Depto.</label>
+          <input type="text" id="rem-estado" placeholder="Estado">
+        </div>
+        <div class="field">
+          <label>ZIP / Cód. Postal</label>
+          <input type="text" id="rem-zip" placeholder="ZIP">
+        </div>
+        <div class="field">
+          <label>País</label>
+          <input type="text" id="rem-pais" placeholder="País">
+        </div>
+        <div class="field">
+          <label>Teléfono <span class="req">*</span></label>
+          <input type="tel" id="rem-telefono" placeholder="+506 8888 8888">
+        </div>
+        <div class="field">
+          <label>Celular</label>
+          <input type="tel" id="rem-celular" placeholder="Celular">
+        </div>
+        <div class="field">
+          <label>E-Mail</label>
+          <input type="email" id="rem-email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="field">
+          <label>Tracking (ref. interna)</label>
+          <input type="text" id="rem-tracking" placeholder="Opcional">
+        </div>
+        <div class="field">
+          <label>ID Cliente</label>
+          <div class="id-row">
+            <input type="text" id="rem-id" placeholder="Auto" readonly>
+            <span class="id-tag" id="rem-id-tag">Nuevo</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="notify-row">
+        <input type="checkbox" id="rem-notificar">
+        <label for="rem-notificar">Notificar al remitente vía WhatsApp</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DESTINATARIO ══ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-dot amber"></div>
+      <div class="panel-title">Destinatario</div>
+      <div class="panel-badge" id="badge-dest"></div>
+    </div>
+    <div class="panel-body">
+
+      <!-- Sugerencias de pares (se muestra tras seleccionar remitente) -->
+      <div class="sugerencias" id="sugerencias">
+        <div class="sug-label">Envíos anteriores de este remitente</div>
+        <div class="sug-chips" id="sug-chips"></div>
+      </div>
+
+      <div class="search-row">
+        <div class="search-wrap">
+          <span class="search-ico">⌕</span>
+          <input class="search-input" id="dest-nombre" type="text"
+            placeholder="Nombre, correo o teléfono…" autocomplete="off"
+            oninput="onSearch('dest',this.value)" onfocus="openAc('dest')">
+          <div class="ac-list" id="ac-dest"></div>
+        </div>
+        <button class="btn-limpiar" onclick="clearPanel('dest')">✕</button>
+      </div>
+
+      <div class="fields-grid">
+        <div class="field f-full">
+          <label>Dirección <span class="req">*</span></label>
+          <input type="text" id="dest-direccion" placeholder="Dirección completa">
+        </div>
+        <div class="field">
+          <label>Ciudad <span class="req">*</span></label>
+          <input type="text" id="dest-ciudad" placeholder="Ciudad">
+        </div>
+        <div class="field">
+          <label>Barrio</label>
+          <input type="text" id="dest-barrio" placeholder="Barrio / Zona">
+        </div>
+        <div class="field">
+          <label>Código Postal</label>
+          <input type="text" id="dest-pcodigo" placeholder="Cód. Postal">
+        </div>
+        <div class="field">
+          <label>Teléfono <span class="req">*</span></label>
+          <input type="tel" id="dest-telefono" placeholder="+506 8888 8888">
+        </div>
+        <div class="field">
+          <label>Celular</label>
+          <input type="tel" id="dest-celular" placeholder="Celular">
+        </div>
+        <div class="field f-full">
+          <label>E-Mail <span class="req">*</span></label>
+          <input type="email" id="dest-email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="field f-full">
+          <label>ID Cliente</label>
+          <div class="id-row">
+            <input type="text" id="dest-id" placeholder="Auto" readonly>
+            <span class="id-tag" id="dest-id-tag">Nuevo</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="notify-row">
+        <input type="checkbox" id="dest-notificar">
+        <label for="dest-notificar">Notificar al destinatario vía WhatsApp</label>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Bottom bar -->
+<div class="bottombar">
+  <div class="summary">
+    <span>Agencia: <strong id="sum-ag">CR</strong></span>
+    <span>Remitente: <strong id="sum-rem">—</strong></span>
+    <span>Destinatario: <strong id="sum-dest">—</strong></span>
+  </div>
+  <button class="btn btn-secondary" onclick="history.back()">Cancelar</button>
+  <button class="btn btn-primary" id="btn-crear" onclick="crearGuia()">Crear Guía →</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay">
+  <div class="spin-card">
+    <div class="spinner"></div>
+    <div class="spin-lbl" id="spin-lbl">Creando guía…</div>
+  </div>
+</div>
+
+<script>
+/* ── Config ─────────────────────────────────── */
+const N8N = 'https://zenderbox.app.n8n.cloud/webhook';
+const EP = {
+  buscar:  `${N8N}/buscar-cliente`,
+  historial: `${N8N}/historial-pares`,
+  crear:   `${N8N}/crear-guia`,
+};
+
+/* ── State ──────────────────────────────────── */
+const S = { agencia:'CR', rem:null, dest:null };
+const timers = {};
+
+/* ── Agencia ────────────────────────────────── */
+function onAgencia() {
+  S.agencia = document.getElementById('agencia').value;
+  document.getElementById('sum-ag').textContent = S.agencia;
+  const ph = S.agencia === 'CR' ? '+506 8888 8888' : '+57 300 000 0000';
+  ['rem','dest'].forEach(p => {
+    const el = document.getElementById(`${p}-telefono`);
+    if(el) el.placeholder = ph;
+  });
+}
+
+/* ── Search / AC ────────────────────────────── */
+function onSearch(panel, val) {
+  clearTimeout(timers[panel]);
+  const ac = document.getElementById(`ac-${panel}`);
+  document.getElementById(`${panel}-nombre`).dataset.typing = '1';
+  if(val.length < 2){ ac.classList.remove('open'); return; }
+  ac.innerHTML = '<div class="ac-hint">Buscando…</div>';
+  ac.classList.add('open');
+  timers[panel] = setTimeout(() => doSearch(panel, val), 350);
+}
+
+function openAc(panel) {
+  const val = document.getElementById(`${panel}-nombre`).value;
+  if(val.length >= 2) document.getElementById(`ac-${panel}`).classList.add('open');
+}
+
+async function doSearch(panel, q) {
+  const ac = document.getElementById(`ac-${panel}`);
+  try {
+    const r = await fetch(`${EP.buscar}?q=${encodeURIComponent(q)}&agencia=${S.agencia}`);
+    const data = await r.json();
+    renderAc(panel, Array.isArray(data) ? data : [], q);
+  } catch(e) {
+    renderAc(panel, mockSearch(q), q);
+  }
+}
+
+function renderAc(panel, results, q) {
+  const ac = document.getElementById(`ac-${panel}`);
+  const crear = `<div class="ac-item" onclick="nuevoCliente('${panel}','${esc(q)}')">
+    <div class="ac-name ac-new">+ Crear "${esc(q)}" como cliente nuevo</div>
+    <div class="ac-sub">Se generará ID automático</div>
+  </div>`;
+  if(!results.length){ ac.innerHTML = crear; }
+  else {
+    ac.innerHTML = results.map(c =>
+      `<div class="ac-item" tabindex="0"
+        onclick='selectCliente("${panel}",${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+        <div class="ac-name">${hl(c.Nombre||'', q)}</div>
+        <div class="ac-sub">${c['E-Mail']||c.email||''} · ${c.Telefono||c.telefono||''}</div>
+      </div>`
+    ).join('') + crear;
+  }
+  ac.classList.add('open');
+}
+
+/* ── Select existing ────────────────────────── */
+async function selectCliente(panel, c) {
+  S[panel] = { ...c, es_nuevo: false };
+  fill(panel, c, false);
+  document.getElementById(`ac-${panel}`).classList.remove('open');
+  updateSummary();
+  if(panel === 'rem') await loadSugerencias(c);
+}
+
+/* ── Nuevo cliente ──────────────────────────── */
+function nuevoCliente(panel, nombre) {
+  const tmpId = `${S.agencia}-NEW-${Date.now().toString().slice(-6)}`;
+  document.getElementById(`${panel}-nombre`).value = nombre;
+  document.getElementById(`${panel}-id`).value = tmpId;
+  document.getElementById(`${panel}-id-tag`).style.display = 'inline';
+  S[panel] = { Nombre: nombre, id: tmpId, es_nuevo: true };
+  setBadge(panel, 'Cliente nuevo', 'new');
+  document.getElementById(`ac-${panel}`).classList.remove('open');
+  updateSummary();
+  if(panel === 'rem') hideSugerencias();
+}
+
+/* ── Sugerencias de pares ───────────────────── */
+async function loadSugerencias(remitente) {
+  hideSugerencias();
+  try {
+    const r = await fetch(`${EP.historial}?remitente=${encodeURIComponent(remitente.Nombre||remitente.id)}&agencia=${S.agencia}`);
+    const data = await r.json();
+    if(Array.isArray(data) && data.length) renderSugerencias(data);
+    else renderSugerencias(mockPares(remitente.Nombre)); // dev fallback
+  } catch(e) {
+    renderSugerencias(mockPares(remitente.Nombre));
+  }
+}
+
+function renderSugerencias(pares) {
+  if(!pares || !pares.length) return;
+  const chips = document.getElementById('sug-chips');
+  chips.innerHTML = pares.slice(0,4).map(p => {
+    const iniciales = (p.nombre||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    return `<div class="sug-chip" onclick='selectSugerido(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+      <div class="sug-avatar">${iniciales}</div>
+      <div class="sug-info">
+        <div class="sug-nombre">${p.nombre}</div>
+        <div class="sug-veces">${p.veces} envío${p.veces>1?'s':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('sugerencias').classList.add('show');
+}
+
+function hideSugerencias() {
+  document.getElementById('sugerencias').classList.remove('show');
+  document.getElementById('sug-chips').innerHTML = '';
+}
+
+async function selectSugerido(par) {
+  // par tiene nombre + datos del destinatario del historial
+  // Buscar datos completos en la hoja CLIENTES
+  try {
+    const r = await fetch(`${EP.buscar}?q=${encodeURIComponent(par.nombre)}&agencia=${S.agencia}`);
+    const data = await r.json();
+    const cliente = (Array.isArray(data) && data.length) ? data[0] : par;
+    S.dest = { ...cliente, es_nuevo: false };
+    fill('dest', cliente, false);
+  } catch(e) {
+    S.dest = { ...par, es_nuevo: false };
+    fill('dest', par, false);
+  }
+  updateSummary();
+}
+
+/* ── Fill panel ─────────────────────────────── */
+function fill(panel, c, isNew) {
+  const set = (f, v) => {
+    const el = document.getElementById(`${panel}-${f}`);
+    if(el && v != null && v !== '') { el.value = v; el.classList.add('prefilled'); }
+  };
+  set('nombre',    c.Nombre     || c.nombre    || '');
+  set('direccion', c.Direccion  || c.direccion || '');
+  set('ciudad',    c.Ciudad     || c.ciudad    || '');
+  set('estado',    c.Estado     || c.estado    || '');
+  set('zip',       c.Zip        || c.zip       || '');
+  set('pais',      c.Pais       || c.pais      || '');
+  set('telefono',  c.Telefono   || c.telefono  || '');
+  set('celular',   c.Celular    || c.celular   || '');
+  set('email',     c['E-Mail']  || c['E-MAIL'] || c.email || '');
+  set('tracking',  c.Tracking   || c.tracking  || '');
+  set('id',        c.ID         || c.id        || '');
+  set('barrio',    c.Barrio     || c.barrio    || '');
+  set('pcodigo',   c['P. Codigo']|| c.pcodigo  || '');
+  const tag = document.getElementById(`${panel}-id-tag`);
+  if(tag) tag.style.display = isNew ? 'inline' : 'none';
+  setBadge(panel, isNew ? 'Nuevo' : 'Existente', isNew ? 'new' : 'existing');
+}
+
+/* ── Clear panel ────────────────────────────── */
+function clearPanel(panel) {
+  ['nombre','direccion','ciudad','estado','zip','pais','telefono','celular',
+   'email','tracking','id','barrio','pcodigo'].forEach(f => {
+    const el = document.getElementById(`${panel}-${f}`);
+    if(el){ el.value=''; el.classList.remove('prefilled','error'); }
+  });
+  const chk = document.getElementById(`${panel}-notificar`);
+  if(chk) chk.checked = false;
+  const tag = document.getElementById(`${panel}-id-tag`);
+  if(tag) tag.style.display = 'none';
+  S[panel] = null;
+  setBadge(panel,'','');
+  if(panel==='rem') hideSugerencias();
+  updateSummary();
+}
+
+/* ── Badge ──────────────────────────────────── */
+function setBadge(panel, text, type) {
+  const el = document.getElementById(`badge-${panel}`);
+  el.textContent = text;
+  el.className = 'panel-badge';
+  if(type) el.classList.add('show', type);
+}
+
+/* ── Summary ────────────────────────────────── */
+function updateSummary() {
+  const rn = document.getElementById('rem-nombre').value;
+  const dn = document.getElementById('dest-nombre').value;
+  document.getElementById('sum-rem').textContent  = rn || '—';
+  document.getElementById('sum-dest').textContent = dn || '—';
+}
+
+/* ── Crear guía ─────────────────────────────── */
+async function crearGuia() {
+  const remNombre  = val('rem-nombre');
+  const destNombre = val('dest-nombre');
+  const destTel    = val('dest-telefono');
+  const destDir    = val('dest-direccion');
+  if(!remNombre||!destNombre){ toast('Completa el nombre del remitente y destinatario','err'); return; }
+  if(!destTel||!destDir){ toast('El destinatario necesita teléfono y dirección','err'); return; }
+
+  const payload = {
+    agencia: S.agencia,
+    remitente: {
+      nombre: remNombre, id: val('rem-id'),
+      direccion: val('rem-direccion'), ciudad: val('rem-ciudad'),
+      estado: val('rem-estado'), zip: val('rem-zip'), pais: val('rem-pais'),
+      telefono: val('rem-telefono'), celular: val('rem-celular'),
+      email: val('rem-email'), tracking: val('rem-tracking'),
+      notificar: document.getElementById('rem-notificar').checked,
+      es_nuevo: S.rem?.es_nuevo || false,
+    },
+    destinatario: {
+      nombre: destNombre, id: val('dest-id'),
+      direccion: destDir, ciudad: val('dest-ciudad'),
+      barrio: val('dest-barrio'), pcodigo: val('dest-pcodigo'),
+      telefono: destTel, celular: val('dest-celular'), email: val('dest-email'),
+      notificar: document.getElementById('dest-notificar').checked,
+      es_nuevo: S.dest?.es_nuevo || false,
+    },
+  };
+
+  showOverlay('Guardando clientes…');
+  try {
+    document.getElementById('spin-lbl').textContent = 'Creando guía…';
+    const r = await fetch(EP.crear, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    hideOverlay();
+    if(data.numero_guia || data.guia_id){
+      toast(`Guía ${data.numero_guia||data.guia_id} creada ✓`, 'ok');
+    } else {
+      toast(data.error || 'Error al crear la guía','err');
+    }
+  } catch(e) {
+    hideOverlay();
+    toast('No se pudo conectar con el servidor','err');
+  }
+}
+
+/* ── Utils ──────────────────────────────────── */
+const val = id => (document.getElementById(id)?.value||'').trim();
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function hl(text, q) {
+  if(!text) return '';
+  return text.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
+    '<strong style="color:var(--cyan)">$1</strong>');
+}
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast show ${type}`;
+  setTimeout(()=>el.classList.remove('show'), 3500);
+}
+function showOverlay(lbl) {
+  document.getElementById('spin-lbl').textContent = lbl;
+  document.getElementById('overlay').classList.add('show');
+}
+function hideOverlay() { document.getElementById('overlay').classList.remove('show'); }
+
+/* ── Mock data (dev / CORS) ─────────────────── */
+function mockSearch(q) {
+  return [
+    {ID:'CR-000001',Nombre:'Juan Acuña Caro',Telefono:'+50688881234','E-Mail':'juan@zenderbox.com',Direccion:'Pavas, San José',Ciudad:'San José',Pais:'Costa Rica'},
+    {ID:'CR-000002',Nombre:'María González',Telefono:'+50677770001','E-Mail':'maria@email.com',Direccion:'Escazú Centro',Ciudad:'Escazú',Pais:'Costa Rica'},
+    {ID:'CO-000001',Nombre:'Carlos Rodríguez',Telefono:'+573001112233','E-Mail':'carlos@email.com',Direccion:'Cra 7 #120-30',Ciudad:'Bogotá'},
+  ].filter(c => c.Nombre.toLowerCase().includes(q.toLowerCase()) || (c['E-Mail']||'').includes(q));
+}
+function mockPares(nombre) {
+  const db = {
+    'Juan Acuña Caro': [
+      {nombre:'Tania Rodríguez Mora', id:'CR-000015', veces:12, Telefono:'+50688990011', Direccion:'Cartago Centro', Ciudad:'Cartago'},
+      {nombre:'Ana Vargas López',    id:'CR-000023', veces:5,  Telefono:'+50688112233', Direccion:'Heredia Norte',  Ciudad:'Heredia'},
+      {nombre:'Luis Fallas',         id:'CR-000041', veces:2,  Telefono:'+50677884455', Direccion:'Alajuela Sur',   Ciudad:'Alajuela'},
+    ],
+  };
+  return db[nombre] || [];
+}
+
+/* ── Close AC on outside click ──────────────── */
+document.addEventListener('click', e => {
+  ['rem','dest'].forEach(p => {
+    const ac  = document.getElementById(`ac-${p}`);
+    const inp = document.getElementById(`${p}-nombre`);
+    if(!ac.contains(e.target) && e.target !== inp) ac.classList.remove('open');
+  });
+});
+
+onAgencia();
+</script>
+</body>
+</html>
