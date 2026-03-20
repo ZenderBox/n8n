@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox Costa Rica — Módulo Consolidados</title>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+    :root {
+        --bg: #040d18;
+        --surface: #081F3A;
+        --surface2: #0d2748;
+        --border: #0f3058;
+        --border2: #1a4575;
+        --accent: #CCD32A;
+        --accent-dim: rgba(204, 211, 42, 0.12);
+        --blue: #009CC9;
+        --blue-dim: rgba(0, 156, 201, 0.12);
+        --green: #22c55e;
+        --green-dim: rgba(34, 197, 94, 0.1);
+        --red: #ef4444;
+        --red-dim: rgba(239, 68, 68, 0.1);
+        --yellow: #f59e0b;
+        --yellow-dim: rgba(245, 158, 11, 0.1);
+        --purple: #a78bfa;
+        --text: #e8f0f8;
+        --text-muted: #5a7a9a;
+        --text-mid: #8aaac8;
+        --mono: 'IBM Plex Mono', monospace;
+        --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 48px 24px;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.4;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+    }
+
+    .logo {
+        width: 36px;
+        height: 36px;
+        background: var(--accent);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 14px;
+        color: white;
+        letter-spacing: -1px;
+    }
+
+    .header-text h1 {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .header-text p {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-family: var(--mono);
+        margin-top: 2px;
+    }
+
+    .badge {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 3px 8px;
+        border: 1px solid var(--accent-dim);
+        color: var(--accent);
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .card-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-header .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+    }
+
+    .card-header span {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .webhook-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+    }
+
+    .method-badge {
+        background: var(--accent-dim);
+        color: var(--accent);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        flex-shrink: 0;
+    }
+
+    .webhook-url {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-family: var(--mono);
+        font-size: 11px;
+        outline: none;
+        width: 100%;
+    }
+
+    .edit-hint {
+        font-size: 10px;
+        color: var(--text-dim);
+        font-family: var(--mono);
+        margin-top: 6px;
+        padding-left: 2px;
+    }
+
+    .field {
+        margin-bottom: 16px;
+    }
+
+    .field label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 8px;
+    }
+
+    .agencia-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .ag-btn {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 4px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.15s;
+        text-align: center;
+    }
+
+    .ag-btn:hover {
+        border-color: var(--accent-dim);
+        color: var(--accent);
+    }
+
+    .ag-btn.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .agencia-custom {
+        margin-top: 8px;
+    }
+
+    .agencia-custom input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.15s;
+    }
+
+    .agencia-custom input:focus {
+        border-color: var(--accent);
+    }
+
+    .agencia-custom input::placeholder {
+        color: var(--text-dim);
+    }/* Campo consolidado */
+
+    .consolidado-field {
+        display: none;
+        margin-bottom: 16px;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .consolidado-field.visible {
+        display: block;
+    }
+
+    .consolidado-field input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--yellow);
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.15s;
+    }
+
+    .consolidado-field input:focus {
+        border-color: var(--accent);
+    }
+
+    .consolidado-field input::placeholder {
+        color: var(--text-dim);
+    }
+
+    .consolidado-hint {
+        font-size: 10px;
+        color: var(--yellow);
+        font-family: var(--mono);
+        margin-top: 6px;
+        padding-left: 2px;
+    }
+
+    .drop-zone {
+        border: 1px dashed var(--border-bright);
+        border-radius: 8px;
+        padding: 32px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+        border-color: var(--accent);
+        background: rgba(79, 110, 247, 0.04);
+    }
+
+    .drop-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .drop-icon {
+        font-size: 28px;
+        margin-bottom: 10px;
+        opacity: 0.5;
+    }
+
+    .drop-title {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+
+    .drop-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-family: var(--mono);
+    }
+
+    .file-selected {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg);
+        border: 1px solid var(--green);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-top: 10px;
+    }
+
+    .file-selected.visible {
+        display: flex;
+    }
+
+    .file-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .file-info {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .file-name {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--green);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-size {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    .file-clear {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 2px;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .file-clear:hover {
+        color: var(--red);
+    }
+
+    .btn-procesar {
+        width: 100%;
+        background: var(--accent);
+        border: none;
+        border-radius: 8px;
+        padding: 14px;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: all 0.15s;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 4px;
+    }
+
+    .btn-procesar:hover:not(:disabled) {
+        background: #6b83f8;
+        transform: translateY(-1px);
+    }
+
+    .btn-procesar:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: none;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .log-card {
+        display: none;
+    }
+
+    .log-card.visible {
+        display: block;
+    }
+
+    .log-body {
+        padding: 16px 20px;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .log-line {
+        display: flex;
+        gap: 12px;
+        padding: 3px 0;
+        border-bottom: 1px solid var(--border);
+        animation: fadeIn 0.2s ease;
+    }
+
+    .log-line:last-child {
+        border-bottom: none;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .log-time {
+        color: var(--text-dim);
+        flex-shrink: 0;
+    }
+
+    .log-msg {
+        color: var(--text-muted);
+    }
+
+    .log-msg.ok {
+        color: var(--green);
+    }
+
+    .log-msg.err {
+        color: var(--red);
+    }
+
+    .log-msg.info {
+        color: var(--accent);
+    }
+
+    .log-msg.warn {
+        color: var(--yellow);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .stat-box {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    .stat-val {
+        font-family: var(--mono);
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--accent);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 4px;
+    }
+
+    .footer {
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-dim);
+        margin-top: 32px;
+        letter-spacing: 0.06em;
+    }
+
+    .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+    }
+
+    .sidebar-logo {
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .nav-back {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        text-decoration: none;
+        transition: color .15s;
+    }
+
+    .nav-back:hover {
+        color: var(--accent);
+    }
+
+    .nav-section {
+        padding: 16px 12px 8px;
+    }
+
+    .nav-section-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 0 8px;
+        margin-bottom: 4px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 6px;
+        transition: all 0.15s;
+        margin-bottom: 2px;
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+
+    .nav-item:hover {
+        background: var(--surface2);
+    }
+
+    .nav-item.active {
+        background: var(--accent-dim);
+        border-color: rgba(204, 211, 42, 0.2);
+    }
+
+    .nav-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .nav-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-mid);
+    }
+
+    .nav-item.active .nav-label {
+        color: var(--accent);
+    }
+
+    .nav-coming {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        padding: 2px 6px;
+        background: var(--surface2);
+        border-radius: 3px;
+        margin-left: auto;
+    }
+
+    .sidebar-footer {
+        margin-top: auto;
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+    }
+
+    .sidebar-footer .version {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+    }
+
+    .wrapper {
+        margin-left: 220px;
+    }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="wms-sidebar"></div>
+    <div class="wrapper">
+
+        <div class="header">
+            <div class="logo">ZB</div>
+            <div class="header-text">
+                <h1>ZenderBox</h1>
+                <p id="headerSub">Módulo Consolidados v2 · Multiagencia</p>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                <div class="badge">n8n CLOUD</div>
+                <a id="driveLink" href="https://docs.google.com/spreadsheets/d/1CYJsc8KaOjuigYP5MKtWPh5Gt9V07lpKKslh9ksWjRY/edit?pli=1&gid=476955927#gid=476955927" target="_blank" style="font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:none;border:1px solid var(--accent-dim);border-radius:4px;padding:3px 10px;">📊 Abrir Drive</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="dot"></div>
+                <span>Endpoint</span>
+            </div>
+            <div class="card-body">
+                <div class="webhook-row">
+                    <span class="method-badge">POST</span>
+                    <input class="webhook-url" id="webhookUrl" value="https://zenderbox.app.n8n.cloud/webhook/cr-consolidados"/>
+                </div>
+                <p class="edit-hint">// Endpoint procesar archivo</p>
+
+                <div style="margin-top:10px;">
+                    <div class="webhook-row">
+                        <span class="method-badge" style="background:#2a1a3a;color:#a78bfa;">GET</span>
+                        <input class="webhook-url" id="webhookConsulta" value="https://zenderbox.app.n8n.cloud/webhook/cr-consultar-agencia"/>
+                    </div>
+                    <p class="edit-hint">// Endpoint consultar agencia</p>
+                </div>
+                <div style="margin-top:10px;" id="rowDescarga" style="display:none">
+                    <div class="webhook-row">
+                        <span class="method-badge" style="background:#1a3a1a;color:#22c55e;">GET</span>
+                        <input class="webhook-url" id="webhookDescarga" value=""/>
+                    </div>
+                    <p class="edit-hint">// Endpoint descargar histórico</p>
+                </div>
+                <div style="margin-top:10px;" id="rowLimpiar" style="display:none">
+                    <div class="webhook-row">
+                        <span class="method-badge" style="background:#3a1a1a;color:#ef4444;">GET</span>
+                        <input class="webhook-url" id="webhookLimpiar" value=""/>
+                    </div>
+                    <p class="edit-hint">// Endpoint limpiar hoja Resultado</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="dot"></div>
+                <span>Procesar Archivo</span>
+            </div>
+            <div class="card-body">
+
+                <div class="field">
+                    <label>Agencia</label>
+                    <div class="agencia-grid" id="agenciaGrid">
+
+                        <button class="ag-btn active" onclick="selectAgencia(this, 'CASILLERO')">CASILLERO</button>
+
+                    </div>
+                    <div class="agencia-custom">
+                        <input type="text" id="agenciaCustom" placeholder="Otra agencia..." oninput="onCustomAgencia(this)"/>
+                    </div>
+                </div>
+
+                <!-- Campo consolidado — aparece solo si la agencia lo requiere -->
+                <div class="consolidado-field" id="consolidadoField">
+                    <label>Número de Consolidado</label>
+                    <input type="text" id="numConsolidado" placeholder="Ej: CONS-2026-001"/>
+                    <p class="consolidado-hint">// Requerido para esta agencia</p>
+                </div>
+
+                <div class="field">
+                    <label>Archivo Fuente (.xlsx / .xls)</label>
+                    <div class="drop-zone" id="dropZone">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="onFileSelected(this)"/>
+                        <div class="drop-icon">📂</div>
+                        <div class="drop-title">Arrastra el archivo aquí</div>
+                        <div class="drop-sub">o haz clic para seleccionar</div>
+                    </div>
+                    <div class="file-selected" id="fileSelected">
+                        <span class="file-icon">📄</span>
+                        <div class="file-info">
+                            <div class="file-name" id="fileName"></div>
+                            <div class="file-size" id="fileSize"></div>
+                        </div>
+                        <button class="file-clear" onclick="clearFile()" title="Quitar archivo">✕</button>
+                    </div>
+                </div>
+
+                <button class="btn-procesar" id="btnProcesar" onclick="procesar()" disabled>
+                    <div class="spinner" id="spinner"></div>
+                    <span id="btnText">PROCESAR ARCHIVO</span>
+                </button>
+                <button class="btn-descargar" id="btnDescargar" onclick="descargarHistorico()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-family:var(--mono);font-size:11px;cursor:pointer;">⬇ DESCARGAR HISTÓRICO</button>
+                <button class="btn-limpiar" id="btnLimpiar" onclick="limpiarResultado()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1px solid var(--red);border-radius:8px;color:var(--red);font-family:var(--mono);font-size:11px;cursor:pointer;">🗑 LIMPIAR HOJA RESULTADO</button>
+            </div>
+        </div>
+
+        <div class="card log-card" id="logCard">
+            <div class="card-header">
+                <div class="dot" id="logDot" style="background: var(--yellow)"></div>
+                <span id="logTitle">Log de ejecución</span>
+            </div>
+            <div class="log-body" id="logBody"></div>
+        </div>
+
+        <div class="card log-card" id="statsCard">
+            <div class="card-header">
+                <div class="dot" style="background: var(--green)"></div>
+                <span>Resultado</span>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid" id="statsGrid"></div>
+                <a class="btn-download" id="btnDownload" href="#" download style="display:none;margin-top:12px;padding:10px;background:transparent;border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--mono);font-size:11px;text-align:center;text-decoration:none;">⬇ Descargar XLSX Aduana</a>
+            </div>
+        </div>
+
+        <div class="footer" id="footerPais">ZENDERBOX — MÓDULO CONSOLIDADOS v2 · MULTIAGENCIA — 2026</div>
+    </div>
+
+    <script>
+    const BASE = 'https://zenderbox.app.n8n.cloud/webhook';
+
+    // Config por país
+    const CONFIG = {
+        CR: {
+            label: '🇨🇷 Costa Rica',
+            webhooks: {
+                procesar: BASE + '/cr-consolidados',
+                consulta: BASE + '/cr-consultar-agencia',
+                descarga: null,
+                limpiar: null
+            },
+            agencias: ['CASILLERO'],
+            default: 'CASILLERO'
+        },
+        COL: {
+            label: '🇨🇴 Colombia',
+            webhooks: {
+                procesar: BASE + '/consolidados',
+                consulta: BASE + '/consultar-agencia',
+                descarga: BASE + '/descargar-consolidados',
+                limpiar: BASE + '/limpiar-resultado'
+            },
+            agencias: ['DAMAK', 'CASILLERO', 'JL', 'COMERCIAL'],
+            default: 'DAMAK'
+        }
+    };
+
+    let currentPais = 'CR';
+    let selectedAgencia = '';
+    let selectedFile = null;
+    let agenciaUsaConsolidados = false;
+
+    // Aplicar configuración del país
+    function applyConfig(paisId) {
+        currentPais = paisId;
+        const dl = document.getElementById('driveLink');
+        if (dl) dl.href = DRIVE_LINKS[paisId] || DRIVE_LINKS.CR;
+        const cfg = CONFIG[paisId];
+        selectedAgencia = '';
+        agenciaUsaConsolidados = false;
+        ocultarConsolidado();
+        clearFile();
+
+        // Actualizar webhooks mostrados
+        document.getElementById('webhookUrl').value = cfg.webhooks.procesar;
+        document.getElementById('webhookConsulta').value = cfg.webhooks.consulta;
+        document.getElementById('webhookDescarga').value = cfg.webhooks.descarga || '— no disponible para esta agencia —';
+        document.getElementById('webhookLimpiar').value = cfg.webhooks.limpiar || '— no disponible para esta agencia —';
+
+        // Mostrar/ocultar botones extra
+        document.getElementById('rowDescarga').style.display = cfg.webhooks.descarga ? 'block' : 'none';
+        document.getElementById('rowLimpiar').style.display = cfg.webhooks.limpiar ? 'block' : 'none';
+        document.getElementById('btnDescargar').style.display = cfg.webhooks.descarga ? 'block' : 'none';
+        document.getElementById('btnLimpiar').style.display = cfg.webhooks.limpiar ? 'block' : 'none';
+
+        // Actualizar botones de agencia
+        const grid = document.getElementById('agenciaGrid');
+        grid.innerHTML = cfg.agencias.map(a =>
+        `<button class="ag-btn" onclick="selectAgencia(this, '${a}')">${a}</button>`
+        ).join('');
+
+        // Actualizar footer
+        document.getElementById('footerPais').textContent =
+        `ZENDERBOX ${cfg.label.replace(/[^A-ZÁÉÍÓÚa-záéíóúñ ]/g, '').trim().toUpperCase()} — MÓDULO CONSOLIDADOS v2 · MULTIAGENCIA — 2026`;
+
+        // Auto-seleccionar default
+        const defaultBtn = Array.from(grid.querySelectorAll('.ag-btn')).find(b => b.textContent === cfg.default);
+        if (defaultBtn)
+            selectAgencia(defaultBtn, cfg.default);
+
+        checkReady();
+    }
+
+    // Escuchar cambio de agencia desde sidebar.js
+    window.addEventListener('wms:agencia', (e) => {
+        const id = e.detail.agencia; // 'CR' o 'COL'
+        if (CONFIG[id])
+            applyConfig(id);
+    });
+
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const f = e.dataTransfer.files[0];
+        if (f)
+            setFile(f);
+    });
+
+    function onFileSelected(input) {
+        if (input.files[0])
+            setFile(input.files[0]);
+    }
+
+    function setFile(f) {
+        selectedFile = f;
+        document.getElementById('fileName').textContent = f.name;
+        document.getElementById('fileSize').textContent = formatBytes(f.size);
+        document.getElementById('fileSelected').classList.add('visible');
+        checkReady();
+    }
+
+    function clearFile() {
+        selectedFile = null;
+        const fi = document.getElementById('fileInput');
+        if (fi)
+            fi.value = '';
+        const fs = document.getElementById('fileSelected');
+        if (fs)
+            fs.classList.remove('visible');
+        checkReady();
+    }
+
+    function formatBytes(b) {
+        if (b < 1024)
+            return b + ' B';
+        if (b < 1024 * 1024)
+            return (b / 1024).toFixed(1) + ' KB';
+        return (b / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    async function selectAgencia(btn, name) {
+        document.querySelectorAll('.ag-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedAgencia = name;
+        const customEl = document.getElementById('agenciaCustom');
+        if (customEl)
+            customEl.value = '';
+        await consultarAgencia(name);
+        checkReady();
+    }
+
+    async function onCustomAgencia(input) {
+        document.querySelectorAll('.ag-btn').forEach(b => b.classList.remove('active'));
+        selectedAgencia = input.value.trim().toUpperCase();
+        if (selectedAgencia.length >= 2) {
+            await consultarAgencia(selectedAgencia);
+        } else {
+            ocultarConsolidado();
+        }
+        checkReady();
+    }
+
+    async function consultarAgencia(agencia) {
+        const urlBase = document.getElementById('webhookConsulta').value.trim();
+        if (!urlBase || !agencia || urlBase.includes('no disponible'))
+            return;
+        try {
+            const res = await fetch(urlBase + '?agencia=' + encodeURIComponent(agencia));
+            if (!res.ok) {
+                ocultarConsolidado();
+                return;
+            }
+            const data = await res.json();
+            agenciaUsaConsolidados = data.usaConsolidados === true;
+            agenciaUsaConsolidados ? mostrarConsolidado() : ocultarConsolidado();
+        } catch (e) {
+            ocultarConsolidado();
+        }
+    }
+
+    function mostrarConsolidado() {
+        document.getElementById('consolidadoField').classList.add('visible');
+    }
+    function ocultarConsolidado() {
+        agenciaUsaConsolidados = false;
+        document.getElementById('consolidadoField').classList.remove('visible');
+        document.getElementById('numConsolidado').value = '';
+    }
+
+    function checkReady() {
+        const consolidadoOk = !agenciaUsaConsolidados || document.getElementById('numConsolidado').value.trim() !== '';
+        document.getElementById('btnProcesar').disabled = !(selectedAgencia && selectedFile && consolidadoOk);
+    }
+
+    document.getElementById('numConsolidado').addEventListener('input', checkReady);
+
+    function showLog() {
+        document.getElementById('logCard').classList.add('visible');
+        document.getElementById('statsCard').classList.remove('visible');
+    }
+
+    function addLog(msg, type='') {
+        const body = document.getElementById('logBody');
+        const line = document.createElement('div');
+        line.className = 'log-line';
+        const ts = new Date().toTimeString().split(' ')[0];
+        line.innerHTML = `<span class="log-time">${ts}</span><span class="log-msg ${type}">${msg}</span>`;
+        body.appendChild(line);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    function setLoading(on) {
+        document.getElementById('btnProcesar').disabled = on;
+        document.getElementById('spinner').style.display = on ? 'block' : 'none';
+        document.getElementById('btnText').textContent = on ? 'PROCESANDO...' : 'PROCESAR ARCHIVO';
+    }
+
+    function setLogStatus(ok) {
+        document.getElementById('logDot').style.background = ok ? 'var(--green)' : 'var(--red)';
+        document.getElementById('logTitle').textContent = ok ? 'Ejecución completada' : 'Error en ejecución';
+    }
+
+    async function descargarHistorico() {
+        const url = CONFIG[currentPais].webhooks.descarga;
+        if (!url)
+            return;
+        addLog('Descargando histórico...', 'info');
+        window.open(url, '_blank');
+    }
+
+    async function limpiarResultado() {
+        const url = CONFIG[currentPais].webhooks.limpiar;
+        if (!url)
+            return;
+        if (!confirm('¿Seguro que deseas limpiar la hoja Resultado?'))
+            return;
+        addLog('Limpiando hoja...', 'info');
+        try {
+            const res = await fetch(url);
+            addLog(res.ok ? 'Hoja limpiada correctamente' : 'Error al limpiar', res.ok ? 'ok' : 'err');
+        } catch (e) {
+            addLog('Error: ' + e.message, 'err');
+        }
+    }
+
+    async function procesar() {
+        const url = document.getElementById('webhookUrl').value.trim();
+        if (!url)
+            return;
+        showLog();
+        setLoading(true);
+        document.getElementById('logBody').innerHTML = '';
+        addLog('Iniciando proceso...', 'info');
+        addLog('País: ' + CONFIG[currentPais].label, 'info');
+        addLog('Agencia: ' + selectedAgencia, 'info');
+        if (agenciaUsaConsolidados)
+            addLog('Consolidado: ' + document.getElementById('numConsolidado').value.trim(), 'info');
+        addLog('Archivo: ' + selectedFile.name + ' (' + formatBytes(selectedFile.size) + ')');
+
+        const formData = new FormData();
+        formData.append('data', selectedFile);
+        if (agenciaUsaConsolidados) {
+            const numCons = document.getElementById('numConsolidado').value.trim();
+            if (numCons)
+                formData.append('consolidado', numCons);
+        }
+        const endpoint = url + '?agencia=' + encodeURIComponent(selectedAgencia);
+        addLog('POST → ' + endpoint);
+
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+            addLog('Respuesta HTTP: ' + res.status + ' ' + res.statusText, res.ok ? 'ok' : 'err');
+            if (!res.ok) {
+                let errText = await res.text();
+                try {
+                    errText = JSON.stringify(JSON.parse(errText), null, 2);
+                } catch (e) {}
+                addLog('Error: ' + errText, 'err');
+                setLogStatus(false);
+                setLoading(false);
+                checkReady();
+                return;
+            }
+            const blob = await res.blob();
+            const contentType = res.headers.get('Content-Type') || blob.type || '';
+            const isXlsx = contentType.includes('spreadsheetml') || contentType.includes('octet-stream') || contentType.includes('excel');
+            if (isXlsx && blob.size > 1000) {
+                const blobUrl = URL.createObjectURL(blob);
+                const fname = 'Aduana_' + selectedAgencia + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                addLog('Archivo generado: ' + fname, 'ok');
+                showStats({
+                    agencia: selectedAgencia,
+                    blob: blobUrl,
+                    filename: fname
+                });
+                setLogStatus(true);
+            } else {
+                const text = await blob.text();
+                let data = null;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    addLog('Respuesta: ' + text.substring(0, 300), 'info');
+                    setLogStatus(true);
+                    setLoading(false);
+                    checkReady();
+                    return;
+                }
+                if (data.error === false && data.mensaje) {
+                    addLog('Aviso: ' + data.mensaje, 'warn');
+                    setLogStatus(true);
+                } else if (data.resumen) {
+                    addLog(data.resumen, 'ok');
+                    if (data.stats)
+                        showStats(data.stats);
+                    setLogStatus(true);
+                } else {
+                    addLog(JSON.stringify(data).substring(0, 300), 'info');
+                    setLogStatus(true);
+                }
+            }
+        } catch (err) {
+            addLog('Error de red: ' + err.message, 'err');
+            addLog('Verifica que el workflow esté activo en n8n', 'warn');
+            setLogStatus(false);
+        }
+        setLoading(false);
+        checkReady();
+    }
+
+    function showStats(stats) {
+        const card = document.getElementById('statsCard');
+        const grid = document.getElementById('statsGrid');
+        const btnDl = document.getElementById('btnDownload');
+        card.classList.add('visible');
+        grid.innerHTML = '';
+        const items = stats.blob ? [
+        {
+            val: stats.agencia,
+            label: 'Agencia'
+        },
+        {
+            val: '✓',
+            label: 'Drive actualizado'
+        },
+        {
+            val: '⬇',
+            label: 'XLSX listo'
+        }
+        ] : [
+        {
+            val: stats.agencia || '-',
+            label: 'Agencia'
+        },
+        {
+            val: stats.totalProcesadas ?? '-',
+            label: 'Filas procesadas'
+        },
+        {
+            val: stats.columnasDestino ?? '-',
+            label: 'Columnas'
+        }
+        ];
+        items.forEach(item => {
+            grid.innerHTML += `<div class="stat-box"><div class="stat-val">${item.val}</div><div class="stat-label">${item.label}</div></div>`;
+        });
+        if (stats.blob && btnDl) {
+            btnDl.href = stats.blob;
+            btnDl.download = stats.filename;
+            btnDl.classList.add('visible');
+        }
+        else if (btnDl) {
+            btnDl.classList.remove('visible');
+        }
+    }
+
+    const DRIVE_LINKS = {
+        CR:  'https://docs.google.com/spreadsheets/d/1CYJsc8KaOjuigYP5MKtWPh5Gt9V07lpKKslh9ksWjRY/edit?pli=1&gid=476955927#gid=476955927',
+        COL: 'https://docs.google.com/spreadsheets/d/1paRkMQFd68Git0ZMEVaEKHSnoNqsqGYVkN0TXqHPjec/edit?pli=1&gid=464587832#gid=464587832'
+    };
+
+    // Init — esperar sidebar.js y aplicar agencia guardada
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedPais = (typeof getAgencia === 'function') ? getAgencia() : 'CR';
+        applyConfig(savedPais === 'COL' ? 'COL' : 'CR');
+    });
+    </script>
+    <script src="sidebar.js"></script>
+</body>
+</html>
+
