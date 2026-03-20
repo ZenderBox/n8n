@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox · Costa Rica — Despachos</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+    :root {
+    --bg:#040d18;--surface:#081F3A;--surface2:#0d2748;--border:#0f3058;--border2:#1a4575;
+    --accent:#CCD32A;--accent-dim:rgba(204,211,42,0.12);
+    --blue:#009CC9;--blue-dim:rgba(0,156,201,0.12);
+    --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
+    --red:#ef4444;--red-dim:rgba(239,68,68,0.1);
+    --yellow:#f59e0b;--yellow-dim:rgba(245,158,11,0.1);
+    --purple:#a78bfa;--text:#e8f0f8;--text-muted:#5a7a9a;--text-mid:#8aaac8;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        padding: 48px 24px 80px;
+    }
+
+    .wrapper {
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+    }
+
+    .eyebrow {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    h1 {
+        font-size: 42px;
+        font-weight: 300;
+        letter-spacing: -1.5px;
+        line-height: 1;
+    }
+
+    h1 strong {
+        font-weight: 600;
+        color: var(--accent);
+    }
+
+    .page-meta {
+        text-align: right;
+    }
+
+    .page-meta .badge {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 4px 10px;
+        border: 1px solid var(--border-bright);
+        color: var(--text-muted);
+        border-radius: 3px;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .page-meta .subtitle {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        display: block;
+    }
+
+    .env-section {
+        margin-bottom: 32px;
+    }
+
+    .env-lbl {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+
+    .env-toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .env-toggle {
+        display: flex;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .env-btn {
+        padding: 8px 24px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: transparent;
+        color: var(--text-muted);
+    }
+
+    .env-btn.ap {
+        background: var(--accent);
+        color: #000;
+    }
+
+    .env-btn.at {
+        background: #2a2a2a;
+        color: var(--accent);
+    }
+
+    .env-status {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .env-status .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+
+    .env-status.ta .dot {
+        background: var(--yellow);
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity:1
+        }
+
+        50% {
+            opacity: 0.4
+        }
+    }
+
+    .webhooks {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 40px;
+    }
+
+    .wh-row {
+        display: flex;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .wh-lbl {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 12px 16px;
+        border-right: 1px solid var(--border);
+        white-space: nowrap;
+        min-width: 160px;
+    }
+
+    .wh-url {
+        flex: 1;
+        padding: 12px 16px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        outline: none;
+        min-width: 0;
+    }
+
+    .wh-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        margin-right: 16px;
+        flex-shrink: 0;
+    }
+
+    .wh-dot.t {
+        background: var(--yellow);
+    }
+
+    .steps-nav {
+        display: flex;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .sc {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--border-bright);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        transition: all 0.2s;
+    }
+
+    .sc.active {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #000;
+    }
+
+    .sc.done {
+        border-color: var(--green);
+        background: transparent;
+        color: var(--green);
+    }
+
+    .sn {
+        font-family: var(--mono);
+        font-size: 8px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .step-line {
+        flex: 1;
+        height: 1px;
+        background: var(--border-bright);
+        margin-bottom: 18px;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    .card-hdr {
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .step-tag {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(245, 166, 35, 0.3);
+        padding: 3px 10px;
+        border-radius: 3px;
+        letter-spacing: 1px;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    .btn {
+        width: 100%;
+        border: none;
+        border-radius: 3px;
+        padding: 14px 20px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn:disabled {
+        opacity: .35;
+        cursor: not-allowed;
+    }
+
+    .btn:hover:not(:disabled) {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+    }
+
+    .btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn-o {
+        background: var(--accent);
+        color: #000;
+    }
+
+    .btn-g {
+        background: var(--green);
+        color: #000;
+    }
+
+    .spinner {
+        width: 13px;
+        height: 13px;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        border-top-color: #000;
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+        display: none;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg)
+        }
+    }
+
+    .warn-box {
+        background: rgba(245, 158, 11, 0.05);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        border-radius: 3px;
+        padding: 11px 16px;
+        margin-bottom: 16px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--yellow);
+        line-height: 1.7;
+        display: flex;
+        gap: 10px;
+    }
+
+    .result-panel {
+        display: none;
+        margin-top: 14px;
+    }
+
+    .result-panel.visible {
+        display: block;
+    }
+
+    .result-inner {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .result-bar {
+        padding: 9px 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .rdot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .rdot.ok {
+        background: var(--green);
+    }
+
+    .rdot.err {
+        background: var(--red);
+    }
+
+    .rdot.loading {
+        background: var(--yellow);
+        animation: pulse 1s ease-in-out infinite;
+    }
+
+    .rlabel {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .rbody {
+        padding: 14px 16px;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.9;
+        color: var(--text-muted);
+    }
+
+    .sl {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .sl-lbl {
+        color: var(--text-muted);
+        flex: 1;
+    }
+
+    .sl-val {
+        font-weight: 600;
+    }
+
+    .ok {
+        color:var(--green)
+    }
+
+    .warn {
+        color:var(--yellow)
+    }
+
+    .err {
+        color:var(--red)
+    }
+
+    .dim {
+        color: var(--text-muted);
+    }
+
+    .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 10px 0;
+    }/* Modal */
+
+    .overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .overlay.visible {
+        display: flex;
+    }
+
+    .modal {
+        background: var(--surface);
+        border: 1px solid var(--border-bright);
+        border-radius: 6px;
+        padding: 36px 40px;
+        width: 320px;
+        text-align: center;
+    }
+
+    .modal h3 {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+    }
+
+    .modal p {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-bottom: 24px;
+    }
+
+    .pin-row {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+
+    .pd {
+        width: 52px;
+        height: 60px;
+        background: var(--bg);
+        border: 1px solid var(--border-bright);
+        border-radius: 4px;
+        font-family: var(--mono);
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text);
+        text-align: center;
+        outline: none;
+        transition: border-color .15s;
+        -webkit-text-security: disc;
+    }
+
+    .pd:focus {
+        border-color: var(--accent);
+    }
+
+    .pd.err {
+        border-color: var(--red);
+        animation: shake .3s ease;
+    }
+
+    @keyframes shake {
+        0%, 100% {
+            transform:translateX(0)
+        }
+
+        25% {
+            transform:translateX(-4px)
+        }
+
+        75% {
+            transform: translateX(4px)
+        }
+    }
+
+    .pin-err {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--red);
+        min-height: 14px;
+        margin-bottom: 16px;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid var(--border-bright);
+        border-radius: 3px;
+        padding: 8px 24px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        cursor: pointer;
+        letter-spacing: 1px;
+        transition: border-color .15s;
+    }
+
+    .btn-cancel:hover {
+        border-color: var(--text-muted);
+    }
+    
+  .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;left:0;top:0;bottom:0;z-index:10;}
+  .sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);}
+  .nav-back{display:flex;align-items:center;gap:8px;padding:12px 20px;font-family:var(--mono);font-size:10px;color:var(--text-muted);border-bottom:1px solid var(--border);text-decoration:none;transition:color .15s;}
+  .nav-back:hover{color:var(--accent);}
+  .nav-section{padding:16px 12px 8px;}
+  .nav-section-label{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;transition:all 0.15s;margin-bottom:2px;border:1px solid transparent;text-decoration:none;}
+  .nav-item:hover{background:var(--surface2);}
+  .nav-item.active{background:var(--accent-dim);border-color:rgba(204,211,42,0.2);}
+  .nav-icon{font-size:14px;flex-shrink:0;}
+  .nav-label{font-size:13px;font-weight:500;color:var(--text-mid);}
+  .nav-item.active .nav-label{color:var(--accent);}
+  .nav-coming{font-family:var(--mono);font-size:9px;color:var(--text-muted);padding:2px 6px;background:var(--surface2);border-radius:3px;margin-left:auto;}
+  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+  .sidebar-footer .version{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
+  .wrapper{margin-left:220px;}
+</style>
+</head>
+<body>
+<div class="sidebar" id="wms-sidebar"></div>
+<div id="panel-cr"><div class="wrapper">
+        <div class="page-header">
+            <div>
+                <div class="eyebrow">ZenderBox · Costa Rica</div>
+                <h1>
+                    Módulo 
+                    <strong>Despachos</strong>
+                </h1>
+            </div>
+            <div class="page-meta">
+                <span class="badge">n8n · Google Sheets</span>
+                <span class="subtitle">Despachos CR v2.0</span>
+                <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">
+                    <a href="https://docs.google.com/spreadsheets/d/1CYJsc8KaOjuigYP5MKtWPh5Gt9V07lpKKslh9ksWjRY/edit?pli=1&gid=1786792725#gid=1786792725" target="_blank" style="font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:none;border:1px solid var(--accent-dim);border-radius:4px;padding:3px 10px;">📊 Motor</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1CYJsc8KaOjuigYP5MKtWPh5Gt9V07lpKKslh9ksWjRY/edit?pli=1&gid=391733102#gid=391733102" target="_blank" style="font-family:var(--mono);font-size:10px;color:#009CC9;text-decoration:none;border:1px solid rgba(0,156,201,0.2);border-radius:4px;padding:3px 10px;">🚚 SmartQuick</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="env-section">
+            <div class="env-lbl">Ambiente</div>
+            <div class="env-toggle-row">
+                <div class="env-toggle">
+                    <button class="env-btn ap" id="btnPro" onclick="switchEnv('prod')">PRO</button>
+                    <button class="env-btn" id="btnTest" onclick="requestTest()">TEST</button>
+                </div>
+                <div class="env-status" id="envStatus">
+                    <span class="dot"></span>
+                    Producción activa
+                </div>
+            </div>
+        </div>
+
+        <div class="webhooks">
+            <div class="wh-row">
+                <div class="wh-lbl">Webhook Ejecutar</div>
+                <input class="wh-url" id="urlE" readonly value="https://zenderbox.app.n8n.cloud/webhook/cr-despachos">
+                <div class="wh-dot" id="dotE"></div>
+            </div>
+            <div class="wh-row">
+                <div class="wh-lbl">Webhook Descargar</div>
+                <input class="wh-url" id="urlD" readonly value="https://zenderbox.app.n8n.cloud/webhook/cr-descargar-despachos">
+                <div class="wh-dot" id="dotD"></div>
+            </div>
+        </div>
+
+        <div class="steps-nav">
+            <div class="step-item">
+                <div class="sc active" id="sc1">1</div>
+                <div class="sn">Ejecutar</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-item">
+                <div class="sc" id="sc2">2</div>
+                <div class="sn">Descargar</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-hdr">
+                <span class="step-tag">STEP 01</span>
+                <span class="card-title">Ejecutar Motor de Despachos</span>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-o" id="btnEj" onclick="ejecutar()">
+                    <div class="spinner" id="sp1"></div>
+                    <span id="t1">▶ &nbsp;Ejecutar Motor</span>
+                </button>
+                <div class="result-panel" id="res1">
+                    <div class="result-inner">
+                        <div class="result-bar">
+                            <div class="rdot loading" id="d1"></div>
+                            <span class="rlabel" id="l1">Procesando...</span>
+                        </div>
+                        <div class="rbody" id="b1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-hdr">
+                <span class="step-tag">STEP 02</span>
+                <span class="card-title">Enviar a SmartQuick</span>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-o" id="btnSQ" onclick="enviarSQ()">
+                    <div class="spinner" id="sp2"></div>
+                    <span id="t2">🚚 &nbsp;Crear Órdenes en SmartQuick</span>
+                </button>
+                <div class="result-panel" id="res2">
+                    <div class="result-inner">
+                        <div class="result-bar">
+                            <div class="rdot loading" id="d2"></div>
+                            <span class="rlabel" id="l2">Descargando...</span>
+                        </div>
+                        <div class="rbody" id="b2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="pinModal">
+        <div class="modal">
+            <h3>Acceso Test</h3>
+            <p>Ingresa el código para activar el ambiente de pruebas</p>
+            <div class="pin-row">
+                <input class="pd" id="p0" maxlength="1" inputmode="numeric" autocomplete="off">
+                <input class="pd" id="p1" maxlength="1" inputmode="numeric" autocomplete="off">
+                <input class="pd" id="p2" maxlength="1" inputmode="numeric" autocomplete="off">
+                <input class="pd" id="p3" maxlength="1" inputmode="numeric" autocomplete="off">
+            </div>
+            <div class="pin-err" id="pinErr"></div>
+            <button class="btn-cancel" onclick="cancelPin()">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+    const PIN = '1234';
+    const URLS = {
+        prod: {
+            e:  'https://zenderbox.app.n8n.cloud/webhook/cr-despachos',
+            d:  'https://zenderbox.app.n8n.cloud/webhook/cr-descargar-despachos',
+            sq: 'https://zenderbox.app.n8n.cloud/webhook/crear-guias-smartquick'
+        },
+        test: {
+            e:  'https://zenderbox.app.n8n.cloud/webhook-test/cr-despachos',
+            d:  'https://zenderbox.app.n8n.cloud/webhook-test/cr-descargar-despachos',
+            sq: 'https://zenderbox.app.n8n.cloud/webhook-test/crear-guias-smartquick'
+        }
+    };
+    let env = 'prod';
+    const pds = [0, 1, 2, 3].map(i => document.getElementById('p' + i));
+    pds.forEach((el, i) => {
+        el.addEventListener('input', () => {
+            el.value = el.value.replace(/[^0-9]/g, '').slice(-1);
+            if (el.value && i < 3)
+                pds[i + 1].focus();
+            if (pds.every(d => d.value.length === 1))
+                checkPin();
+        });
+        el.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !el.value && i > 0) {
+                pds[i - 1].value = '';
+                pds[i - 1].focus();
+            }
+        });
+    });
+    function requestTest() {
+        document.getElementById('pinModal').classList.add('visible');
+        pds.forEach(d => d.value = '');
+        document.getElementById('pinErr').textContent = '';
+        setTimeout(() => pds[0].focus(), 50);
+    }
+    function cancelPin() {
+        document.getElementById('pinModal').classList.remove('visible');
+        document.getElementById('btnTest').className = 'env-btn';
+    }
+    function checkPin() {
+        const v = pds.map(d => d.value).join('');
+        if (v === PIN) {
+            document.getElementById('pinModal').classList.remove('visible');
+            applyEnv('test');
+        }
+        else {
+            pds.forEach(d => d.classList.add('err'));
+            document.getElementById('pinErr').textContent = 'Código incorrecto';
+            setTimeout(() => {
+                pds.forEach(d => {
+                    d.classList.remove('err');
+                    d.value = '';
+                });
+                document.getElementById('pinErr').textContent = '';
+                pds[0].focus();
+            }, 700);
+        }
+    }
+    function switchEnv(e) {
+        if (e === 'test') {
+            requestTest();
+            return;
+        }
+        applyEnv('prod');
+    }
+    function applyEnv(e) {
+        env = e;
+        const p = e === 'prod';
+        document.getElementById('btnPro').className = p ? 'env-btn ap' : 'env-btn';
+        document.getElementById('btnTest').className = p ? 'env-btn' : 'env-btn at';
+        const st = document.getElementById('envStatus');
+        st.className = p ? 'env-status' : 'env-status ta';
+        st.innerHTML = `<span class="dot"></span>${p ? 'Producción activa' : 'Ambiente de pruebas activo'}`;
+        document.getElementById('urlE').value = URLS[e].e;
+        document.getElementById('urlD').value = URLS[e].d;
+        const dc = p ? 'wh-dot' : 'wh-dot t';
+        document.getElementById('dotE').className = dc;
+        document.getElementById('dotD').className = dc;
+    }
+    function sl(ic, lb, vl, cl) {
+        return `<div class="sl"><span>${ic}</span><span class="sl-lbl">${lb}</span><span class="sl-val ${cl || ''}">${vl}</span></div>`;
+    }
+    function setLoad(step, on) {
+        const n = step === 1 ? 'Ej' : 'Dl';
+        document.getElementById('btn' + n).disabled = on;
+        document.getElementById('sp' + step).style.display = on ? 'block' : 'none';
+        document.getElementById('t' + step).textContent = on ? (step === 1 ? 'Ejecutando...' : 'Descargando...') : (step === 1 ? '▶  Ejecutar Motor' : '↓  Descargar CSV');
+    }
+    function showRes(step, st, lb, html) {
+        document.getElementById('res' + step).classList.add('visible');
+        document.getElementById('d' + step).className = 'rdot ' + st;
+        document.getElementById('l' + step).textContent = lb;
+        document.getElementById('b' + step).innerHTML = html;
+    }
+    async function ejecutar() {
+        setLoad(1, true);
+        showRes(1, 'loading', 'Procesando...', '<span class="dim">Conectando con n8n...</span>');
+        try {
+            const res = await fetch(URLS[env].e, {
+                method: 'GET'
+            });
+            const json = await res.json();
+            if (!res.ok || json.error)
+                throw new Error(json.message || `HTTP ${res.status}`);
+            const s = json.stats || {};
+            const html = [
+            sl('✅', 'Guías generadas', s.added ?? 0, s.added > 0 ? 'ok' : 'dim'),
+            sl('⚠️', 'Ya generadas', s.skippedGenerated ?? 0, s.skippedGenerated > 0 ? 'warn' : 'dim'),
+            sl('🚫', 'Excluidas', s.skippedExcluded ?? 0, s.skippedExcluded > 0 ? 'warn' : 'dim'),
+            sl('❌', 'Sin consolidado', s.skippedNoConsolidado ?? 0, s.skippedNoConsolidado > 0 ? 'err' : 'dim'),
+            sl('📦', 'Sin bodega destino', s.skippedNoEnBodega ?? 0, s.skippedNoEnBodega > 0 ? 'warn' : 'dim'),
+            sl('🏙️', 'Ciudad sin resolver', s.skippedCiudad ?? 0, s.skippedCiudad > 0 ? 'warn' : 'dim'),
+            '<hr class="divider">',
+            `<span class="dim" style="font-size:10px">${new Date().toLocaleTimeString('es-CR')}</span>`
+            ].join('');
+            showRes(1, 'ok', `Completado · ${s.added ?? 0} guías generadas`, html);
+            if ((s.added ?? 0) > 0) {
+                document.getElementById('sc1').className = 'sc done';
+                document.getElementById('sc1').textContent = '✓';
+                document.getElementById('sc2').className = 'sc active';
+            }
+        } catch (e) {
+            showRes(1, 'err', 'Error', `<span class="err">${e.message}</span>`);
+        }
+        finally {
+            setLoad(1, false);
+        }
+    }
+    async function descargar() {
+        setLoad(2, true);
+        showRes(2, 'loading', 'Generando archivo...', '<span class="dim">Leyendo hoja Despachos...</span>');
+        try {
+            const res = await fetch(URLS[env].d, {
+                method: 'GET'
+            });
+            if (!res.ok)
+                throw new Error(`HTTP ${res.status}`);
+            const blob = await res.blob();
+            if (!blob || blob.size < 10) {
+                showRes(2, 'err', 'Sin datos', '<span class="warn">La hoja Despachos está vacía.</span>');
+                return;
+            }
+            const fecha = new Date().toISOString().split('T')[0];
+            const fn = `Despachos_CR_${fecha}.csv`;
+            const u = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = fn;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(u);
+            showRes(2, 'ok', 'Descarga completada', [sl('📄', 'Archivo', fn, 'ok'), sl('🗑️', 'Hoja Despachos', 'Limpiada', 'warn'), '<hr class="divider">', `<span class="dim" style="font-size:10px">${new Date().toLocaleTimeString('es-CR')}</span>`].join(''));
+            document.getElementById('sc2').className = 'sc done';
+            document.getElementById('sc2').textContent = '✓';
+        } catch (e) {
+            showRes(2, 'err', 'Error', `<span class="err">${e.message}</span>`);
+        }
+        finally {
+            setLoad(2, false);
+        }
+    }
+    
+async function enviarSQ() {
+  const n = 'btnSQ', sp = 'sp2', tx = 't2', rs = 'res2', d = 'd2', l = 'l2', b = 'b2';
+  document.getElementById(n).disabled = true;
+  document.getElementById(sp).style.display = 'block';
+  document.getElementById(tx).textContent = 'Enviando a SmartQuick...';
+  document.getElementById(rs).classList.add('visible');
+  document.getElementById(d).className = 'rdot loading';
+  document.getElementById(l).textContent = 'Conectando con SmartQuick...';
+  document.getElementById(b).innerHTML = '';
+
+  try {
+    const res  = await fetch(URLS[env].sq, { method: 'GET' });
+    const text = await res.text();
+    let json = {};
+    try { json = JSON.parse(text); } catch(e) {}
+
+    // Contar resultados
+    const creados = json.creadas ?? 0;
+    const errores = json.errores ?? 0;
+
+    document.getElementById(d).className = errores > 0 ? 'rdot err' : 'rdot ok';
+    document.getElementById(l).textContent = `Completado · ${creados} órdenes creadas`;
+    document.getElementById(b).innerHTML = [
+      sl('✅', 'Órdenes creadas',  creados, creados > 0 ? 'ok' : 'dim'),
+      sl('❌', 'Errores',           errores, errores > 0 ? 'err' : 'dim'),
+      '<hr class="divider">',
+      `<span class="dim" style="font-size:10px">${new Date().toLocaleTimeString('es-CR')}</span>`
+    ].join('');
+
+    if (creados > 0) {
+      document.getElementById('sc2').className = 'sc done';
+      document.getElementById('sc2').textContent = '✓';
+      document.getElementById('sc3') && (document.getElementById('sc3').className = 'sc active');
+    }
+  } catch(err) {
+    document.getElementById(d).className = 'rdot err';
+    document.getElementById(l).textContent = 'Error';
+    document.getElementById(b).innerHTML = `<span class="err">${err.message}</span>`;
+  } finally {
+    document.getElementById(n).disabled = false;
+    document.getElementById(sp).style.display = 'none';
+    document.getElementById(tx).textContent = '🚚  Crear Órdenes en SmartQuick';
+  }
+}
+
+</script>
+        <!-- STEP 3 respaldo -->
+        <div class="card" style="opacity:0.7;border-style:dashed">
+            <div class="card-hdr">
+                <span class="step-tag" style="background:var(--surface2);color:var(--text-muted);border-color:var(--border2)">RESPALDO</span>
+                <span class="card-title" style="color:var(--text-muted)">Descargar CSV Manual</span>
+            </div>
+            <div class="card-body">
+                <div class="warn-box"><span>⚠</span><span>Usar solo si SmartQuick falla. La hoja <strong>Despachos</strong> se limpia al descargar.</span></div>
+                <button class="btn btn-g" id="btnDl" onclick="descargar()" style="opacity:0.8">
+                    <div class="spinner" id="sp3"></div>
+                    <span id="t3">↓ &nbsp;Descargar CSV</span>
+                </button>
+                <div class="result-panel" id="res3">
+                    <div class="result-inner">
+                        <div class="result-bar"><div class="rdot loading" id="d3"></div><span class="rlabel" id="l3">Descargando...</span></div>
+                        <div class="rbody" id="b3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</div><!-- /main-content -->
+</div><!-- /wrapper -->
+</div><!-- /panel-cr -->
+</body>
+</html>
+
+<!-- PANEL COLOMBIA -->
+<div id="panel-col" style="display:none">
+  <div class="wrapper" style="max-width:760px;margin:0 auto;padding:48px 24px 80px">
+    <div class="page-header">
+      <div>
+        <div class="eyebrow">ZenderBox · Colombia</div>
+        <h1>Despachos <strong>TCC</strong></h1>
+      </div>
+      <div>
+        <a href="https://docs.google.com/spreadsheets/d/1UedzkG59CAOv7jdcU9Tm0HCIegSmeXpWTptM7rfMv5Y/edit?gid=503489634#gid=503489634" target="_blank" style="font-family:var(--mono);font-size:10px;color:#CCD32A;text-decoration:none;border:1px solid rgba(204,211,42,0.2);border-radius:4px;padding:4px 12px;">📊 Abrir Drive</a>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <span class="step-tag">01</span>
+        <span class="card-title">Generar Despachos del Día</span>
+      </div>
+      <div class="card-body">
+        <button class="btn btn-a" id="btnGenerar" onclick="generarDespachos()">
+          <div class="spinner" id="spGen"></div>
+          <span id="tGen">▶  Generar Despachos</span>
+        </button>
+        <div class="result-panel" id="resGenerar">
+          <div class="result-inner">
+            <div class="result-bar"><div class="rdot loading" id="dGen"></div><span class="rlabel" id="lGen">Procesando...</span></div>
+            <div class="rbody" id="bGen"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;opacity:0.8;border-style:dashed">
+      <div class="card-hdr">
+        <span class="step-tag" style="background:var(--red-dim);color:var(--red);border-color:rgba(239,68,68,0.3)">⚠</span>
+        <span class="card-title" style="color:var(--text-muted)">Limpiar Hoja TCC HOY</span>
+      </div>
+      <div class="card-body">
+        <div class="warn-box"><span>⚠</span><span>Usar solo para reiniciar el despacho del día. Se borran todas las filas de TCC HOY.</span></div>
+        <button class="btn btn-g" id="btnBorrar" onclick="confirmarBorrar()" style="border-color:var(--red);color:var(--red)">
+          <div class="spinner" id="spBorrar"></div>
+          <span id="tBorrar">⊘  Borrar TCC HOY</span>
+        </button>
+        <div class="result-panel" id="resBorrar">
+          <div class="result-inner">
+            <div class="result-bar"><div class="rdot loading" id="dBorrar"></div><span class="rlabel" id="lBorrar">Borrando...</span></div>
+            <div class="rbody" id="bBorrar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+  // Config webhooks por país
+  const DESPACHOS_WEBHOOKS = {
+    CR: {
+      motor:    'https://zenderbox.app.n8n.cloud/webhook/cr-despachos',
+      sq:       'https://zenderbox.app.n8n.cloud/webhook/crear-guias-smartquick',
+      descarga: 'https://zenderbox.app.n8n.cloud/webhook/cr-descargar-despachos'
+    },
+    COL: {
+      generar: 'https://zenderbox.app.n8n.cloud/webhook/despachos',
+      borrar:  'https://zenderbox.app.n8n.cloud/webhook/borrar-tcc'
+    }
+  };
+
+  // Cambiar panel según agencia
+  function switchDespachoPanel(paisId) {
+    document.getElementById('panel-cr').style.display  = paisId === 'CR'  ? 'block' : 'none';
+    document.getElementById('panel-col').style.display = paisId === 'COL' ? 'block' : 'none';
+  }
+
+  window.addEventListener('wms:agencia', (e) => {
+    switchDespachoPanel(e.detail.agencia);
+  });
+
+  // Colombia functions
+  async function generarDespachos() {
+    const btn = document.getElementById('btnGenerar');
+    btn.disabled = true;
+    document.getElementById('spGen').style.display = 'block';
+    document.getElementById('tGen').textContent = 'Ejecutando...';
+    document.getElementById('resGenerar').classList.add('visible');
+    document.getElementById('dGen').className = 'rdot loading';
+    document.getElementById('lGen').textContent = 'Conectando con n8n...';
+    document.getElementById('bGen').innerHTML = '';
+    try {
+      const res  = await fetch(DESPACHOS_WEBHOOKS.COL.generar, { method: 'GET' });
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch(e) { data = null; }
+      if (res.ok) {
+        const resumen = data?.resumen || data?.[0]?.resumen || '';
+        document.getElementById('dGen').className = 'rdot ok';
+        document.getElementById('lGen').textContent = '✓ Despachos generados';
+        document.getElementById('bGen').innerHTML = resumen
+          ? resumen.split('|').map(l => `<div class="sl"><span>·</span><span class="sl-lbl">${l.trim()}</span></div>`).join('')
+          : '<span class="dim">Flujo ejecutado correctamente. Revisa las hojas.</span>';
+      } else {
+        document.getElementById('dGen').className = 'rdot err';
+        document.getElementById('lGen').textContent = 'Error';
+        document.getElementById('bGen').innerHTML = `<span class="err">${text.substring(0,200)}</span>`;
+      }
+    } catch(err) {
+      document.getElementById('dGen').className = 'rdot err';
+      document.getElementById('lGen').textContent = 'Error de red';
+      document.getElementById('bGen').innerHTML = `<span class="err">${err.message}</span>`;
+    } finally {
+      btn.disabled = false;
+      document.getElementById('spGen').style.display = 'none';
+      document.getElementById('tGen').textContent = '▶  Generar Despachos';
+    }
+  }
+
+  let borrarConfirmado = false;
+  function confirmarBorrar() {
+    if (!borrarConfirmado) {
+      borrarConfirmado = true;
+      document.getElementById('tBorrar').textContent = '⊘  Confirmar borrado';
+      document.getElementById('resBorrar').classList.add('visible');
+      document.getElementById('dBorrar').className = 'rdot loading';
+      document.getElementById('lBorrar').textContent = '⚠ Haz clic de nuevo para confirmar';
+      return;
+    }
+    ejecutarBorrar();
+  }
+
+  async function ejecutarBorrar() {
+    borrarConfirmado = false;
+    document.getElementById('tBorrar').textContent = '⊘  Borrar TCC HOY';
+    const btn = document.getElementById('btnBorrar');
+    btn.disabled = true;
+    document.getElementById('spBorrar').style.display = 'block';
+    document.getElementById('dBorrar').className = 'rdot loading';
+    document.getElementById('lBorrar').textContent = 'Borrando filas...';
+    try {
+      const res = await fetch(DESPACHOS_WEBHOOKS.COL.borrar, { method: 'GET' });
+      document.getElementById('dBorrar').className = res.ok ? 'rdot ok' : 'rdot err';
+      document.getElementById('lBorrar').textContent = res.ok ? '✓ TCC HOY limpiada' : 'Error al borrar';
+    } catch(err) {
+      document.getElementById('dBorrar').className = 'rdot err';
+      document.getElementById('lBorrar').textContent = 'Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      document.getElementById('spBorrar').style.display = 'none';
+    }
+  }
+
+  // Init
+  window.addEventListener('DOMContentLoaded', () => {
+    const ag = (typeof getAgencia === 'function') ? getAgencia() : 'CR';
+    switchDespachoPanel(ag);
+  });
+</script>
