@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte Despachos Colombia - ZenderBox</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; margin: 0; background: #f0f2f5; }
+  .header { background: #1a237e; color: white; padding: 20px 24px; }
+  .header h1 { margin: 0; font-size: 20px; }
+  .header p { margin: 4px 0 0; opacity: 0.75; font-size: 13px; }
+  .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+  .stats { display: flex; gap: 16px; margin-bottom: 24px; }
+  .stat { background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); flex: 1; text-align: center; }
+  .stat-num { font-size: 36px; font-weight: bold; color: #1a237e; }
+  .stat-num.verde { color: #2e7d32; }
+  .stat-num.naranja { color: #e65100; }
+  .stat-label { font-size: 12px; color: #666; margin-top: 4px; }
+  .section { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; overflow: hidden; }
+  .section-header { padding: 14px 16px; font-weight: bold; font-size: 14px; }
+  .section-header.verde { background: #e8f5e9; color: #2e7d32; border-bottom: 3px solid #4caf50; }
+  .section-header.naranja { background: #fff3e0; color: #e65100; border-bottom: 3px solid #ff9800; }
+  .grupo { border-bottom: 2px solid #e0e0e0; }
+  .grupo:last-child { border-bottom: none; }
+  .grupo-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #fafafa; }
+  .grupo-id { font-weight: bold; font-size: 15px; color: #1a237e; font-family: monospace; }
+  .badge { padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; color: white; }
+  .badge.dg { background: #c62828; }
+  .badge.normal { background: #2e7d32; }
+  .badge.bloqueado { background: #e65100; }
+  .badge.cr { background: #6a1b9a; }
+  .grupo-agencia { font-size: 12px; color: #666; margin-left: auto; }
+  .grupo-razon { font-size: 12px; color: #e65100; font-style: italic; }
+  .whr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .whr-table th { background: #e8eaf6; color: #3949ab; padding: 6px 12px; text-align: left; font-size: 12px; }
+  .whr-table td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; }
+  .whr-table tr:last-child td { border-bottom: none; }
+  .whr-ok { color: #2e7d32; font-weight: bold; }
+  .whr-err { color: #c62828; font-weight: bold; }
+  .pos { font-family: monospace; font-size: 12px; background: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+  .pos.vacia { background: #ffebee; color: #c62828; }
+  .nota { background: #fff9c4; border-left: 4px solid #f9a825; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-size: 13px; }
+  .btn-ejecutar { display: block; width: 100%; padding: 16px; background: #4caf50; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: not-allowed; opacity: 0.6; margin-bottom: 24px; }
+  .footer { text-align: center; color: #999; font-size: 12px; padding: 20px; }
+  .whr-code { font-family: monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚚 Reporte Despachos Colombia</h1>
+  <p>ZenderBox MIA · Consulta: 21/3/2026, 10:45:00 a. m.</p>
+</div>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">7</div>
+      <div class="stat-label">Total Grupos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num verde">3</div>
+      <div class="stat-label">Listos para Despachar</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num naranja">4</div>
+      <div class="stat-label">Grupos Bloqueados</div>
+    </div>
+  </div>
+
+  <div class="nota">
+    ⚠️ <strong>Modo validación:</strong> Este reporte muestra lo que el bot despacharía. Verifica que sea correcto antes de activar el despacho automático.
+  </div>
+
+  <button class="btn-ejecutar">▶ Ejecutar Despacho Real (próximamente)</button>
+
+  <!-- GRUPOS LISTOS -->
+  <div class="section">
+    <div class="section-header verde">✅ Grupos listos para despachar (3)</div>
+
+    <!-- Casillero 69641 -->
+    <div class="grupo">
+      <div class="grupo-header">
+        <span class="grupo-id">69641</span>
+        <span class="badge dg">DG</span>
+        <span style="font-size:13px">1 pieza · 7.00 lb</span>
+        <span class="grupo-agencia">ZenderBox Colombia</span>
+      </div>
+      <table class="whr-table">
+        <tr><th>WHR</th><th>Posición</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>
+        <tr>
+          <td class="whr-code">WHR0011264422</td>
+          <td><span class="pos">Z2-R4-DG-103</span></td>
+          <td>7.0 lb</td>
+          <td>DG UN3481 MAC BOOK PRO</td>
+          <td class="whr-ok">✅ OK</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Casillero 69707 -->
+    <div class="grupo">
+      <div class="grupo-header">
+        <span class="grupo-id">69707</span>
+        <span class="badge normal">NORMAL</span>
+        <span style="font-size:13px">1 pieza · 2.70 lb</span>
+        <span class="grupo-agencia">ZenderBox Colombia</span>
+      </div>
+      <table class="whr-table">
+        <tr><th>WHR</th><th>Posición</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>
+        <tr>
+          <td class="whr-code">WHR0011264476</td>
+          <td><span class="pos">Z2-R2-B1-402</span></td>
+          <td>2.7 lb</td>
+          <td>SUPLEMENTOS X3 JABON COORPORAL X3</td>
+          <td class="whr-ok">✅ OK</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Casillero 69738 -->
+    <div class="grupo">
+      <div class="grupo-header">
+        <span class="grupo-id">69738</span>
+        <span class="badge normal">NORMAL</span>
+        <span style="font-size:13px">1 pieza · 1.00 lb</span>
+        <span class="grupo-agencia">ZenderBox Colombia</span>
+      </div>
+      <table class="whr-table">
+        <tr><th>WHR</th><th>Posición</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>
+        <tr>
+          <td class="whr-code">WHR0011264738</td>
+          <td><span class="pos">Z2-G2-528</span></td>
+          <td>1.0 lb</td>
+          <td>ropa</td>
+          <td class="whr-ok">✅ OK</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- GRUPOS BLOQUEADOS -->
+  <div class="section">
+    <div class="section-header naranja">⚠️ Grupos bloqueados (4)</div>
+
+    <!-- Casillero 69681 -->
+    <div class="grupo">
+      <div class="grupo-header">
+        <span class="grupo-id">69681</span>
+        <span class="badge bloqueado">BLOQUEADO</span>
+        <span class="grupo-razon">Tiene 1 guía no lista</span>
+        <span class="grupo-agencia">ZenderBox Colombia</span>
+      </div>
+      <table class="whr-table">
+        <tr><th>WHR</th><th>Posición</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>
+        <tr>
+          <td class="whr-code">WHR0011264411</td>
+          <td><span class="pos">Z2-R4-F1-203</span></td>
+          <td>4.3 lb</td>
+          <td>4 Vitaminas</td>
+          <td class="whr-ok">✅ OK</td>
+        </tr>
+        <tr style="background:#fff8f8">
+          <td class="whr-code">WHR0011264576</td>
+          <td><span class="pos vacia">VACIA</span></td>
+          <td>0.7 lb</td>
+          <td>2 Vitaminas</td>
+          <td class="whr-err">❌ SIN_POSICION</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Casillero 69720 -->
+    <div class="grupo">
+      <div class="grupo-header">
+        <span class="grupo-id">69720</span>
+        <span class="badge cr">COSTA RICA</span>
+        <span class="grupo-razon">Tiene 1 guía no lista</span>
+        <span class="grupo-agencia">Zenderbox Costa Rica</span>
+      </div>
+      <table class="whr-table">
+        <tr><th>WHR</th><th>Posición</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>
+        <tr>
+          <td class="whr-code">WHR0011264572</td>
+          <td><span class="pos">Z2-R2-F1-302</span></td>
+          <td>2.7 lb</td>
+          <td>2 FIGURAS DE JUGUETE Y UN TRITURADOR DE PAPAS</td>
+          <td class="whr-ok">✅ OK</td>
+        </tr>
+        <tr style="background:#fff8f8">
+          <td class="whr-code">WHR0011263837</td>
+          <td><span class="pos vacia">VACIA</span></td>
+          <td>0.1 lb</td>
+          <td>Ingreso Cubiq</td>
+          <td class="whr-err">❌ SIN_POSICION</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Casillero 69734 -->
+    <div class="grupo">
+      <div class="grupo-header">
+        <span class="grupo-id">69734</span>
+        <span class="badge bloqueado">BLOQUEADO</span>
+        <span class="grupo-razon">Tiene 1 guía no lista</span>
+        <span class="grupo-agencia">ZenderBox Colombia</span>
+      </div>
+      <table class="whr-table">
+        <tr><th>WHR</th><th>Posición</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>
+        <tr>
+          <td class="whr-code">WHR0011264397</td>
+          <td><span class="pos">Z2-R1-B1-303</span></td>
+          <td>4.9 lb</td>
+          <td>dg-un3481 ( extractor de leche materna)</td>
+          <td class="whr-ok">✅ OK</td>
+        </tr>
+        <tr style="background:#fff8f8">
+          <td class="whr-code">WHR0011264704</td>
+          <td><span class="pos vacia">VACIA</span></td>
+          <td>26.0 lb</td>
+          <td>DG-UN3481 ( EXTRACTOR DE LECHE MATERNA</td>
+          <td class="whr-err">❌ SIN_POSICION</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Casillero 69736 -->
+    <div class="grupo">
+      <div class="grupo-header">
+        <span class="grupo-id">69736</span>
+        <span class="badge bloqueado">BLOQUEADO</span>
+        <span class="grupo-razon">Tiene 1 guía no lista</span>
+        <span class="grupo-agencia">ZenderBox Colombia</span>
+      </div>
+      <table class="whr-table">
+        <tr><th>WHR</th><th>Posición</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>
+        <tr>
+          <td class="whr-code">WHR0011263577</td>
+          <td><span class="pos">Z2-R3-B1-101</span></td>
+          <td>16.6 lb</td>
+          <td>Limpiador portátil</td>
+          <td class="whr-ok">✅ OK</td>
+        </tr>
+        <tr style="background:#fff8f8">
+          <td class="whr-code">WHR0011264675</td>
+          <td><span class="pos vacia">VACIA</span></td>
+          <td>2.5 lb</td>
+          <td>Muñeco</td>
+          <td class="whr-err">❌ SIN_POSICION</td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="footer">ZenderBox · WMS Motor Despachos v2 · 21/3/2026</div>
+</div>
+</body>
+</html>
