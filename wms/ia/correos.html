@@ -120,6 +120,10 @@
         50% { opacity: 0.4 }
     }
 
+    @keyframes spin {
+        to { transform: rotate(360deg) }
+    }
+
     .btn-refresh {
         background: transparent;
         border: 1px solid var(--border2);
@@ -590,7 +594,7 @@
     </div>
 
     <script>
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1nTU-pkmHKiiSUs5ro5dVmZLawxUEKGoL53wE0Mhxt0g/gviz/tq?tqx=out:json&sheet=EmailLog';
+    const WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/correos-ia-data';
 
     let EMAILS = [];
     let currentFilter = 'todos';
@@ -625,59 +629,29 @@
         safe('stat-pendientes', pendientes);
     }
 
-    function parseSheetJSON(text) {
-        // gviz response: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
-        const start = text.indexOf('(');
-        const end = text.lastIndexOf(')');
-        if (start === -1 || end === -1) throw new Error('Formato de respuesta inválido');
-        const json = JSON.parse(text.substring(start + 1, end));
-        if (json.status === 'error') throw new Error(json.errors?.[0]?.detailed_message || 'Error en consulta');
-
-        const cols = json.table.cols.map(c => c.label || c.id || '');
-        const rows = json.table.rows.map(r => {
-            const obj = {};
-            r.c.forEach((cell, i) => {
-                const key = cols[i].toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-                obj[key] = cell ? (cell.f || cell.v || '') : '';
-            });
-            return obj;
-        });
-        return rows;
-    }
-
-    function mapRow(row) {
-        // Map common column name variants to our internal fields
-        return {
-            fecha:        row.fecha || row.timestamp || row.date || row.fecha_envio || '',
-            destinatario: row.destinatario || row.to || row.email || row.para || row.recipient || '',
-            asunto:       row.asunto || row.subject || row.tema || '',
-            estado:       row.estado || row.status || row.resultado || '',
-            tipo:         row.tipo || row.type || row.categoria || row.category || '',
-            casillero:    row.casillero || row.mailbox || row.locker || '',
-            nombre:       row.nombre || row.name || row.cliente || '',
-            cuerpo:       row.cuerpo || row.body || row.mensaje || row.message || row.contenido || '',
-            agencia:      row.agencia || row.agency || row.pais || row.country || '',
-            error_msg:    row.error || row.error_msg || row.error_message || row.detalle_error || '',
-            message_id:   row.message_id || row.id || row.msg_id || '',
-            template:     row.template || row.plantilla || '',
-        };
-    }
-
     async function fetchData() {
-        const subEl = document.getElementById('correos-sub');
-        if (subEl) subEl.textContent = 'Actualizando...';
+        document.getElementById('emailList').innerHTML = '<div class="empty-state"><div style="width:24px;height:24px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div><div class="empty-text">Cargando...</div></div>';
         try {
-            const res = await fetch(SHEET_URL + '&_t=' + Date.now());
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 30000);
+            const res = await fetch(WEBHOOK_URL + '?t=' + Date.now(), {
+                method: 'GET',
+                signal: ctrl.signal
+            });
+            clearTimeout(t);
             const text = await res.text();
-            const rows = parseSheetJSON(text);
-            EMAILS = rows.map(mapRow);
+            if (!text || !text.trim()) throw new Error('Respuesta vacía');
+            const json = JSON.parse(text);
+            if (!json.ok) throw new Error('Error en workflow');
+            EMAILS = json.correos || [];
             updateStats();
-            if (subEl) subEl.textContent = `Emails procesados · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
+            document.getElementById('correos-sub').textContent = `Emails procesados · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
             renderList();
         } catch (err) {
             document.getElementById('emailList').innerHTML = `<div style="padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red)">✕ ${err.message} <button onclick="fetchData()" style="margin-left:12px;background:var(--accent);border:none;border-radius:4px;padding:6px 12px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer">↻ Reintentar</button></div>`;
         }
     }
+
 
     function setFilter(f) {
         currentFilter = f;
