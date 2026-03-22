@@ -590,9 +590,7 @@
     </div>
 
     <script>
-    const SHEET_ID = '1nTU-pkmHKiiSUs5ro5dVmZLawxUEKGoL53wE0Mhxt0g';
-    const SHEET_NAME = 'EmailLog';
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1nTU-pkmHKiiSUs5ro5dVmZLawxUEKGoL53wE0Mhxt0g/gviz/tq?tqx=out:json&sheet=EmailLog';
 
     let EMAILS = [];
     let currentFilter = 'todos';
@@ -628,10 +626,11 @@
     }
 
     function parseSheetJSON(text) {
-        // Google Sheets gviz returns: google.visualization.Query.setResponse({...})
-        const match = text.match(/google\.visualization\.Query\.setResponse\((.+)\);?\s*$/s);
-        if (!match) throw new Error('Formato de respuesta inválido');
-        const json = JSON.parse(match[1]);
+        // gviz response: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
+        const start = text.indexOf('(');
+        const end = text.lastIndexOf(')');
+        if (start === -1 || end === -1) throw new Error('Formato de respuesta inválido');
+        const json = JSON.parse(text.substring(start + 1, end));
         if (json.status === 'error') throw new Error(json.errors?.[0]?.detailed_message || 'Error en consulta');
 
         const cols = json.table.cols.map(c => c.label || c.id || '');
