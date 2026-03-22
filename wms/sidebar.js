@@ -24,6 +24,7 @@ const WMS_NAV = [
     id: 'ia-section',
     items: [
       { icon: '📞', label: 'Llamadas',          href: 'ia/llamadas.html',  id: 'llamadas' },
+      { icon: '📧', label: 'Correos',           href: 'ia/correos.html',   id: 'correos' },
       { icon: '💰', label: 'Cobros',            href: 'ia/cobros.html',    id: 'cobros',          coming: true },
       { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
     ]
