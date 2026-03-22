@@ -749,8 +749,30 @@
         document.getElementById('detailPanel').classList.remove('visible');
     }
 
-    function ejecutarAgente() {
-        fetchData();
+    async function ejecutarAgente() {
+        const btn = document.getElementById('btnAgent');
+        btn.disabled = true;
+        btn.textContent = '⏳ Ejecutando...';
+        try {
+            await fetch('https://zenderbox.app.n8n.cloud/webhook/ejecutar-motor-email', { method: 'GET', mode: 'no-cors' });
+            btn.textContent = '✅ Agente ejecutado';
+            btn.style.background = 'var(--green-dim)';
+            btn.style.borderColor = 'rgba(34,197,94,0.35)';
+            btn.style.color = 'var(--green)';
+            setTimeout(fetchData, 3000);
+        } catch (e) {
+            btn.textContent = '❌ Error';
+            btn.style.background = 'var(--red-dim)';
+            btn.style.borderColor = 'rgba(239,68,68,0.35)';
+            btn.style.color = 'var(--red)';
+        }
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '▶ Ejecutar Agente Ahora';
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 5000);
     }
 
     // Listen for agency change from sidebar.js
