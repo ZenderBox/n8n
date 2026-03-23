@@ -81,6 +81,8 @@
     .footer{text-align:center;color:var(--text-muted);font-family:var(--mono);font-size:10px;padding:24px;}
     .error-box{margin:24px 32px;padding:16px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red);display:flex;align-items:center;gap:12px;}
     .btn-retry{background:var(--accent);border:none;border-radius:4px;padding:6px 14px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer;}
+    .chk-despacho{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+    .btn-ejecutar.activo:disabled{opacity:0.4;cursor:not-allowed;filter:none;}
     </style>
 </head>
 <body>
@@ -145,6 +147,7 @@
         html += '<div class="stat bloqueados"><div class="stat-num">' + bloqueados.length + '</div><div class="stat-label">Grupos Bloqueados</div></div>';
         html += '</div>';
         html += '<div class="alerta">MODO VISTA PREVIA &mdash; ' + totalPeso.toFixed(2) + ' lb listos &middot; Consulta: ' + fecha + '</div>';
+        html += '<button class="btn-ejecutar activo" id="btn-despachar-sel" disabled onclick="despacharSeleccionados()">&#9654; Despachar Seleccionados (0)</button>';
         html += '<button class="btn-ejecutar" id="btn-ejecutar" disabled onclick="ejecutarDespacho()">&#9654; Ejecutar Despacho Real &nbsp;&middot;&nbsp; Proximo</button>';
 
         if (listos.length > 0) {
@@ -178,7 +181,9 @@
             const trCls    = w.estado !== 'OK' ? 'omitida' : '';
             return '<tr class="' + trCls + '"><td class="whr-code">' + w.whr + '</td><td><span class="pos ' + posCls + '">' + posTxt + '</span></td><td>' + w.peso + ' lb</td><td>' + (w.contenido||'') + '</td><td class="' + estCls + '">' + estTxt + '</td></tr>';
         }).join('');
+        const chk = esListo ? '<input type="checkbox" class="chk-despacho" id="chk-' + g.casillero_id + '" value="' + g.casillero_id + '" onclick="event.stopPropagation(); actualizarSeleccion()">' : '';
         return '<div class="grupo open"><div class="grupo-header" onclick="toggleGrupo(this)">' +
+            chk +
             '<span class="grupo-id">' + g.casillero_id + '</span>' +
             '<span class="badge ' + badgeCls + '">' + tipo + '</span>' +
             '<span class="grupo-info">' + piezas + ' pieza' + (piezas!==1?'s':'') + ' &middot; ' + peso + ' lb</span>' +
@@ -191,6 +196,35 @@
     }
 
     function toggleGrupo(h) { h.parentElement.classList.toggle('open'); }
+
+    function actualizarSeleccion() {
+        const checked = document.querySelectorAll('.chk-despacho:checked');
+        const btn = document.getElementById('btn-despachar-sel');
+        if (btn) {
+            btn.textContent = '\u25B6 Despachar Seleccionados (' + checked.length + ')';
+            btn.disabled = checked.length === 0;
+        }
+    }
+
+    async function despacharSeleccionados() {
+        const checked = document.querySelectorAll('.chk-despacho:checked');
+        if (checked.length === 0) return;
+        const ids = Array.from(checked).map(c => c.value);
+        if (!confirm('Despachar ' + ids.length + ' grupo(s) seleccionados?\n\n' + ids.join(', ') + '\n\nEsta accion no se puede deshacer.')) return;
+        const btn = document.getElementById('btn-despachar-sel');
+        btn.disabled = true; btn.textContent = 'Ejecutando...';
+        try {
+            const res = await fetch(WEBHOOK_EJECUTAR, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ casillero_ids: ids })
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            btn.textContent = 'Despacho ejecutado - actualiza la vista previa';
+        } catch(err) {
+            btn.disabled = false; btn.textContent = 'Error - reintentar';
+        }
+    }
 
     async function ejecutarDespacho() {
         if (!confirm('Confirmas el despacho real? Esta accion no se puede deshacer.')) return;
