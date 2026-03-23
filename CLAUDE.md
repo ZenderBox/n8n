@@ -1,43 +1,87 @@
-# CLAUDE.md
+# ZenderBox WMS — CLAUDE.md
+**Guía para Claude Code al trabajar en este repositorio**
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Quién soy
+Juan Acuña, dueño de ZenderBox (ACUNA & CARO INVESTMENTS LLC) — empresa de casilleros virtuales y logística internacional en Costa Rica, Colombia y Panamá.
 
-## Project Overview
+## Stack
+- **Automatización**: n8n Cloud · zenderbox.app.n8n.cloud
+- **Base de datos actual**: Google Sheets (migrando a PostgreSQL)
+- **WMS actual**: .NET en AWS EC2 · store1.zenderbox.com
+- **Frontend prototipo**: GitHub Pages · zenderbox.github.io/n8n/wms/
+- **Frontend futuro**: Angular + MUI · zenderhubapp.com
+- **WhatsApp**: Twilio · línea CR: +17869461834 · línea COL: +17864423800
+- **Pagos**: ePayco
+- **IA Llamadas**: Dapta · api.dapta.ai
+- **Courier CR**: SmartQuick
+- **Courier Colombia**: TCC
 
-ZenderBox WMS (Warehouse Management System) — a static, frontend-only operations panel for managing logistics, shipping, and warehouse operations across multiple geographic agencies (Colombia and Costa Rica). Built with vanilla HTML, CSS, and JavaScript with no build system, package manager, or testing framework.
+## Arquitectura del repo
 
-## Running Locally
+### Estructura de carpetas
+- `/wms/` — Módulos principales del WMS multiagencia
+- `/wms/ia/` — Módulos de IA (llamadas, cobros, etc.)
+- `/wms/casillero/` — Módulos de casillero (despachos USA, etc.)
+- `/CR/` — Variantes regionales Costa Rica
+- Root — rastreo.html, index.html
 
-Serve with any static HTTP server:
+### Sidebar compartido (`/wms/sidebar.js`)
+- Único archivo JS compartido — inyecta navegación en todas las páginas
+- Multiagencia CR/Colombia via sessionStorage
+- Dispara evento `wms:agencia` al cambiar agencia
+- Módulos en `/wms/` usan `sidebar.js`
+- Módulos en `/wms/ia/` y `/wms/casillero/` usan `../sidebar.js`
+- SIEMPRE usar colores hardcoded (#081F3A, #CCD32A, etc.) — no variables CSS
+
+## Design System
+- **Colores**: Navy `#081F3A` · Cyan `#009CC9` · Lima `#CCD32A`
+- **Tipografía**: IBM Plex Mono (datos) + IBM Plex Sans (UI)
+- **Tema**: Oscuro — fondo `#040d18`, superficie `#081F3A`
+- **Layout**: Sidebar fijo 220px + contenido principal
+- **Idioma UI**: Español
+
+## Webhooks n8n producción
+- Base: `https://zenderbox.app.n8n.cloud/webhook/`
+- CR Consolidados: `/cr-consolidados-data`
+- CR Despachos: `/cr-despachos`
+- CR WhatsApp: `/cr-enviar-whatsapp`
+- COL WhatsApp: `/col-enviar-whatsapp`
+- CR Templates Twilio: `/cr-templates-twilio`
+- Llamadas Data: `/llamadas-data`
+- Pre-liquidador: `/preliquidador`
+- Rastreo CR: `/rastreo-cr`
+- Despachos USA Preview: `/wms-despachos-preview`
+- Despachos USA Ejecutar: `/wms-despachos-ejecutar`
+
+## Google Sheets
+- CR Despachos: `1CYJsc8KaOjuigYP5MKtWPh5Gt9V07lpKKslh9ksWjRY`
+- Total Casilleros: `1h2AcJ1wRdE9MvvKbB8XzzyEtRQLqqJjoDVWK0C21RQw`
+
+## Módulos activos
+| Módulo | Archivo | Estado |
+|---|---|---|
+| Dashboard | `wms/index.html` | ✅ |
+| Buscar Guía | `wms/buscar.html` | ✅ |
+| Consolidados | `wms/consolidados.html` | ✅ CR |
+| Manifiesto | `wms/manifiesto.html` | ✅ CR + COL |
+| Despachos | `wms/despachos.html` | ✅ CR + COL |
+| WhatsApp | `wms/whatsapp.html` | ✅ CR + COL |
+| Pre-liquidador | `wms/preliquidador.html` | ✅ COL |
+| Llamadas IA | `wms/ia/llamadas.html` | ✅ CR + COL |
+| Despachos USA | `wms/casillero/despachos-usa.html` | 🔄 Validación |
+
+## Convenciones
+- n8n: siempre `alwaysOutputData: true` en nodos Leer
+- Webhooks prod: `/webhook/...` · Test: `/webhook-test/...`
+- PIN ambiente test: `1234`
+- Patrón guía CR: `/^[A-Z]{3}\d{10}$/`
+- Teléfono CR: 8 dígitos → agregar `+506`
+- Teléfono COL: 10 dígitos → agregar `+57`
+- Sin tildes ni ñ en nombres de columnas de Google Sheets
+
+## Cómo correr localmente
 ```bash
-python3 -m http.server
-# or
-npx serve
+cd ~/n8n
+python3 -m http.server 8080
+# Abrir http://localhost:8080/wms/
 ```
-No build step, no dependencies to install.
-
-## Architecture
-
-### Page Structure
-Each HTML page is self-contained with embedded CSS and minimal inline JS. Pages are organized by region and module:
-
-- `/wms/` — Primary WMS modules (Colombia/General): buscar, consolidados, manifiesto, despachos, whatsapp, preliquidador, guias
-- `/wms/ia/` — AI-powered features (llamadas/call management)
-- `/wms/casillero/` — Mailbox/parcel storage (USA dispatches)
-- `/CR/` — Costa Rica regional variants of core modules
-- Root level — Landing page (`index.html`), tracking (`rastreo.html`), and mixed regional pages
-
-### Shared Navigation (`/wms/sidebar.js`)
-The only shared JavaScript file. It dynamically injects a sidebar navigation into any page that includes it. Key details:
-- `WMS_NAV` defines the navigation structure with collapsible sections (IA, Casillero)
-- `WMS_AGENCIAS` enables multi-agency switching (CR ↔ COL)
-- Uses `sessionStorage` for persisting agency selection and collapse state
-- Fires custom `wms:agencia` events for cross-module agency change communication
-- Auto-highlights the current page in the nav
-- Footer shows "WMS v2.0"
-
-### Design System
-- **Dark theme**: Navy backgrounds (`#081F3A`, `#040d18`) with lime (`#CCD32A`), cyan (`#009CC9`), and gold (`#F5A623` for CR) accents
-- **Typography**: IBM Plex Mono (code/data), IBM Plex Sans (UI text) via Google Fonts
-- **Layout**: Fixed 220px sidebar + main content area
-- **UI language**: Spanish throughout
