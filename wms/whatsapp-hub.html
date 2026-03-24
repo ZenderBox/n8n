@@ -880,6 +880,7 @@ async function twilioFetch(url) {
 }
 
 async function loadConversations() {
+  console.log('loadConversations currentLine:', currentLine);
   document.getElementById('convList').innerHTML = '<div class="loading"><div class="spinner"></div> Cargando...</div>';
   const BASE = 'https://zenderbox.app.n8n.cloud/webhook/';
   try {
@@ -1269,6 +1270,7 @@ function setFilter(filter, btn) {
 }
 
 function setLine(line, btn) {
+  console.log('setLine llamado con:', line);
   currentLine = line;
   document.querySelectorAll('.line-btn').forEach(b => {
     b.className = 'line-btn';
