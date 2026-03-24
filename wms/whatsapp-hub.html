@@ -992,6 +992,17 @@ async function openConversation(contact) {
     conv.messages = conv.messages || [];
   }
 
+  // Si está marcado como resuelto PERO el último mensaje es inbound
+  // significa que el cliente escribió de nuevo — desresolver
+  const lastMsg = conv.messages?.[conv.messages.length - 1];
+  if (resueltosSet.has(String(contact || '').trim()) &&
+      lastMsg?.direction === 'inbound') {
+    resueltosSet.delete(String(contact || '').trim());
+    fetch('https://zenderbox.app.n8n.cloud/webhook/wa-hub-desresolver'
+      + '?numero=' + encodeURIComponent(contact) + '&pais=CR');
+    renderConvList();
+  }
+
   // Renderizar mensajes en el contenedor ya existente
   const mc = document.getElementById('msgContainer');
   if (mc) {
