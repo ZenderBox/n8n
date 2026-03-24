@@ -83,6 +83,8 @@
     .btn-retry{background:var(--accent);border:none;border-radius:4px;padding:6px 14px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer;}
     .chk-despacho{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
     .btn-ejecutar.activo:disabled{opacity:0.4;cursor:not-allowed;filter:none;}
+    .btn-sel-todo{padding:8px 16px;border:none;border-radius:6px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;margin-bottom:12px;letter-spacing:0.5px;transition:all 0.2s;background:var(--blue);color:#fff;}
+    .btn-sel-todo:hover{filter:brightness(1.15);}
     </style>
 </head>
 <body>
@@ -151,6 +153,7 @@
         html += '<button class="btn-ejecutar" id="btn-ejecutar" disabled onclick="ejecutarDespacho()">&#9654; Ejecutar Despacho Real &nbsp;&middot;&nbsp; Proximo</button>';
 
         if (listos.length > 0) {
+            html += '<button class="btn-sel-todo" id="btn-sel-todo" onclick="toggleSeleccionarTodo()">&#9745; Seleccionar Todo</button>';
             html += '<div class="section"><div class="section-header verde">&#10003; Grupos listos para despachar (' + listos.length + ')</div>';
             listos.forEach(g => { html += renderGrupo(g); });
             html += '</div>';
@@ -197,13 +200,26 @@
 
     function toggleGrupo(h) { h.parentElement.classList.toggle('open'); }
 
+    function toggleSeleccionarTodo() {
+        const all = document.querySelectorAll('.chk-despacho');
+        const checked = document.querySelectorAll('.chk-despacho:checked');
+        const seleccionar = checked.length < all.length;
+        all.forEach(c => { c.checked = seleccionar; });
+        const btn = document.getElementById('btn-sel-todo');
+        if (btn) btn.innerHTML = seleccionar ? '&#9744; Deseleccionar Todo' : '&#9745; Seleccionar Todo';
+        actualizarSeleccion();
+    }
+
     function actualizarSeleccion() {
+        const all = document.querySelectorAll('.chk-despacho');
         const checked = document.querySelectorAll('.chk-despacho:checked');
         const btn = document.getElementById('btn-despachar-sel');
         if (btn) {
             btn.textContent = '\u25B6 Despachar Seleccionados (' + checked.length + ')';
             btn.disabled = checked.length === 0;
         }
+        const btnTodo = document.getElementById('btn-sel-todo');
+        if (btnTodo) btnTodo.innerHTML = checked.length === all.length && all.length > 0 ? '&#9744; Deseleccionar Todo' : '&#9745; Seleccionar Todo';
     }
 
     async function despacharSeleccionados() {
