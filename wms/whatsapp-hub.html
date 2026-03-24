@@ -1001,7 +1001,7 @@ function renderChatShell(contact, conv) {
     <div class="input-area">
       <div class="template-bar" id="templateBar">
         ${templatesList.slice(0,5).map(t =>
-          `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])})">${t.nombre}</button>`
+          `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this)">${t.nombre}</button>`
         ).join('')}
         ${templatesList.length > 5 ? `<button class="template-chip" onclick="toggleAllTemplates('${contact}')">+ más</button>` : ''}
       </div>
@@ -1048,7 +1048,7 @@ function toggleAllTemplates(contact) {
   const bar = document.getElementById('templateBar');
   if (!bar) return;
   bar.innerHTML = templatesList.map(t =>
-    `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])})">${t.nombre}</button>`
+    `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this)">${t.nombre}</button>`
   ).join('');
 }
 
@@ -1077,7 +1077,10 @@ async function sendFreeText(contact, line) {
 }
 
 // ─── SEND TEMPLATE ───────────────────────────────────────────────────────────
-async function sendTemplate(contact, contentSid, variables) {
+async function sendTemplate(contact, contentSid, variables, el) {
+  const originalName = el ? el.textContent : '';
+  if (el) { el.disabled = true; el.textContent = 'Enviando...'; }
+
   try {
     const params = new URLSearchParams({
       tel: contact,
@@ -1090,7 +1093,7 @@ async function sendTemplate(contact, contentSid, variables) {
       const vars = {};
       for (let i = 0; i < variables.length; i++) {
         const val = prompt(`Variable {{${i+1}}} para este template:`);
-        if (val === null) return; // cancelado
+        if (val === null) { if (el) { el.disabled = false; el.textContent = originalName; } return; }
         vars[String(i+1)] = val;
       }
       params.set('vars', JSON.stringify(vars));
@@ -1102,6 +1105,8 @@ async function sendTemplate(contact, contentSid, variables) {
     openConversation(contact);
   } catch (e) {
     showNotification('❌ Error: ' + e.message, 'error');
+  } finally {
+    if (el) { el.disabled = false; el.textContent = originalName; }
   }
 }
 
