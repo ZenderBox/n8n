@@ -1,0 +1,1366 @@
+{
+  "name": "WMS - Despachos Ejecutar",
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "path": "wms-despachos-ejecutar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4bd3eb54-3da8-4890-b51b-df1e5bc15d6e",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "58fbc294-64c5-414c-8fca-9588d8d371be"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://store1.zenderbox.com/app/validarusuario.asp",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "usuario",
+              "value": "zenderbot@zenderbox.com"
+            },
+            {
+              "name": "clave",
+              "value": "zenderbot@zenderbox.com"
+            },
+            {
+              "name": "cbxidioma",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "d658ac76-2079-491d-a392-61277b9192ce",
+      "name": "Login WMS Normal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $input.item.json.headers || {};\nconst raw = headers['set-cookie'] || headers['Set-Cookie'] || [];\nconst parts = Array.isArray(raw) ? raw : [raw];\nconst cookieNormal = parts\n  .map(c => (typeof c === 'string' ? c.split(';')[0].trim() : ''))\n  .filter(Boolean).join('; ');\nif (!cookieNormal) throw new Error('Login fallido.');\n\nconst body = $('Webhook').item.json.body || {};\nconst casilleroIds = body.casillero_ids || [];\nif (casilleroIds.length === 0) throw new Error('No se recibieron casillero_ids');\n\nreturn [{ json: { cookieNormal, casilleroIds } }];\n"
+      },
+      "id": "6d2ed652-7466-4284-a8be-c299f39fa04c",
+      "name": "Extraer Cookies y IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://store1.zenderbox.com/app/deapachoscasillero.asp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookieNormal }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "nrogui",
+              "value": ""
+            },
+            {
+              "name": "guimia",
+              "value": ""
+            },
+            {
+              "name": "agencia",
+              "value": ""
+            },
+            {
+              "name": "usuario",
+              "value": ""
+            },
+            {
+              "name": "pais",
+              "value": ""
+            },
+            {
+              "name": "remitente",
+              "value": ""
+            },
+            {
+              "name": "destinatario",
+              "value": ""
+            },
+            {
+              "name": "casillero",
+              "value": ""
+            },
+            {
+              "name": "pagado",
+              "value": "0"
+            },
+            {
+              "name": "posicion",
+              "value": ""
+            },
+            {
+              "name": "telrem",
+              "value": ""
+            },
+            {
+              "name": "teldes",
+              "value": ""
+            },
+            {
+              "name": "valor",
+              "value": ""
+            },
+            {
+              "name": "observacion",
+              "value": ""
+            },
+            {
+              "name": "peso1",
+              "value": ""
+            },
+            {
+              "name": "peso2",
+              "value": ""
+            },
+            {
+              "name": "fechainicial",
+              "value": ""
+            },
+            {
+              "name": "fechafinal",
+              "value": ""
+            },
+            {
+              "name": "po",
+              "value": ""
+            },
+            {
+              "name": "cuenta",
+              "value": ""
+            },
+            {
+              "name": "Submit",
+              "value": "Buscar"
+            },
+            {
+              "name": "AB_buscar",
+              "value": "form1"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "6caa32e9-1ecb-4535-929b-0262a39aea73",
+      "name": "Buscar en Despachos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.data || '';\nconst cookieNormal = $('Extraer Cookies y IDs').item.json.cookieNormal;\nconst casilleroIds = $('Extraer Cookies y IDs').item.json.casilleroIds || [];\n\nif (html.length < 500) throw new Error('HTML muy pequeño - error de sesión');\n\nconst rows = [];\nconst whrPattern = /<span class=\"titulos\">(WHR\\d+)<\\/span>/g;\nlet match;\n\nwhile ((match = whrPattern.exec(html)) !== null) {\n  const whr = match[1];\n  const block = html.substring(match.index, match.index + 3000);\n\n  const midM = block.match(/manifiesto_id\" value=\"(\\d+)\"/);\n  const manifestoId = midM ? midM[1] : '';\n\n  const creaM = block.match(/crea_guia\\('WHR\\d+','(\\d+)'\\)/);\n  const casilleroId = creaM ? creaM[1] : '';\n\n  // Solo los casilleros que vienen en el request\n  if (!casilleroIds.includes(casilleroId)) continue;\n\n  const tdMatches = [...block.matchAll(/<td class=\"reciboSMALLCAP\">\\s*([\\s\\S]*?)\\s*<\\/[Tt][Dd]>/g)];\n  const agencia = tdMatches[0] ? tdMatches[0][1].trim().replace(/<[^>]+>/g,'').replace(/\\s+/g,' ') : '';\n\n  const pesoM = block.match(/name=\"pes_\\d+\" type=\"text\"[^>]*value=\"([^\"]*)\"/);\n  const peso = parseFloat(pesoM ? pesoM[1].trim() : '0') || 0;\n\n  const desM = block.match(/name=\"des_\\d+\" type=\"text\"[^>]*value=\"([^\"]*)\"/);\n  const contenido = desM ? desM[1].trim() : '';\n\n  const decM = block.match(/name=\"dec_\\d+\" type=\"text\"[^>]*value=\"([^\"]*)\"/);\n  const valorDec = decM ? decM[1].trim() : '0';\n\n  const contenidoLower = contenido.toLowerCase();\n  const esDG = ['dg', 'un'].some(p => contenidoLower.includes(p));\n\n  rows.push({ whr, manifestoId, casilleroId, agencia, peso, contenido, valorDec, esDG });\n}\n\n// Agrupar por casillero\nconst grupos = {};\nfor (const r of rows) {\n  const key = r.casilleroId;\n  if (!grupos[key]) grupos[key] = [];\n  grupos[key].push(r);\n}\n\nconst resultados = [];\nfor (const [casId, guias] of Object.entries(grupos)) {\n  const tieneDG = guias.some(g => g.esDG);\n  const paItems = guias.map(g => `${g.peso}x0x0x0x${g.manifestoId}`);\n  resultados.push({\n    casilleroId:  casId,\n    agencia:      guias[0].agencia,\n    tipo:         tieneDG ? 'DG' : 'NORMAL',\n    whrsValidos:  guias.map(g => g.whr),\n    whrsStr:      guias.map(g => `'${g.whr}'`).join(','),\n    whrsBuscar:   guias.map(g => g.whr).join('%7C'),\n    pa:           paItems.join('|'),\n    piezas:       guias.length,\n    pesoTotal:    guias.reduce((s, g) => s + g.peso, 0).toFixed(2),\n    descripcion:  guias.map(g => g.contenido).join('\\n'),\n    valdec:       guias.reduce((s, g) => s + (parseFloat(g.valorDec) || 0), 0),\n    primerWhr:    guias[0].whr,\n    cookieNormal,\n    nomr: 'por confirmar', dirr: '8524 NW 61 ST', ciur: 'Miami',\n    estr: 'Florida', zipr: '33166', pair: 'USA', telr: '305-594-1100',\n    nAgencia: '00001', nprod: 'experto.col', producto: '16',\n  });\n}\n\nif (resultados.length === 0) {\n  return [{ json: { __sinGrupos: true, mensaje: 'No se encontraron WHRs para los casilleros recibidos', cookieNormal }}];\n}\n\nreturn resultados.map(r => ({ json: r }));\n"
+      },
+      "id": "ffd35ab0-5b20-4d8b-b9f5-c25f093fe3ef",
+      "name": "Preparar Grupos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1
+      },
+      "id": "184cde15-d7de-41f4-82dd-3dd4b2c77a40",
+      "name": "Split Grupos",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.tipo }}",
+              "operation": "equal",
+              "value2": "DG"
+            }
+          ]
+        }
+      },
+      "id": "8af0382c-55a0-46b7-8685-082cf5b87821",
+      "name": "¿Es DG?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://store1.zenderbox.com/app/validarusuario.asp",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "usuario",
+              "value": "alejandro.acuna@zenderbox.com"
+            },
+            {
+              "name": "clave",
+              "value": "Alejo1983.,"
+            },
+            {
+              "name": "cbxidioma",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "fec8e9e8-e753-48cb-824c-311868db0ef6",
+      "name": "Login WMS DG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $input.item.json.headers || {};\nconst raw = headers['set-cookie'] || headers['Set-Cookie'] || [];\nconst parts = Array.isArray(raw) ? raw : [raw];\nconst cookieDG = parts.map(c => (typeof c === 'string' ? c.split(';')[0].trim() : '')).filter(Boolean).join('; ');\nif (!cookieDG) throw new Error('Login DG fallido.');\nconst grupo = $('Split Grupos').item.json;\nreturn [{ json: { ...grupo, cookieActiva: cookieDG }}];"
+      },
+      "id": "ee3909c5-18aa-4d96-9608-8ad866199674",
+      "name": "Extraer Cookies DG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const grupo = $('Split Grupos').item.json;\nreturn [{ json: { ...grupo, cookieActiva: grupo.cookieNormal }}];"
+      },
+      "id": "81507880-69f7-4138-8fcd-a0db435c7e03",
+      "name": "Preparar Cookie",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://store1.zenderbox.com/app/ajax/whrToGuiaMultiples.asp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookieActiva }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "w_whrs",
+              "value": "={{ $json.whrsBuscar }}"
+            },
+            {
+              "name": "w_despacho",
+              "value": ""
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "1799766b-7041-40c2-815b-7e9701976f21",
+      "name": "whrToGuiaMultiples",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.data || '';\nconst grupo = $('Split Grupos').item.json;\nif (html.length < 500) return [{ json: { ...grupo, _parseOk: false, _error: 'guias.asp respuesta vacía' }}];\nfunction extractField(name) {\n  const m = html.match(new RegExp('name=\"' + name + '\"[^>]*value=\"([^\"]*)\"', 'i'));\n  return m ? m[1] : '';\n}\nconst casillero = extractField('casillero');\nconst casillero_id = extractField('casillero_id');\nconst guiaingreso = extractField('guiaingreso');\nconst fletes = extractField('fletes') || '0';\nconst Total = extractField('Total') || '0';\nconst adicionales = extractField('adicionales') || '0';\nconst h_adic_auto = extractField('h_adicionales_auto') || '';\nconst Val_Dif_Vol = extractField('Val_Dif_Vol') || '0';\nconst impuestotxt = extractField('impuestotxt') || '0.00';\nconst seguro = extractField('seguro') || '5.00';\nconst totalseguro = extractField('totalseguro') || '0.00';\nconst pesovolumetrico = extractField('pesovolumetrico') || '0';\nconst paquetesadjuntos = extractField('paquetesadjuntos') || '';\nconst formaPago = extractField('formaPago') || 'NP';\nconst nomd = extractField('nomd');\nconst dird = extractField('dird');\nconst des_nit = extractField('des_nit');\nconst ciudades = extractField('ciudades');\nconst ciudadesn = extractField('ciudadesn');\nconst paises = extractField('paises') || '1';\nconst paisesn = extractField('paisesn');\nconst zipd = extractField('zipd');\nconst teld = extractField('teld');\nconst emaild = extractField('emaild');\nconst celular_des = extractField('celular_des');\nconst rem_id = extractField('rem_id') || '';\nconst valdec = extractField('valdec') || grupo.valdec || '0';\nconst diferenciaPeso = extractField('diferenciaPeso') || '0';\nconst pesol2 = extractField('pesol2') || grupo.pesoTotal;\nconst pesovol = extractField('pesovol') || '0.00';\nif (!Total || Total === '0') return [{ json: { ...grupo, _parseOk: false, _error: 'SIN_TARIFA', casillero, guiaingreso }}];\nreturn [{ json: { ...grupo, _parseOk: true, guiaingreso, fletes, Total, adicionales, h_adic_auto, Val_Dif_Vol, impuestotxt, seguro, totalseguro, pesovolumetrico, paquetesadjuntos, formaPago, diferenciaPeso, pesol2, pesovol, valdec, casillero, casillero_id_real: casillero_id, nomd, dird, des_nit, ciudades, ciudadesn, paises, paisesn, zipd, teld, emaild, celular_des, rem_id }}];"
+      },
+      "id": "78701faf-a6f7-44bc-b607-a76f0ee7b3f8",
+      "name": "Parsear guias.asp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json._parseOk }}",
+              "operation": "equal",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "66893f8b-e0c0-4f45-beb0-a2c511096783",
+      "name": "¿Parse OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://store1.zenderbox.com/app/guardarguia.asp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookieActiva }}"
+            },
+            {
+              "name": "Referer",
+              "value": "https://store1.zenderbox.com/app/guias.asp"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "despacho_form",
+              "value": "1"
+            },
+            {
+              "name": "nAgencia",
+              "value": "={{ $json.nAgencia }}"
+            },
+            {
+              "name": "nomr",
+              "value": "={{ $json.nomr }}"
+            },
+            {
+              "name": "n_remitente",
+              "value": ""
+            },
+            {
+              "name": "n_destinatario",
+              "value": ""
+            },
+            {
+              "name": "dirr",
+              "value": "={{ $json.dirr }}"
+            },
+            {
+              "name": "ciur",
+              "value": "={{ $json.ciur }}"
+            },
+            {
+              "name": "estr",
+              "value": "={{ $json.estr }}"
+            },
+            {
+              "name": "zipr",
+              "value": "={{ $json.zipr }}"
+            },
+            {
+              "name": "pair",
+              "value": "={{ $json.pair }}"
+            },
+            {
+              "name": "telr",
+              "value": "={{ $json.telr }}"
+            },
+            {
+              "name": "guiaingreso",
+              "value": "={{ $json.guiaingreso }}"
+            },
+            {
+              "name": "rem_id",
+              "value": "={{ $json.rem_id }}"
+            },
+            {
+              "name": "email",
+              "value": ""
+            },
+            {
+              "name": "celular_rem",
+              "value": ""
+            },
+            {
+              "name": "nomd",
+              "value": "={{ $json.nomd }}"
+            },
+            {
+              "name": "dird",
+              "value": "={{ $json.dird }}"
+            },
+            {
+              "name": "ciudadesn",
+              "value": "={{ $json.ciudadesn }}"
+            },
+            {
+              "name": "paisesn",
+              "value": "={{ $json.paisesn }}"
+            },
+            {
+              "name": "des_nit",
+              "value": "={{ $json.des_nit }}"
+            },
+            {
+              "name": "barrio",
+              "value": ""
+            },
+            {
+              "name": "ciudades",
+              "value": "={{ $json.ciudades }}"
+            },
+            {
+              "name": "paises",
+              "value": "={{ $json.paises }}"
+            },
+            {
+              "name": "zipd",
+              "value": "={{ $json.zipd }}"
+            },
+            {
+              "name": "teld",
+              "value": "={{ $json.teld }}"
+            },
+            {
+              "name": "pais",
+              "value": "1"
+            },
+            {
+              "name": "emaild",
+              "value": "={{ $json.emaild }}"
+            },
+            {
+              "name": "celular_des",
+              "value": "={{ $json.celular_des }}"
+            },
+            {
+              "name": "nomcuenta",
+              "value": ""
+            },
+            {
+              "name": "cuenta",
+              "value": ""
+            },
+            {
+              "name": "casillero",
+              "value": "={{ $json.casillero }}"
+            },
+            {
+              "name": "casillero_id",
+              "value": "={{ $json.casillero_id_real }}"
+            },
+            {
+              "name": "producton",
+              "value": "={{ $json.nprod }}"
+            },
+            {
+              "name": "producto",
+              "value": "={{ $json.producto }}"
+            },
+            {
+              "name": "nprod",
+              "value": "={{ $json.nprod }}"
+            },
+            {
+              "name": "SoloCOD",
+              "value": "True"
+            },
+            {
+              "name": "pesot",
+              "value": ""
+            },
+            {
+              "name": "alto",
+              "value": "0"
+            },
+            {
+              "name": "ancho",
+              "value": "0"
+            },
+            {
+              "name": "largo",
+              "value": "0"
+            },
+            {
+              "name": "diferenciaPeso",
+              "value": "={{ $json.diferenciaPeso }}"
+            },
+            {
+              "name": "pa",
+              "value": "={{ $json.pa }}"
+            },
+            {
+              "name": "pacan",
+              "value": ""
+            },
+            {
+              "name": "pesovolumetrico",
+              "value": "={{ $json.pesovolumetrico }}"
+            },
+            {
+              "name": "pcobrar",
+              "value": ""
+            },
+            {
+              "name": "paquetesadjuntos",
+              "value": "={{ $json.paquetesadjuntos }}"
+            },
+            {
+              "name": "descripcion",
+              "value": "={{ $json.descripcion }}"
+            },
+            {
+              "name": "whrs",
+              "value": "={{ $json.whrsStr }}"
+            },
+            {
+              "name": "catalogos",
+              "value": "0"
+            },
+            {
+              "name": "piezas",
+              "value": "={{ $json.piezas }}"
+            },
+            {
+              "name": "piezas2",
+              "value": "={{ $json.piezas }}"
+            },
+            {
+              "name": "pesol",
+              "value": "={{ $json.pesoTotal }}"
+            },
+            {
+              "name": "pesol2",
+              "value": "={{ $json.pesol2 }}"
+            },
+            {
+              "name": "pesovol",
+              "value": "={{ $json.pesovol }}"
+            },
+            {
+              "name": "pesovol2",
+              "value": "0.00"
+            },
+            {
+              "name": "formaPago",
+              "value": "={{ $json.formaPago }}"
+            },
+            {
+              "name": "val",
+              "value": "0"
+            },
+            {
+              "name": "fletes",
+              "value": "={{ $json.fletes }}"
+            },
+            {
+              "name": "Val_Dif_Vol",
+              "value": "={{ $json.Val_Dif_Vol }}"
+            },
+            {
+              "name": "calcularimpuesto",
+              "value": "Si"
+            },
+            {
+              "name": "valdec",
+              "value": "={{ $json.valdec }}"
+            },
+            {
+              "name": "impuestotxt",
+              "value": "={{ $json.impuestotxt }}"
+            },
+            {
+              "name": "otros1",
+              "value": "0.00"
+            },
+            {
+              "name": "seguro",
+              "value": "={{ $json.seguro }}"
+            },
+            {
+              "name": "calcularseguro",
+              "value": "Si"
+            },
+            {
+              "name": "valasegurado",
+              "value": "0"
+            },
+            {
+              "name": "totalseguro",
+              "value": "={{ $json.totalseguro }}"
+            },
+            {
+              "name": "h_adicionales",
+              "value": ""
+            },
+            {
+              "name": "h_adicionales_auto",
+              "value": "={{ $json.h_adic_auto }}"
+            },
+            {
+              "name": "codpa",
+              "value": ""
+            },
+            {
+              "name": "idpa",
+              "value": ""
+            },
+            {
+              "name": "adicionales",
+              "value": "={{ $json.adicionales }}"
+            },
+            {
+              "name": "seguroagencia",
+              "value": "0"
+            },
+            {
+              "name": "seguroffw",
+              "value": "0"
+            },
+            {
+              "name": "otros",
+              "value": "0"
+            },
+            {
+              "name": "descuento",
+              "value": "0"
+            },
+            {
+              "name": "promocion",
+              "value": "0.00"
+            },
+            {
+              "name": "despachoID",
+              "value": ""
+            },
+            {
+              "name": "PoboxPcode",
+              "value": "0"
+            },
+            {
+              "name": "Total",
+              "value": "={{ $json.Total }}"
+            },
+            {
+              "name": "observaciones",
+              "value": "={{ $json.whrsValidos.map(w => ',/').join('') }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "138821e5-5c49-4097-b954-8372ced83aa9",
+      "name": "guardarguia.asp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const resp = $input.item.json;\nconst grupo = $('Split Grupos').item.json;\nconst headers = resp.headers || {};\nconst location = headers['location'] || headers['Location'] || '';\nconst statusCode = resp.statusCode || 0;\nconst exito = statusCode === 302 && location.includes('salvado=1');\nconst idMatch = location.match(/id=(\\d+)/);\nconst guiaId = idMatch ? idMatch[1] : '';\nreturn [{ json: { ...grupo, _exito: exito, guiaId, location, statusCode, mensaje: exito ? `Despachado OK - Guía #${guiaId}` : `Error al guardar - Status:${statusCode}` }}];"
+      },
+      "id": "c1e50f03-5782-4bfb-9bb7-58bc307de97d",
+      "name": "Verificar Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json._exito }}",
+              "operation": "equal",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "382f6402-aa34-4a77-9f63-ab2701c2cdfd",
+      "name": "¿Éxito?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nTU-pkmHKiiSUs5ro5dVmZLawxUEKGoL53wE0Mhxt0g",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "despachos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "casillero_id": "={{ $json.casilleroId }}",
+            "agencia": "Colombia",
+            "whrs": "={{ $json.whrsValidos.join(', ') }}",
+            "tipo": "={{ $json.tipo }}",
+            "guias_validas": "={{ $json.piezas }}",
+            "guias_omitidas": "",
+            "estado": "DESPACHADO",
+            "guia_courier": "={{ $json.guiaId }}",
+            "fecha": "={{ new Date().toLocaleString('es-CO') }}",
+            "bot": "={{ $json.mensaje }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "35891d01-9f6f-4478-bf99-85845c608468",
+      "name": "Log Sheet OK",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3520,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nTU-pkmHKiiSUs5ro5dVmZLawxUEKGoL53wE0Mhxt0g",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "despachos",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "casillero_id": "={{ $json.casilleroId || '' }}",
+            "agencia": "Colombia",
+            "whrs": "={{ ($json.whrsValidos || []).join(', ') }}",
+            "tipo": "={{ $json.tipo || '' }}",
+            "guias_validas": "={{ $json.piezas || 0 }}",
+            "guias_omitidas": "={{ $json._error || '' }}",
+            "estado": "ERROR",
+            "guia_courier": "",
+            "fecha": "={{ new Date().toLocaleString('es-CO') }}",
+            "bot": "={{ $json.mensaje || $json._error || 'Error desconocido' }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "afdb5498-8021-4c95-82ad-ef5f5e35c99a",
+      "name": "Log Sheet Error",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3520,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, mensaje: 'Despacho completado' }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "acf10942-00a5-47bc-bf15-ccd59f8f32ad",
+      "name": "Responder Resultado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3960,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "unit": "seconds",
+        "amount": 10
+      },
+      "id": "7d3b446c-3ad6-4015-a8c9-86162fde6e61",
+      "name": "Pausa 10s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        3740,
+        300
+      ],
+      "webhookId": "fbf058c7-7412-4417-a68e-43ae4221f205"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.item.json.data || '';\nconst grupo = $('Split Grupos').item.json;\nconst cookieActiva = grupo.cookieActiva || grupo.cookieNormal;\n\nconst fields = {};\nconst inputPattern = /<input[^>]*name=\"([^\"]*)\"[^>]*value=\"([^\"]*)\"[^>]*>/gi;\nlet m;\nwhile ((m = inputPattern.exec(html)) !== null) {\n  if (!fields[m[1]]) fields[m[1]] = m[2]; // no sobreescribir duplicados\n}\n\nif (!fields['casillero']) {\n  return [{ json: { ...grupo, _formOk: false, _error: 'Form vacío', cookieActiva }}];\n}\n\nreturn [{ json: { ...grupo, _formOk: true, _formFields: fields, cookieActiva }}];\n"
+      },
+      "id": "9376d46a-9505-4673-81e5-500459f8167c",
+      "name": "Extraer Form whrToGuia",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://store1.zenderbox.com/app/guias.asp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookieActiva }}"
+            },
+            {
+              "name": "Referer",
+              "value": "https://store1.zenderbox.com/app/deapachoscasillero.asp"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "donde",
+              "value": "={{ $json._formFields.donde || 'consulta' }}"
+            },
+            {
+              "name": "valdec",
+              "value": "={{ $json._formFields.valdec || '0' }}"
+            },
+            {
+              "name": "despacho_form",
+              "value": "1"
+            },
+            {
+              "name": "nomr",
+              "value": "={{ $json._formFields.nomr }}"
+            },
+            {
+              "name": "dirr",
+              "value": "={{ $json._formFields.dirr }}"
+            },
+            {
+              "name": "pair",
+              "value": "={{ $json._formFields.pair }}"
+            },
+            {
+              "name": "ciur",
+              "value": "={{ $json._formFields.ciur }}"
+            },
+            {
+              "name": "estr",
+              "value": "={{ $json._formFields.estr }}"
+            },
+            {
+              "name": "zipr",
+              "value": "={{ $json._formFields.zipr }}"
+            },
+            {
+              "name": "telr",
+              "value": "={{ $json._formFields.telr }}"
+            },
+            {
+              "name": "piezas",
+              "value": "={{ $json._formFields.piezas }}"
+            },
+            {
+              "name": "pesol",
+              "value": "={{ $json._formFields.pesol }}"
+            },
+            {
+              "name": "alto",
+              "value": "={{ $json._formFields.alto || '0' }}"
+            },
+            {
+              "name": "ancho",
+              "value": "={{ $json._formFields.ancho || '0' }}"
+            },
+            {
+              "name": "largo",
+              "value": "={{ $json._formFields.largo || '0' }}"
+            },
+            {
+              "name": "producto",
+              "value": "={{ $json._formFields.producto }}"
+            },
+            {
+              "name": "producton",
+              "value": "={{ $json._formFields.producton }}"
+            },
+            {
+              "name": "SoloCOD",
+              "value": "True"
+            },
+            {
+              "name": "descripcion",
+              "value": "={{ $json._formFields.descripcion }}"
+            },
+            {
+              "name": "pa",
+              "value": "={{ $json._formFields.pa }}"
+            },
+            {
+              "name": "paises",
+              "value": "={{ $json._formFields.paises || '1' }}"
+            },
+            {
+              "name": "pago",
+              "value": "={{ $json._formFields.pago || 'porcobrar' }}"
+            },
+            {
+              "name": "nAgencia",
+              "value": "={{ $json._formFields.nAgencia }}"
+            },
+            {
+              "name": "nprod",
+              "value": "={{ $json._formFields.nprod }}"
+            },
+            {
+              "name": "whrs",
+              "value": "={{ $json._formFields.whrs }}"
+            },
+            {
+              "name": "nro_primer_paquete",
+              "value": "={{ $json._formFields.nro_primer_paquete }}"
+            },
+            {
+              "name": "promocion",
+              "value": "0"
+            },
+            {
+              "name": "PoboxPcode",
+              "value": "0"
+            },
+            {
+              "name": "observaciones",
+              "value": "={{ $json.whrsValidos.map(w => ',/').join('') }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "e64b799a-79c2-43ef-8868-385494fd7cad",
+      "name": "Cargar guias.asp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Login WMS Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login WMS Normal": {
+      "main": [
+        [
+          {
+            "node": "Extraer Cookies y IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Cookies y IDs": {
+      "main": [
+        [
+          {
+            "node": "Buscar en Despachos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar en Despachos": {
+      "main": [
+        [
+          {
+            "node": "Preparar Grupos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Grupos": {
+      "main": [
+        [
+          {
+            "node": "Split Grupos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Grupos": {
+      "main": [
+        [
+          {
+            "node": "¿Es DG?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es DG?": {
+      "main": [
+        [
+          {
+            "node": "Login WMS DG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Cookie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login WMS DG": {
+      "main": [
+        [
+          {
+            "node": "Extraer Cookies DG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Cookies DG": {
+      "main": [
+        [
+          {
+            "node": "whrToGuiaMultiples",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Cookie": {
+      "main": [
+        [
+          {
+            "node": "whrToGuiaMultiples",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "whrToGuiaMultiples": {
+      "main": [
+        [
+          {
+            "node": "Extraer Form whrToGuia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar guias.asp": {
+      "main": [
+        [
+          {
+            "node": "Parsear guias.asp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear guias.asp": {
+      "main": [
+        [
+          {
+            "node": "¿Parse OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Parse OK?": {
+      "main": [
+        [
+          {
+            "node": "guardarguia.asp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Sheet Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "guardarguia.asp": {
+      "main": [
+        [
+          {
+            "node": "Verificar Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Resultado": {
+      "main": [
+        [
+          {
+            "node": "¿Éxito?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Éxito?": {
+      "main": [
+        [
+          {
+            "node": "Log Sheet OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Sheet Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Sheet OK": {
+      "main": [
+        [
+          {
+            "node": "Pausa 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Sheet Error": {
+      "main": [
+        [
+          {
+            "node": "Pausa 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa 10s": {
+      "main": [
+        [
+          {
+            "node": "Split Grupos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Form whrToGuia": {
+      "main": [
+        [
+          {
+            "node": "Cargar guias.asp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
