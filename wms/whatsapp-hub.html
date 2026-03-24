@@ -962,15 +962,13 @@ async function openConversation(contact) {
   activeConv = contact;
   const conv = conversations[contact];
   if (!conv) return;
-
-  // Reset unread
   conv.unread = 0;
   renderConvList();
 
   const colors = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444'];
   const color = colors[parseInt(contact.slice(-1)) % colors.length];
 
-  // Render chat structure with spinner while loading
+  // Mostrar spinner mientras carga
   document.getElementById('chatArea').innerHTML = `
     <div class="chat-header">
       <div class="chat-avatar" style="background:${color}22;color:${color}">${contact.slice(-2)}</div>
@@ -997,20 +995,29 @@ async function openConversation(contact) {
       </div>
     </div>`;
 
-  // Fetch full message thread from n8n
+  // Llamar al endpoint de mensajes pasando el contacto
   try {
     const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-mensajes?contacto=' + encodeURIComponent(contact));
     const data = await res.json();
     conv.messages = data.mensajes || [];
     if (data.linea) conv.linea = data.linea;
-    const mc = document.getElementById('msgContainer');
-    if (mc) mc.innerHTML = renderMessages(conv.messages);
-    const info = document.getElementById('chatContactNumber');
-    if (info) info.textContent = `${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · ${conv.messages.length} mensajes`;
   } catch(e) {
-    const mc = document.getElementById('msgContainer');
-    if (mc) mc.innerHTML = `<div class="loading" style="color:var(--danger)">❌ Error: ${e.message}</div>`;
+    conv.messages = conv.messages || [];
   }
+
+  // Re-renderizar con los mensajes completos
+  openConversationRender(contact);
+}
+
+function openConversationRender(contact) {
+  const conv = conversations[contact];
+  if (!conv) return;
+
+  const mc = document.getElementById('msgContainer');
+  if (mc) mc.innerHTML = renderMessages(conv.messages);
+
+  const info = document.getElementById('chatContactNumber');
+  if (info) info.textContent = `${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · ${conv.messages.length} mensajes`;
 
   // Scroll to bottom
   setTimeout(() => {
