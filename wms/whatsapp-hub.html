@@ -890,7 +890,11 @@ async function loadConversations() {
     for (const conv of convData.conversaciones) {
       conversations[conv.contact] = conv;
     }
-    resueltosSet = new Set((estadoData.resueltos || []).map(n => n.trim()));
+    resueltosSet = new Set(
+      (estadoData.resueltos || [])
+        .filter(n => n && typeof n === 'string')
+        .map(n => n.trim())
+    );
 
     renderConvList();
     showNotification(`✅ ${convData.total} conversaciones cargadas`, 'success');
