@@ -905,6 +905,8 @@ async function loadConversations() {
 
 // ─── RENDER CONVERSATIONS ─────────────────────────────────────────────────────
 function renderConvList() {
+  console.log('resueltosSet:', [...resueltosSet]);
+  console.log('contacts:', Object.keys(conversations).slice(0,3));
   const search = document.getElementById('searchInput').value.toLowerCase();
   const list = document.getElementById('convList');
 
