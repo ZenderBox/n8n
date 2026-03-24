@@ -948,7 +948,7 @@ function renderConvList() {
           </div>
           <div class="conv-preview">${conv.lastMsg?.direction === 'outbound-api' ? '↗ ' : '↙ '}${preview}</div>
           <div class="conv-badges">
-            <span class="badge badge-${conv.line}">${conv.line.toUpperCase()}</span>
+            <span class="badge badge-${conv.linea?.toLowerCase()}">${conv.linea}</span>
             ${isPending ? '<span class="badge badge-pending">SIN RESPONDER</span>' : ''}
           </div>
         </div>
@@ -975,7 +975,7 @@ function openConversation(contact) {
       <div class="chat-avatar" style="background:${color}22;color:${color}">${contact.slice(-2)}</div>
       <div class="chat-contact-info">
         <div class="chat-contact-name">${contact}</div>
-        <div class="chat-contact-number">${conv.line === 'cr' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · ${conv.messages.length} mensajes</div>
+        <div class="chat-contact-number">${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · ${conv.messages.length} mensajes</div>
       </div>
       <div class="chat-header-actions">
         <button class="icon-btn" onclick="loadMessageThread('${contact}')" title="Refrescar">🔄</button>
@@ -985,14 +985,14 @@ function openConversation(contact) {
     <div class="input-area">
       <div class="template-bar" id="templateBar">
         ${Object.entries(TEMPLATES).slice(0,5).map(([sid, t]) =>
-          `<button class="template-chip" onclick="sendTemplate('${contact}', '${sid}', '${conv.line}')">${t.name}</button>`
+          `<button class="template-chip" onclick="sendTemplate('${contact}', '${sid}', '${conv.linea}')">${t.name}</button>`
         ).join('')}
-        <button class="template-chip" onclick="toggleAllTemplates('${contact}', '${conv.line}')">+ más</button>
+        <button class="template-chip" onclick="toggleAllTemplates('${contact}', '${conv.linea}')">+ más</button>
       </div>
       <div class="input-row">
         <textarea class="msg-input" id="msgInput" placeholder="Escribe un mensaje... (solo dentro de la ventana de 24h)" rows="1"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('${contact}','${conv.line}')}"></textarea>
-        <button class="send-btn" onclick="sendMessage('${contact}','${conv.line}')">➤</button>
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('${contact}','${conv.linea}')}"></textarea>
+        <button class="send-btn" onclick="sendMessage('${contact}','${conv.linea}')">➤</button>
       </div>
     </div>`;
 
