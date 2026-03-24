@@ -958,7 +958,7 @@ function renderConvList() {
 }
 
 // ─── OPEN CONVERSATION ────────────────────────────────────────────────────────
-function openConversation(contact) {
+async function openConversation(contact) {
   activeConv = contact;
   const conv = conversations[contact];
   if (!conv) return;
@@ -970,18 +970,19 @@ function openConversation(contact) {
   const colors = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444'];
   const color = colors[parseInt(contact.slice(-1)) % colors.length];
 
+  // Render chat structure with spinner while loading
   document.getElementById('chatArea').innerHTML = `
     <div class="chat-header">
       <div class="chat-avatar" style="background:${color}22;color:${color}">${contact.slice(-2)}</div>
       <div class="chat-contact-info">
         <div class="chat-contact-name">${contact}</div>
-        <div class="chat-contact-number">${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · ${conv.messages.length} mensajes</div>
+        <div class="chat-contact-number" id="chatContactNumber">${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · cargando...</div>
       </div>
       <div class="chat-header-actions">
-        <button class="icon-btn" onclick="loadMessageThread('${contact}')" title="Refrescar">🔄</button>
+        <button class="icon-btn" onclick="openConversation('${contact}')" title="Refrescar">🔄</button>
       </div>
     </div>
-    <div class="messages" id="msgContainer">${renderMessages(conv.messages)}</div>
+    <div class="messages" id="msgContainer"><div class="loading"><div class="spinner"></div> Cargando mensajes...</div></div>
     <div class="input-area">
       <div class="template-bar" id="templateBar">
         ${Object.entries(TEMPLATES).slice(0,5).map(([sid, t]) =>
@@ -995,6 +996,21 @@ function openConversation(contact) {
         <button class="send-btn" onclick="sendMessage('${contact}','${conv.linea}')">➤</button>
       </div>
     </div>`;
+
+  // Fetch full message thread from n8n
+  try {
+    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-mensajes?contacto=' + encodeURIComponent(contact));
+    const data = await res.json();
+    conv.messages = data.mensajes || [];
+    if (data.linea) conv.linea = data.linea;
+    const mc = document.getElementById('msgContainer');
+    if (mc) mc.innerHTML = renderMessages(conv.messages);
+    const info = document.getElementById('chatContactNumber');
+    if (info) info.textContent = `${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · ${conv.messages.length} mensajes`;
+  } catch(e) {
+    const mc = document.getElementById('msgContainer');
+    if (mc) mc.innerHTML = `<div class="loading" style="color:var(--danger)">❌ Error: ${e.message}</div>`;
+  }
 
   // Scroll to bottom
   setTimeout(() => {
@@ -1016,6 +1032,7 @@ function renderMessages(messages) {
     }
 
     const isInbound = msg.direction === 'inbound';
+    const isOutbound = msg.direction === 'outbound-api' || msg.direction === 'outbound-reply';
     const time = new Date(msg.date_created).toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
     const statusIcon = msg.status === 'delivered' ? '✓✓' : msg.status === 'read' ? '✓✓' : '✓';
     const statusClass = msg.status === 'read' ? 'read' : msg.status === 'delivered' ? 'delivered' : '';
