@@ -1061,15 +1061,16 @@ async function sendFreeText(contact) {
   input.value = '';
 
   try {
-    const params = new URLSearchParams({
-      tel: contact,
-      sid: 'HX3865827f6d17f88792e0c0f665caafc6',
-      guia: 'WA-HUB',
-      vars: JSON.stringify({"1": body, "2": ""})
-    });
-    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-enviar-whatsapp?' + params);
-    await res.json();
-    showNotification('✅ Mensaje enviado', 'success');
+    const url = 'https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-enviar-texto'
+      + '?tel=' + encodeURIComponent(contact)
+      + '&body=' + encodeURIComponent(body);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.ok) {
+      showNotification('✅ Mensaje enviado', 'success');
+    } else {
+      showNotification('❌ ' + (data.message || 'Error enviando'), 'error');
+    }
     openConversation(contact);
   } catch (e) {
     showNotification('❌ Error: ' + e.message, 'error');
