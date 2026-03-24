@@ -881,18 +881,16 @@ async function twilioFetch(url) {
 async function loadConversations() {
   document.getElementById('convList').innerHTML = '<div class="loading"><div class="spinner"></div> Cargando...</div>';
   try {
-    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-conversaciones');
-    const data = await res.json();
+    const [convData, estadoData] = await Promise.all([
+      fetch('https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-conversaciones').then(r => r.json()),
+      fetch('https://zenderbox.app.n8n.cloud/webhook/wa-hub-estado?pais=CR').then(r => r.json()).catch(() => ({ resueltos: [] }))
+    ]);
+
     conversations = {};
-    for (const conv of data.conversaciones) {
+    for (const conv of convData.conversaciones) {
       conversations[conv.contact] = conv;
     }
-    // Cargar estado de resueltos
-    try {
-      const resEstado = await fetch('https://zenderbox.app.n8n.cloud/webhook/wa-hub-estado?pais=CR');
-      const dataEstado = await resEstado.json();
-      resueltosSet = new Set(dataEstado.resueltos || []);
-    } catch(e2) { resueltosSet = new Set(); }
+    resueltosSet = new Set(estadoData.resueltos || []);
 
     // Desresolver automáticamente contactos con nuevo mensaje inbound
     for (const conv of Object.values(conversations)) {
@@ -902,7 +900,7 @@ async function loadConversations() {
     }
 
     renderConvList();
-    showNotification(`✅ ${data.total} conversaciones cargadas`, 'success');
+    showNotification(`✅ ${convData.total} conversaciones cargadas`, 'success');
   } catch(e) {
     document.getElementById('convList').innerHTML = `<div class="loading" style="color:var(--danger)">❌ Error: ${e.message}</div>`;
   }
