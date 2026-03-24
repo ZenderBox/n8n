@@ -930,9 +930,11 @@ function renderConvList() {
 
   let convs = Object.values(conversations);
 
-  // Filter by line
-  if (currentLine !== 'all') {
-    convs = convs.filter(c => c.line === currentLine);
+  // Filtrar por línea activa
+  if (currentLine === 'cr') {
+    convs = convs.filter(c => c.linea === 'CR');
+  } else if (currentLine === 'col') {
+    convs = convs.filter(c => c.linea === 'COL');
   }
 
   // Filter by status
