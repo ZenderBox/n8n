@@ -182,7 +182,10 @@
             const estCls   = w.estado === 'OK' ? 'estado-ok' : 'estado-err';
             const estTxt   = w.estado === 'OK' ? 'OK' : w.estado;
             const trCls    = w.estado !== 'OK' ? 'omitida' : '';
-            return '<tr class="' + trCls + '"><td class="whr-code">' + w.whr + '</td><td><span class="pos ' + posCls + '">' + posTxt + '</span></td><td>' + w.peso + ' lb</td><td>' + (w.contenido||'') + '</td><td class="' + estCls + '">' + estTxt + '</td></tr>';
+            const comentarioTxt = w.comentario ? w.comentario : '';
+            const comentarioCls = comentarioTxt ? 'style="font-family:var(--mono);font-size:10px;color:var(--yellow)"' : 'style="color:var(--text-muted);font-size:10px"';
+            const comentarioHtml = '<td><span ' + comentarioCls + '>' + (comentarioTxt || '—') + '</span></td>';
+            return '<tr class="' + trCls + '"><td class="whr-code">' + w.whr + '</td><td><span class="pos ' + posCls + '">' + posTxt + '</span></td><td>' + w.peso + ' lb</td><td>' + (w.contenido||'') + '</td>' + comentarioHtml + '<td class="' + estCls + '">' + estTxt + '</td></tr>';
         }).join('');
         const chk = esListo ? '<input type="checkbox" class="chk-despacho" id="chk-' + g.casillero_id + '" value="' + g.casillero_id + '" onclick="event.stopPropagation(); actualizarSeleccion()">' : '';
         return '<div class="grupo open"><div class="grupo-header" onclick="toggleGrupo(this)">' +
@@ -194,7 +197,7 @@
             '<span class="grupo-agencia">' + (g.agencia||'') + '</span>' +
             '<span class="toggle-icon">&#9660;</span></div>' +
             '<div class="grupo-body"><table class="whr-table">' +
-            '<tr><th>WHR</th><th>Posicion</th><th>Peso</th><th>Contenido</th><th>Estado</th></tr>' +
+            '<tr><th>WHR</th><th>Posicion</th><th>Peso</th><th>Contenido</th><th>Comentario</th><th>Estado</th></tr>' +
             filas + '</table></div></div>';
     }
 
