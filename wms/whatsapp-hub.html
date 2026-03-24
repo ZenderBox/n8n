@@ -836,6 +836,7 @@ let activeConv = null;
 let currentFilter = 'all';
 let currentLine = 'all';
 let resueltosSet = new Set();
+let resueltosTimestamps = {};
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -895,6 +896,7 @@ async function loadConversations() {
         .filter(n => typeof n === 'string' && n.length > 0)
         .map(n => n.trim())
     );
+    resueltosTimestamps = estadoData?.timestamps || {};
 
     renderConvList();
     showNotification(`✅ ${convData.total} conversaciones cargadas`, 'success');
@@ -992,12 +994,17 @@ async function openConversation(contact) {
     conv.messages = conv.messages || [];
   }
 
-  // Si está marcado como resuelto PERO el último mensaje es inbound
-  // significa que el cliente escribió de nuevo — desresolver
+  // Solo desresolver si el último mensaje inbound es MÁS NUEVO
+  // que cuando se marcó como resuelto
   const lastMsg = conv.messages?.[conv.messages.length - 1];
-  if (resueltosSet.has(String(contact || '').trim()) &&
-      lastMsg?.direction === 'inbound') {
-    resueltosSet.delete(String(contact || '').trim());
+  const contactKey = String(contact || '').trim();
+  const resolvedTimestamp = resueltosTimestamps?.[contactKey] || 0;
+  const lastMsgTimestamp = lastMsg ? new Date(lastMsg.date_created).getTime() : 0;
+
+  if (resueltosSet.has(contactKey) &&
+      lastMsg?.direction === 'inbound' &&
+      lastMsgTimestamp > resolvedTimestamp) {
+    resueltosSet.delete(contactKey);
     fetch('https://zenderbox.app.n8n.cloud/webhook/wa-hub-desresolver'
       + '?numero=' + encodeURIComponent(contact) + '&pais=CR');
     renderConvList();
