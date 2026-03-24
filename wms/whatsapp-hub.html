@@ -685,6 +685,7 @@
       <button class="line-btn" onclick="setLine('cr', this)">🇨🇷 CR</button>
       <button class="line-btn" onclick="setLine('col', this)">🇨🇴 COL</button>
     </div>
+    <button class="btn-mass" onclick="loadConversations()">🔄 Cargar</button>
     <button class="btn-mass" onclick="openMassModal()">📤 Envío Masivo</button>
     <button class="icon-btn" onclick="toggleConfig()" title="Configuración">⚙️</button>
   </div>
@@ -878,54 +879,18 @@ async function twilioFetch(url) {
 }
 
 async function loadConversations() {
-  if (!config.sid || !config.token) {
-    showNotification('⚠️ Configura las credenciales primero', 'error');
-    toggleConfig();
-    return;
-  }
-
   document.getElementById('convList').innerHTML = '<div class="loading"><div class="spinner"></div> Cargando...</div>';
-
   try {
-    // Fetch messages for both numbers
-    const numbers = currentLine === 'all' ? ['cr', 'col'] : [currentLine];
-    const allMessages = [];
-
-    for (const line of numbers) {
-      const num = 'whatsapp:' + config[line];
-      // Get inbound
-      const inbound = await twilioFetch(`/2010-04-01/Accounts/${config.sid}/Messages.json?To=${encodeURIComponent(num)}&PageSize=100`);
-      if (inbound.messages) allMessages.push(...inbound.messages.map(m => ({...m, line})));
-      // Get outbound
-      const outbound = await twilioFetch(`/2010-04-01/Accounts/${config.sid}/Messages.json?From=${encodeURIComponent(num)}&PageSize=100`);
-      if (outbound.messages) allMessages.push(...outbound.messages.map(m => ({...m, line})));
-    }
-
-    // Group by contact number
+    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-conversaciones');
+    const data = await res.json();
     conversations = {};
-    for (const msg of allMessages) {
-      const isInbound = msg.direction === 'inbound';
-      const contact = isInbound ? msg.from.replace('whatsapp:', '') : msg.to.replace('whatsapp:', '');
-      const line = msg.line;
-
-      if (!conversations[contact]) {
-        conversations[contact] = { contact, line, messages: [], lastMsg: null, unread: 0 };
-      }
-
-      conversations[contact].messages.push(msg);
-      if (!conversations[contact].lastMsg || new Date(msg.date_created) > new Date(conversations[contact].lastMsg.date_created)) {
-        conversations[contact].lastMsg = msg;
-      }
-      if (isInbound) conversations[contact].unread++;
+    for (const conv of data.conversaciones) {
+      conversations[conv.contact] = conv;
     }
-
-    // Sort by last message
     renderConvList();
-    showNotification(`✅ ${Object.keys(conversations).length} conversaciones cargadas`, 'success');
-
-  } catch (e) {
+    showNotification(`✅ ${data.total} conversaciones cargadas`, 'success');
+  } catch(e) {
     document.getElementById('convList').innerHTML = `<div class="loading" style="color:var(--danger)">❌ Error: ${e.message}</div>`;
-    showNotification('❌ Error cargando conversaciones', 'error');
   }
 }
 
@@ -1239,6 +1204,7 @@ function showNotification(msg, type) {
 }
 
 updateTemplatePreview();
+document.addEventListener('DOMContentLoaded', loadConversations);
 </script>
 </div>
 <script src="sidebar.js"></script>
