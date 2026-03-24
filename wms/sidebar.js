@@ -15,6 +15,7 @@ const WMS_NAV = [
       { icon: '📥', label: 'Cargar Manifiesto', href: 'manifiesto.html',   id: 'manifiesto' },
       { icon: '🚚', label: 'Despachos',         href: 'despachos.html',    id: 'despachos' },
       { icon: '💬', label: 'WhatsApp',          href: 'whatsapp.html',     id: 'whatsapp' },
+      { icon: '💬', label: 'WA Hub',            href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
       { icon: '🧾', label: 'Pre-liquidador',    href: 'preliquidador.html', id: 'preliquidador' },
     ]
   },
