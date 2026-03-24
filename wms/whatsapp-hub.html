@@ -980,6 +980,26 @@ async function openConversation(contact) {
     mc.innerHTML = renderMessages(conv.messages);
     mc.scrollTop = mc.scrollHeight;
   }
+
+  // Verificar ventana de 24h — buscar último mensaje inbound
+  const msgs = conv.messages || [];
+  const lastInbound = [...msgs].reverse().find(m => m.direction === 'inbound');
+  const inputEl = document.getElementById('msgInput');
+  const sendBtn = document.querySelector('.send-btn');
+  if (lastInbound) {
+    const hoursAgo = (Date.now() - new Date(lastInbound.date_created).getTime()) / (1000 * 60 * 60);
+    if (hoursAgo > 24) {
+      if (inputEl) { inputEl.disabled = true; inputEl.placeholder = '⏰ Ventana de 24h expirada — usa un template'; }
+      if (sendBtn) sendBtn.disabled = true;
+    } else {
+      if (inputEl) { inputEl.disabled = false; inputEl.placeholder = 'Escribe un mensaje... (solo dentro de la ventana de 24h)'; }
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  } else {
+    // Sin mensajes inbound — bloquear input
+    if (inputEl) { inputEl.disabled = true; inputEl.placeholder = '⏰ Sin mensajes entrantes — usa un template'; }
+    if (sendBtn) sendBtn.disabled = true;
+  }
 }
 
 function renderChatShell(contact, conv) {
@@ -1001,7 +1021,7 @@ function renderChatShell(contact, conv) {
     <div class="input-area">
       <div class="template-bar" id="templateBar">
         ${templatesList.slice(0,5).map(t =>
-          `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])})">${t.nombre}</button>`
+          `<button class="template-chip" data-name="${t.nombre}" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this)">${t.nombre}</button>`
         ).join('')}
         ${templatesList.length > 5 ? `<button class="template-chip" onclick="toggleAllTemplates('${contact}')">+ más</button>` : ''}
       </div>
@@ -1048,7 +1068,7 @@ function toggleAllTemplates(contact) {
   const bar = document.getElementById('templateBar');
   if (!bar) return;
   bar.innerHTML = templatesList.map(t =>
-    `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])})">${t.nombre}</button>`
+    `<button class="template-chip" data-name="${t.nombre}" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this)">${t.nombre}</button>`
   ).join('');
 }
 
@@ -1077,7 +1097,10 @@ async function sendFreeText(contact, line) {
 }
 
 // ─── SEND TEMPLATE ───────────────────────────────────────────────────────────
-async function sendTemplate(contact, contentSid, variables) {
+async function sendTemplate(contact, contentSid, variables, btnEl) {
+  // Deshabilitar botón para evitar doble click
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Enviando...'; }
+
   try {
     const params = new URLSearchParams({
       tel: contact,
@@ -1090,18 +1113,20 @@ async function sendTemplate(contact, contentSid, variables) {
       const vars = {};
       for (let i = 0; i < variables.length; i++) {
         const val = prompt(`Variable {{${i+1}}} para este template:`);
-        if (val === null) return; // cancelado
+        if (val === null) { if (btnEl) { btnEl.disabled = false; btnEl.textContent = btnEl.dataset.name; } return; }
         vars[String(i+1)] = val;
       }
       params.set('vars', JSON.stringify(vars));
     }
 
     const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-enviar-whatsapp?' + params);
-    await res.json();
+    const data = await res.json();
     showNotification('✅ Template enviado', 'success');
-    openConversation(contact);
+    await openConversation(contact);
   } catch (e) {
     showNotification('❌ Error: ' + e.message, 'error');
+  } finally {
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = btnEl.dataset.name || 'Template'; }
   }
 }
 
