@@ -944,6 +944,7 @@ function renderConvList() {
     const color = colors[parseInt(conv.contact.slice(-1)) % colors.length];
     const isResuelto = resueltosSet.has(String(conv.contact || '').trim());
     const showPending = !isResuelto && conv.lastMsg && conv.lastMsg.direction === 'inbound';
+    console.log(conv.contact, 'isResuelto:', isResuelto, 'showPending:', showPending);
     const isActive = activeConv === conv.contact;
     const preview = conv.lastMsg ? (conv.lastMsg.body || '[media]').slice(0, 45) : '';
     const time = conv.lastMsg ? formatTime(conv.lastMsg.date_created) : '';
