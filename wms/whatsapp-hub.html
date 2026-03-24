@@ -1053,11 +1053,10 @@ function toggleAllTemplates(contact) {
 }
 
 // ─── SEND FREE TEXT ───────────────────────────────────────────────────────────
-async function sendFreeText(contact) {
+async function sendFreeText(contact, line) {
   const input = document.getElementById('msgInput');
   const body = input.value.trim();
   if (!body) return;
-
   input.value = '';
 
   try {
@@ -1068,11 +1067,11 @@ async function sendFreeText(contact) {
     const data = await res.json();
     if (data.ok) {
       showNotification('✅ Mensaje enviado', 'success');
+      await openConversation(contact);
     } else {
       showNotification('❌ ' + (data.message || 'Error enviando'), 'error');
     }
-    openConversation(contact);
-  } catch (e) {
+  } catch(e) {
     showNotification('❌ Error: ' + e.message, 'error');
   }
 }
