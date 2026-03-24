@@ -958,29 +958,52 @@ function renderConvList() {
 }
 
 // ─── OPEN CONVERSATION ────────────────────────────────────────────────────────
-function openConversation(contact) {
+async function openConversation(contact) {
   activeConv = contact;
   const conv = conversations[contact];
   if (!conv) return;
   conv.unread = 0;
   renderConvList();
 
+  // Renderizar header e input area inmediatamente con spinner en mensajes
+  renderChatShell(contact, conv);
+
+  // Cargar mensajes completos desde n8n
+  try {
+    const res = await fetch(
+      'https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-mensajes?contacto='
+      + encodeURIComponent(contact)
+    );
+    const data = await res.json();
+    conv.messages = data.mensajes || [];
+  } catch(e) {
+    conv.messages = conv.messages || [];
+  }
+
+  // Renderizar mensajes en el contenedor ya existente
+  const mc = document.getElementById('msgContainer');
+  if (mc) {
+    mc.innerHTML = renderMessages(conv.messages);
+    mc.scrollTop = mc.scrollHeight;
+  }
+}
+
+function renderChatShell(contact, conv) {
   const colors = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444'];
   const color = colors[parseInt(contact.slice(-1)) % colors.length];
-  const msgs = conv.messages || [];
 
   document.getElementById('chatArea').innerHTML = `
     <div class="chat-header">
       <div class="chat-avatar" style="background:${color}22;color:${color}">${contact.slice(-2)}</div>
       <div class="chat-contact-info">
         <div class="chat-contact-name">${contact}</div>
-        <div class="chat-contact-number">${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'} · ${msgs.length} mensajes</div>
+        <div class="chat-contact-number">${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'}</div>
       </div>
       <div class="chat-header-actions">
         <button class="icon-btn" onclick="openConversation('${contact}')" title="Refrescar">🔄</button>
       </div>
     </div>
-    <div class="messages" id="msgContainer">${renderMessages(msgs)}</div>
+    <div class="messages" id="msgContainer"><div class="loading"><div class="spinner"></div> Cargando mensajes...</div></div>
     <div class="input-area">
       <div class="template-bar" id="templateBar">
         ${Object.entries(TEMPLATES).slice(0,5).map(([sid, t]) =>
@@ -994,12 +1017,6 @@ function openConversation(contact) {
         <button class="send-btn" onclick="sendMessage('${contact}','${conv.linea}')">➤</button>
       </div>
     </div>`;
-
-  // Scroll to bottom
-  setTimeout(() => {
-    const mc = document.getElementById('msgContainer');
-    if (mc) mc.scrollTop = mc.scrollHeight;
-  }, 50);
 }
 
 function renderMessages(messages) {
