@@ -881,25 +881,40 @@ async function twilioFetch(url) {
 
 async function loadConversations() {
   document.getElementById('convList').innerHTML = '<div class="loading"><div class="spinner"></div> Cargando...</div>';
+  const BASE = 'https://zenderbox.app.n8n.cloud/webhook/';
   try {
-    const [convData, estadoData] = await Promise.all([
-      fetch('https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-conversaciones').then(r => r.json()),
-      fetch('https://zenderbox.app.n8n.cloud/webhook/wa-hub-estado?pais=CR').then(r => r.json()).catch(() => ({ resueltos: [] }))
-    ]);
-
-    conversations = {};
-    for (const conv of convData.conversaciones) {
-      conversations[conv.contact] = conv;
+    let fetches = [];
+    if (currentLine === 'cr' || currentLine === 'all') {
+      fetches.push(fetch(BASE + 'cr-wa-hub-conversaciones').then(r => r.json()));
+      fetches.push(fetch(BASE + 'wa-hub-estado?pais=CR').then(r => r.json()).catch(() => ({ resueltos: [], timestamps: {} })));
     }
-    resueltosSet = new Set(
+    if (currentLine === 'col' || currentLine === 'all') {
+      fetches.push(fetch(BASE + 'col-wa-hub-conversaciones').then(r => r.json()));
+      fetches.push(fetch(BASE + 'wa-hub-estado?pais=COL').then(r => r.json()).catch(() => ({ resueltos: [], timestamps: {} })));
+    }
+
+    const results = await Promise.all(fetches);
+    conversations = {};
+    resueltosSet = new Set();
+    resueltosTimestamps = {};
+    let totalCount = 0;
+
+    // Results come in pairs: [convData, estadoData, ...]
+    for (let i = 0; i < results.length; i += 2) {
+      const convData = results[i];
+      const estadoData = results[i + 1];
+      for (const conv of (convData.conversaciones || [])) {
+        conversations[conv.contact] = conv;
+      }
+      totalCount += convData.total || 0;
       (estadoData?.resueltos ?? [])
         .filter(n => typeof n === 'string' && n.length > 0)
-        .map(n => n.trim())
-    );
-    resueltosTimestamps = estadoData?.timestamps || {};
+        .forEach(n => resueltosSet.add(n.trim()));
+      Object.assign(resueltosTimestamps, estadoData?.timestamps || {});
+    }
 
     renderConvList();
-    showNotification(`✅ ${convData.total} conversaciones cargadas`, 'success');
+    showNotification(`✅ ${totalCount} conversaciones cargadas`, 'success');
   } catch(e) {
     document.getElementById('convList').innerHTML = `<div class="loading" style="color:var(--danger)">❌ Error: ${e.message}</div>`;
   }
@@ -984,8 +999,9 @@ async function openConversation(contact) {
 
   // Cargar mensajes completos desde n8n
   try {
+    const prefix = conv.linea === 'COL' ? 'col' : 'cr';
     const res = await fetch(
-      'https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-mensajes?contacto='
+      'https://zenderbox.app.n8n.cloud/webhook/' + prefix + '-wa-hub-mensajes?contacto='
       + encodeURIComponent(contact)
     );
     const data = await res.json();
@@ -1006,7 +1022,7 @@ async function openConversation(contact) {
       lastMsgTimestamp > resolvedTimestamp) {
     resueltosSet.delete(contactKey);
     fetch('https://zenderbox.app.n8n.cloud/webhook/wa-hub-desresolver'
-      + '?numero=' + encodeURIComponent(contact) + '&pais=CR');
+      + '?numero=' + encodeURIComponent(contact) + '&pais=' + encodeURIComponent(conv.linea || 'CR'));
     renderConvList();
   }
 
@@ -1030,7 +1046,7 @@ function renderChatShell(contact, conv) {
         <div class="chat-contact-number">${conv.linea === 'CR' ? '🇨🇷 Costa Rica' : '🇨🇴 Colombia'}</div>
       </div>
       <div class="chat-header-actions">
-        <button class="icon-btn" id="btnResolver" onclick="resolverContacto('${contact}')" title="${resueltosSet.has(String(contact || '').trim()) ? 'Resuelto' : 'Marcar como resuelto'}" style="font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid ${resueltosSet.has(String(contact || '').trim()) ? '#22c55e' : 'var(--border)'};color:${resueltosSet.has(String(contact || '').trim()) ? '#22c55e' : 'var(--muted)'};background:${resueltosSet.has(String(contact || '').trim()) ? 'rgba(34,197,94,0.1)' : 'transparent'}">${resueltosSet.has(String(contact || '').trim()) ? '✓ Resuelto' : '✓ Resolver'}</button>
+        <button class="icon-btn" id="btnResolver" onclick="resolverContacto('${contact}','${conv.linea}')" title="${resueltosSet.has(String(contact || '').trim()) ? 'Resuelto' : 'Marcar como resuelto'}" style="font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid ${resueltosSet.has(String(contact || '').trim()) ? '#22c55e' : 'var(--border)'};color:${resueltosSet.has(String(contact || '').trim()) ? '#22c55e' : 'var(--muted)'};background:${resueltosSet.has(String(contact || '').trim()) ? 'rgba(34,197,94,0.1)' : 'transparent'}">${resueltosSet.has(String(contact || '').trim()) ? '✓ Resuelto' : '✓ Resolver'}</button>
         <button class="icon-btn" onclick="openConversation('${contact}')" title="Refrescar">🔄</button>
       </div>
     </div>
@@ -1038,14 +1054,14 @@ function renderChatShell(contact, conv) {
     <div class="input-area">
       <div class="template-bar" id="templateBar">
         ${templatesList.slice(0,5).map(t =>
-          `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this)">${t.nombre}</button>`
+          `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this, '${conv.linea}')">${t.nombre}</button>`
         ).join('')}
-        ${templatesList.length > 5 ? `<button class="template-chip" onclick="toggleAllTemplates('${contact}')">+ más</button>` : ''}
+        ${templatesList.length > 5 ? `<button class="template-chip" onclick="toggleAllTemplates('${contact}','${conv.linea}')">+ más</button>` : ''}
       </div>
       <div class="input-row">
         <textarea class="msg-input" id="msgInput" placeholder="Escribe un mensaje... (solo dentro de la ventana de 24h)" rows="1"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendFreeText('${contact}')}"></textarea>
-        <button class="send-btn" onclick="sendFreeText('${contact}')">➤</button>
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendFreeText('${contact}','${conv.linea}')}"></textarea>
+        <button class="send-btn" onclick="sendFreeText('${contact}','${conv.linea}')">➤</button>
       </div>
     </div>`;
 }
@@ -1081,23 +1097,24 @@ function renderMessages(messages) {
   return html || '<div class="loading" style="color:var(--muted)">Sin mensajes</div>';
 }
 
-function toggleAllTemplates(contact) {
+function toggleAllTemplates(contact, line) {
   const bar = document.getElementById('templateBar');
   if (!bar) return;
   bar.innerHTML = templatesList.map(t =>
-    `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this)">${t.nombre}</button>`
+    `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this, '${line}')">${t.nombre}</button>`
   ).join('');
 }
 
 // ─── RESOLVER / DESRESOLVER ───────────────────────────────────────────────────
-async function resolverContacto(contact) {
+async function resolverContacto(contact, pais) {
+  pais = pais || 'CR';
   const btn = document.getElementById('btnResolver');
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
 
   try {
     const url = 'https://zenderbox.app.n8n.cloud/webhook/wa-hub-resolver'
       + '?numero=' + encodeURIComponent(contact)
-      + '&pais=CR&agente=agente';
+      + '&pais=' + encodeURIComponent(pais) + '&agente=agente';
     const res = await fetch(url);
     const data = await res.json();
     if (data.ok) {
@@ -1138,7 +1155,8 @@ async function sendFreeText(contact, line) {
   input.value = '';
 
   try {
-    const url = 'https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-enviar-texto'
+    const prefix = line === 'COL' ? 'col' : 'cr';
+    const url = 'https://zenderbox.app.n8n.cloud/webhook/' + prefix + '-wa-hub-enviar-texto'
       + '?tel=' + encodeURIComponent(contact)
       + '&body=' + encodeURIComponent(body);
     const res = await fetch(url);
@@ -1155,7 +1173,7 @@ async function sendFreeText(contact, line) {
 }
 
 // ─── SEND TEMPLATE ───────────────────────────────────────────────────────────
-async function sendTemplate(contact, contentSid, variables, el) {
+async function sendTemplate(contact, contentSid, variables, el, line) {
   const originalName = el ? el.textContent : '';
   if (el) { el.disabled = true; el.classList.add('disabled'); el.textContent = '⏳'; el.style.opacity = '0.6'; }
 
@@ -1177,7 +1195,8 @@ async function sendTemplate(contact, contentSid, variables, el) {
       params.set('vars', JSON.stringify(vars));
     }
 
-    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-enviar-whatsapp?' + params);
+    const prefix = line === 'COL' ? 'col' : 'cr';
+    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/' + prefix + '-enviar-whatsapp?' + params);
     await res.json();
     showNotification('✅ Template enviado', 'success');
     openConversation(contact);
@@ -1257,7 +1276,7 @@ function setLine(line, btn) {
   if (line === 'all') btn.classList.add('active-all');
   else if (line === 'cr') btn.classList.add('active-cr');
   else btn.classList.add('active-col');
-  renderConvList();
+  loadConversations();
 }
 
 function filterConversations() { renderConvList(); }
