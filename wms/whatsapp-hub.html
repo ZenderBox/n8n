@@ -800,16 +800,22 @@
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const TEMPLATES = {
-  'HX6d1500b7e3259ec339359edf6e0098a1': { name: 'pago_pendiente', body: 'Hola como estas? te escribimos ya que tenemos que programar la entrega de tu orden pero tienes un pago pendiente y hasta que no este confirmado tu paquete no saldrá a despacho' },
-  'HXfc43f36de2839ad9923e198cb923eeb1': { name: 'cr_ubicacion', body: 'Template de ubicación Costa Rica' },
-  'HX882a4d2fdd6f1cae008ea78ad3729e6b': { name: 'welcome_cri', body: 'Bienvenida Costa Rica' },
-  'HXe2a3e0652175431516ea9822d21a4836': { name: 'bienvenida_casillero', body: 'Bienvenida casillero' },
-  'HX2f4384b3b732488e9b9d06d5c6ea2954': { name: 'all_hola', body: 'Hola! ¿Cómo estás?' },
-  'HX3865827f6d17f88792e0c0f665caafc6': { name: 'estatus_message', body: 'Mensaje de estatus de tu paquete' },
-  'HXc9e807ea9f419ba75ce62074bf6f7932': { name: 'welcome_pa', body: 'Bienvenida Panamá' },
-  'HX354a68f212a1dd6da2738b532b8d4420': { name: 'welcome_pobox', body: 'Bienvenida PO Box' },
-};
+let TEMPLATES = {};
+let templatesList = [];
+
+async function loadTemplates() {
+  try {
+    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-templates-twilio');
+    const data = await res.json();
+    templatesList = data;
+    TEMPLATES = {};
+    for (const t of data) {
+      TEMPLATES[t.sid] = { name: t.nombre, body: t.nombre };
+    }
+  } catch(e) {
+    console.error('Error cargando templates:', e);
+  }
+}
 
 const NUMBERS = {
   cr: '+17869461834',
@@ -830,22 +836,14 @@ let currentFilter = 'all';
 let currentLine = 'all';
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cfgSid').value = config.sid;
   document.getElementById('cfgToken').value = config.token;
   document.getElementById('cfgCR').value = config.cr;
   document.getElementById('cfgCOL').value = config.col;
 
-  if (config.sid && config.token) {
-    loadConversations();
-  } else {
-    document.getElementById('convList').innerHTML = `
-      <div class="loading" style="flex-direction:column;gap:8px">
-        <span style="font-size:24px">⚙️</span>
-        <span>Configura tus credenciales</span>
-        <button class="btn-mass" onclick="toggleConfig()">Abrir configuración</button>
-      </div>`;
-  }
+  await loadTemplates();
+  loadConversations();
 });
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
@@ -1057,69 +1055,34 @@ async function sendMessage(contact, line) {
   if (!body) return;
 
   input.value = '';
-  const from = 'whatsapp:' + config[line];
-  const to = 'whatsapp:' + contact;
 
   try {
-    const formData = new URLSearchParams();
-    formData.append('From', from);
-    formData.append('To', to);
-    formData.append('Body', body);
-
-    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${config.sid}/Messages.json`, {
-      method: 'POST',
-      headers: {
-        'Authorization': twilioAuth(),
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: formData
+    const params = new URLSearchParams({
+      tel: contact,
+      sid: 'HX3865827f6d17f88792e0c0f665caafc6',
+      guia: 'WA-HUB',
+      vars: JSON.stringify({"1": body})
     });
-
+    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-enviar-whatsapp?' + params);
     const data = await res.json();
-    if (data.sid) {
-      // Add to local conversation
-      if (!conversations[contact]) conversations[contact] = { contact, line, messages: [], lastMsg: null, unread: 0 };
-      conversations[contact].messages.push(data);
-      conversations[contact].lastMsg = data;
-      openConversation(contact);
-      showNotification('✅ Mensaje enviado', 'success');
-    } else {
-      showNotification('❌ ' + (data.message || 'Error enviando'), 'error');
-    }
+    showNotification('✅ Mensaje enviado', 'success');
+    openConversation(contact);
   } catch (e) {
     showNotification('❌ Error: ' + e.message, 'error');
   }
 }
 
 async function sendTemplate(contact, contentSid, line) {
-  const from = 'whatsapp:' + config[line];
-  const to = 'whatsapp:' + contact;
-
   try {
-    const formData = new URLSearchParams();
-    formData.append('From', from);
-    formData.append('To', to);
-    formData.append('ContentSid', contentSid);
-
-    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${config.sid}/Messages.json`, {
-      method: 'POST',
-      headers: {
-        'Authorization': twilioAuth(),
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: formData
+    const params = new URLSearchParams({
+      tel: contact,
+      sid: contentSid,
+      guia: 'WA-HUB'
     });
-
+    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-enviar-whatsapp?' + params);
     const data = await res.json();
-    if (data.sid) {
-      if (!conversations[contact]) conversations[contact] = { contact, line, messages: [], lastMsg: null, unread: 0 };
-      conversations[contact].messages.push({...data, body: TEMPLATES[contentSid]?.body || 'Template enviado'});
-      conversations[contact].lastMsg = data;
-      openConversation(contact);
-      showNotification('✅ Template enviado', 'success');
-    } else {
-      showNotification('❌ ' + (data.message || 'Error'), 'error');
-    }
+    showNotification('✅ Template enviado', 'success');
+    openConversation(contact);
   } catch (e) {
     showNotification('❌ Error: ' + e.message, 'error');
   }
