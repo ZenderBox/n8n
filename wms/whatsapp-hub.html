@@ -435,6 +435,11 @@
     border-color: var(--accent);
     color: var(--accent);
   }
+  .template-chip:disabled, .template-chip.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 
   .input-row {
     display: flex;
@@ -1079,7 +1084,7 @@ async function sendFreeText(contact, line) {
 // ─── SEND TEMPLATE ───────────────────────────────────────────────────────────
 async function sendTemplate(contact, contentSid, variables, el) {
   const originalName = el ? el.textContent : '';
-  if (el) { el.disabled = true; el.textContent = 'Enviando...'; }
+  if (el) { el.disabled = true; el.classList.add('disabled'); el.textContent = '⏳'; el.style.opacity = '0.6'; }
 
   try {
     const params = new URLSearchParams({
@@ -1093,7 +1098,7 @@ async function sendTemplate(contact, contentSid, variables, el) {
       const vars = {};
       for (let i = 0; i < variables.length; i++) {
         const val = prompt(`Variable {{${i+1}}} para este template:`);
-        if (val === null) { if (el) { el.disabled = false; el.textContent = originalName; } return; }
+        if (val === null) { if (el) { el.disabled = false; el.classList.remove('disabled'); el.textContent = originalName; el.style.opacity = '1'; } return; }
         vars[String(i+1)] = val;
       }
       params.set('vars', JSON.stringify(vars));
@@ -1106,7 +1111,7 @@ async function sendTemplate(contact, contentSid, variables, el) {
   } catch (e) {
     showNotification('❌ Error: ' + e.message, 'error');
   } finally {
-    if (el) { el.disabled = false; el.textContent = originalName; }
+    if (el) { el.disabled = false; el.classList.remove('disabled'); el.textContent = originalName; el.style.opacity = '1'; }
   }
 }
 
