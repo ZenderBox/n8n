@@ -891,8 +891,8 @@ async function loadConversations() {
       conversations[conv.contact] = conv;
     }
     resueltosSet = new Set(
-      (estadoData.resueltos || [])
-        .filter(n => n && typeof n === 'string')
+      (estadoData?.resueltos ?? [])
+        .filter(n => typeof n === 'string' && n.length > 0)
         .map(n => n.trim())
     );
 
