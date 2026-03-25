@@ -1311,39 +1311,42 @@ function filterConversations() { renderConvList(); }
 async function buscarEnHistorial(numero) {
   numero = numero.trim().replace(/[\s\-]/g, '');
 
-  // Normalizar prefijo según línea
+  // Normalizar con prefijo si no tiene +
   if (!numero.startsWith('+')) {
-    if (currentLine === 'col') {
-      numero = numero.length === 10 ? '+57' + numero : '+' + numero;
-    } else {
-      numero = numero.length === 8 ? '+506' + numero : '+' + numero;
-    }
+    if (numero.length === 10) numero = '+57' + numero;
+    else if (numero.length === 8) numero = '+506' + numero;
+    else numero = '+' + numero;
   }
-
-  const endpoint = currentLine === 'col'
-    ? 'col-wa-hub-mensajes'
-    : 'cr-wa-hub-mensajes';
 
   const list = document.getElementById('convList');
   list.innerHTML = '<div class="loading"><div class="spinner"></div> Buscando...</div>';
 
   try {
-    const res = await fetch(
-      'https://zenderbox.app.n8n.cloud/webhook/' + endpoint +
-      '?contacto=' + encodeURIComponent(numero)
-    );
-    const data = await res.json();
-    const msgs = data.mensajes || [];
+    let mensajes = [];
+    let linea = 'CR';
 
-    if (msgs.length > 0) {
-      const last = msgs[msgs.length - 1] || {};
-      const linea = currentLine === 'col' ? 'COL' : 'CR';
+    if (currentLine === 'all') {
+      // Buscar en ambos en paralelo
+      const [crRes, colRes] = await Promise.all([
+        fetch('https://zenderbox.app.n8n.cloud/webhook/cr-wa-hub-mensajes?contacto=' + encodeURIComponent(numero)).then(r => r.json()).catch(() => ({ mensajes: [] })),
+        fetch('https://zenderbox.app.n8n.cloud/webhook/col-wa-hub-mensajes?contacto=' + encodeURIComponent(numero)).then(r => r.json()).catch(() => ({ mensajes: [] }))
+      ]);
+      if ((crRes.mensajes || []).length > 0) { mensajes = crRes.mensajes; linea = 'CR'; }
+      else if ((colRes.mensajes || []).length > 0) { mensajes = colRes.mensajes; linea = 'COL'; }
+    } else {
+      const endpoint = currentLine === 'col' ? 'col-wa-hub-mensajes' : 'cr-wa-hub-mensajes';
+      linea = currentLine === 'col' ? 'COL' : 'CR';
+      const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/' + endpoint + '?contacto=' + encodeURIComponent(numero));
+      const data = await res.json();
+      mensajes = data.mensajes || [];
+    }
+
+    if (mensajes.length > 0) {
+      const last = mensajes[mensajes.length - 1] || {};
       conversations[numero] = {
-        contact: numero,
-        linea: linea,
-        messages: msgs,
-        lastMsg: last,
-        totalMensajes: msgs.length,
+        contact: numero, linea,
+        messages: mensajes, lastMsg: last,
+        totalMensajes: mensajes.length,
         sinResponder: last.direction === 'inbound',
         unread: 0
       };
