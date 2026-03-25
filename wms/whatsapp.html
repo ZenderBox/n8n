@@ -1028,7 +1028,7 @@
         <td>${badgePago(g.pago)}</td>
         <td>${badgeSQ(g.sq)}</td>
         <td>${buildTemplateSelect(g.pago, g.sq_system_id, g.guia)}</td>
-        <td>${`<button class="btn-wa" style="padding:5px 12px;font-size:12px" onclick="enviarWAFromRow('${g.tel}','${g.guia}',this)" title="Enviar WhatsApp">💬 Enviar</button>`}</td>
+        <td><button class="btn-wa" style="padding:5px 12px;font-size:12px${waLog[g.guia] ? ';border-radius:4px 4px 0 0;background:var(--green-dim);color:var(--green)' : ''}" onclick="enviarWAFromRow('${g.tel}','${g.guia}',this)">${waLog[g.guia] ? '✅ Enviado' : '💬 Enviar'}</button><div id="walog-${g.guia}" style="display:${waLog[g.guia] ? 'block' : 'none'};background:#0a2a18;border:1px solid rgba(34,197,94,0.25);border-top:none;border-radius:0 0 4px 4px;padding:2px 6px;font-family:var(--mono);font-size:9px;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">${waLog[g.guia] ? '✓ ' + waLog[g.guia].nombre + ' · ' + waLog[g.guia].hora : ''}</div></td>
       </tr>`).join('')
             }</tbody></table></div>` : '';
             return `<div class="cons-card ${isExp ? 'expanded' : ''}" id="card-${c.id}">
@@ -1180,33 +1180,40 @@
         document.getElementById('detailPanel').classList.remove('visible');
     }
 
-    const WA_WEBHOOK        = 'https://zenderbox.app.n8n.cloud/webhook/cr-enviar-whatsapp';
-    const TEMPLATES_WEBHOOK = 'https://zenderbox.app.n8n.cloud/webhook/cr-templates-twilio';
+    const WA_WEBHOOKS = {
+        CR:  'https://zenderbox.app.n8n.cloud/webhook/cr-enviar-whatsapp',
+        COL: 'https://zenderbox.app.n8n.cloud/webhook/col-enviar-whatsapp'
+    };
+    const TEMPLATES_WEBHOOKS = {
+        CR:  'https://zenderbox.app.n8n.cloud/webhook/cr-templates-twilio',
+        COL: 'https://zenderbox.app.n8n.cloud/webhook/cr-templates-twilio'
+    };
+    let currentAgencia = sessionStorage.getItem('wms_agencia') || 'CR';
+    function getWAWebhook()        { return WA_WEBHOOKS[currentAgencia]        || WA_WEBHOOKS.CR; }
+    function getTemplatesWebhook() { return TEMPLATES_WEBHOOKS[currentAgencia] || TEMPLATES_WEBHOOKS.CR; }
 
     let waOk = 0, waErr = 0;
+    let waLog = {};
     let TEMPLATES = [];
 
-    // SIDs conocidos para default inteligente
-    const SID_RASTREO      = 'HXe843cc37a753b1bdf031e3f0f2a1d004';
-    const KW_PAGO          = ['pago', 'pendiente', 'cobro', 'deuda'];
-    const KW_RASTREO       = ['rastreo', 'encomienda', 'paquete', 'tracking', 'link'];
+    const SID_RASTREO = 'HXe843cc37a753b1bdf031e3f0f2a1d004';
+    const KW_PAGO     = ['pago', 'pendiente', 'cobro', 'deuda'];
+    const KW_RASTREO  = ['rastreo', 'encomienda', 'paquete', 'tracking', 'link'];
 
     async function fetchTemplates() {
         try {
-            const res  = await fetch(TEMPLATES_WEBHOOK + '?t=' + Date.now());
+            const res  = await fetch(getTemplatesWebhook() + '?t=' + Date.now());
             const json = await res.json();
             TEMPLATES  = json.templates || [];
             const sel  = document.getElementById('templateSelect');
             sel.innerHTML = TEMPLATES.map(t =>
                 `<option value="${t.sid}" data-vars='${JSON.stringify(t.variables)}' data-body="${(t.body||'').replace(/"/g,"'")}">${t.nombre}</option>`
             ).join('');
-            // Default: template de rastreo si existe
             const rastreoOpt = TEMPLATES.findIndex(t => t.sid === SID_RASTREO || KW_RASTREO.some(k => t.nombre.toLowerCase().includes(k)));
             if (rastreoOpt >= 0) sel.selectedIndex = rastreoOpt;
         } catch(e) {
             console.error('Error cargando templates:', e);
         }
-        // Re-renderizar para que los dropdowns por fila se generen con templates ya cargados
         renderList();
     }
 
@@ -1239,29 +1246,33 @@
     }
 
     async function enviarWAFromRow(tel, guia, btn) {
-        // Leer el select de esa fila específica
         const sel = document.getElementById('tpl-' + guia);
         const sid = sel ? sel.value : '';
         if (!sid) { alert('Selecciona un template primero'); return; }
-
         const opt  = sel?.options[sel.selectedIndex];
-        const vars = JSON.parse(opt?.dataset?.vars || '[]');
-        // No construimos el link aquí — n8n lo construye según el SID del template
         const contentVariables = {};
-
         btn.disabled = true;
         btn.innerHTML = '⏳';
         try {
             const nombre = opt?.text || sid;
-        const url = `${WA_WEBHOOK}?tel=${encodeURIComponent(tel)}&guia=${encodeURIComponent(guia)}&sid=${encodeURIComponent(sid)}&nombre=${encodeURIComponent(nombre)}&vars=${encodeURIComponent(JSON.stringify(contentVariables))}`;
+            const url = `${getWAWebhook()}?tel=${encodeURIComponent(tel)}&guia=${encodeURIComponent(guia)}&sid=${encodeURIComponent(sid)}&nombre=${encodeURIComponent(nombre)}&vars=${encodeURIComponent(JSON.stringify(contentVariables))}`;
             const res  = await fetch(url);
             const json = await res.json().catch(() => ({}));
             if (json.ok === false || !res.ok) throw new Error(json.message || 'Error');
+            const nombreEnviado = opt?.text || sid;
+            const horaEnviado   = new Date().toLocaleTimeString('es-CR', {timeZone:'America/Costa_Rica', hour:'2-digit', minute:'2-digit'});
+            waLog[guia] = { nombre: nombreEnviado, hora: horaEnviado };
             btn.innerHTML = '✅ Enviado';
             btn.style.background = 'var(--green-dim)';
             btn.style.color = 'var(--green)';
+            btn.style.borderRadius = '4px 4px 0 0';
             waOk++;
             updateWAStats();
+            const logBadge = document.getElementById('walog-' + guia);
+            if (logBadge) {
+                logBadge.innerHTML = '✓ ' + nombreEnviado + ' · ' + horaEnviado;
+                logBadge.style.display = 'block';
+            }
         } catch(e) {
             btn.innerHTML = '❌ Error';
             btn.style.background = 'var(--red-dim)';
@@ -1276,6 +1287,13 @@
             }, 4000);
         }
     }
+
+    window.addEventListener('wms:agencia', (e) => {
+        currentAgencia = e.detail.agencia;
+        waLog = {};
+        fetchTemplates();
+        fetchData();
+    });
 
     // Cargar al iniciar
     fetchTemplates();
