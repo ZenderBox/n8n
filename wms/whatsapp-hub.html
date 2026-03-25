@@ -691,7 +691,7 @@
       <button class="line-btn" onclick="setLine('col', this)">🇨🇴 COL</button>
     </div>
     <button class="btn-mass" onclick="loadConversations()">🔄 Cargar</button>
-    <button class="btn-mass" onclick="openMassModal()">📤 Envío Masivo</button>
+    <button class="btn-mass" disabled title="Temporalmente deshabilitado" style="opacity:0.4;cursor:not-allowed">📤 Envío Masivo</button>
     <button class="icon-btn" onclick="toggleConfig()" title="Configuración">⚙️</button>
   </div>
 </div>
@@ -1223,6 +1223,8 @@ function updateTemplatePreview() {
 }
 
 async function sendMass() {
+  alert('Función deshabilitada temporalmente');
+  return;
   const line = document.getElementById('massLine').value;
   const contentSid = document.getElementById('massTemplate').value;
   const recipientsRaw = document.getElementById('massRecipients').value.trim();
