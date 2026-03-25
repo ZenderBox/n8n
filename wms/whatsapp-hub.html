@@ -1309,23 +1309,42 @@ function setLine(line, btn) {
 function filterConversations() { renderConvList(); }
 
 async function buscarEnHistorial(numero) {
-  numero = numero.replace(/[\s\-]/g, '');
-  const prefix = (currentLine === 'col') ? 'col' : 'cr';
+  numero = numero.trim().replace(/[\s\-]/g, '');
+
+  // Normalizar prefijo según línea
+  if (!numero.startsWith('+')) {
+    if (currentLine === 'col') {
+      numero = numero.length === 10 ? '+57' + numero : '+' + numero;
+    } else {
+      numero = numero.length === 8 ? '+506' + numero : '+' + numero;
+    }
+  }
+
+  const endpoint = currentLine === 'col'
+    ? 'col-wa-hub-mensajes'
+    : 'cr-wa-hub-mensajes';
+
   const list = document.getElementById('convList');
-  list.innerHTML = '<div class="loading"><div class="spinner"></div> Buscando en historial...</div>';
+  list.innerHTML = '<div class="loading"><div class="spinner"></div> Buscando...</div>';
+
   try {
     const res = await fetch(
-      'https://zenderbox.app.n8n.cloud/webhook/' + prefix + '-wa-hub-mensajes?contacto=' + encodeURIComponent(numero)
+      'https://zenderbox.app.n8n.cloud/webhook/' + endpoint +
+      '?contacto=' + encodeURIComponent(numero)
     );
     const data = await res.json();
-    if (data.total > 0 || (data.mensajes && data.mensajes.length > 0)) {
-      const msgs = data.mensajes || [];
+    const msgs = data.mensajes || [];
+
+    if (msgs.length > 0) {
       const last = msgs[msgs.length - 1] || {};
+      const linea = currentLine === 'col' ? 'COL' : 'CR';
       conversations[numero] = {
         contact: numero,
-        linea: prefix.toUpperCase(),
+        linea: linea,
         messages: msgs,
         lastMsg: last,
+        totalMensajes: msgs.length,
+        sinResponder: last.direction === 'inbound',
         unread: 0
       };
       renderConvList();
@@ -1335,7 +1354,7 @@ async function buscarEnHistorial(numero) {
       renderConvList();
     }
   } catch(e) {
-    showNotification('Error buscando historial: ' + e.message, 'error');
+    showNotification('Error: ' + e.message, 'error');
     renderConvList();
   }
 }
