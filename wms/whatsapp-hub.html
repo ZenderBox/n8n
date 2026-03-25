@@ -188,6 +188,19 @@
   .conv-list::-webkit-scrollbar { width: 4px; }
   .conv-list::-webkit-scrollbar-track { background: transparent; }
   .conv-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .search-historial {
+    padding: 16px;
+    text-align: center;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 8px;
+    margin: 8px;
+    background: rgba(0,156,201,0.08);
+    border: 1px dashed var(--accent);
+    transition: background 0.2s;
+  }
+  .search-historial:hover { background: rgba(0,156,201,0.18); }
 
   .conv-item {
     padding: 12px 16px;
@@ -954,7 +967,15 @@ function renderConvList() {
   convs.sort((a, b) => new Date(b.lastMsg?.date_created || 0) - new Date(a.lastMsg?.date_created || 0));
 
   if (convs.length === 0) {
-    list.innerHTML = '<div class="loading">Sin conversaciones</div>';
+    const raw = document.getElementById('searchInput').value.trim();
+    const isPhone = /^[\d\s\+\-]+$/.test(raw) && raw.replace(/[\s\-\+]/g, '').length > 7;
+    if (search && isPhone) {
+      list.innerHTML = `<div class="search-historial" onclick="buscarEnHistorial('${raw.replace(/'/g, "\\'")}')">
+        🔍 Buscar "${raw}" en historial completo
+      </div>`;
+    } else {
+      list.innerHTML = '<div class="loading">Sin conversaciones</div>';
+    }
     return;
   }
 
@@ -1286,6 +1307,38 @@ function setLine(line, btn) {
 }
 
 function filterConversations() { renderConvList(); }
+
+async function buscarEnHistorial(numero) {
+  numero = numero.replace(/[\s\-]/g, '');
+  const prefix = (currentLine === 'col') ? 'col' : 'cr';
+  const list = document.getElementById('convList');
+  list.innerHTML = '<div class="loading"><div class="spinner"></div> Buscando en historial...</div>';
+  try {
+    const res = await fetch(
+      'https://zenderbox.app.n8n.cloud/webhook/' + prefix + '-wa-hub-mensajes?contacto=' + encodeURIComponent(numero)
+    );
+    const data = await res.json();
+    if (data.total > 0 || (data.mensajes && data.mensajes.length > 0)) {
+      const msgs = data.mensajes || [];
+      const last = msgs[msgs.length - 1] || {};
+      conversations[numero] = {
+        contact: numero,
+        linea: prefix.toUpperCase(),
+        messages: msgs,
+        lastMsg: last,
+        unread: 0
+      };
+      renderConvList();
+      openConversation(numero);
+    } else {
+      showNotification('Sin historial para este número', 'error');
+      renderConvList();
+    }
+  } catch(e) {
+    showNotification('Error buscando historial: ' + e.message, 'error');
+    renderConvList();
+  }
+}
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function formatTime(dateStr) {
