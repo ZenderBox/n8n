@@ -1193,7 +1193,7 @@
     function getTemplatesWebhook() { return TEMPLATES_WEBHOOKS[currentAgencia] || TEMPLATES_WEBHOOKS.CR; }
 
     let waOk = 0, waErr = 0;
-    let waLog = {};
+    let waLog = JSON.parse(localStorage.getItem('wms_waLog') || '{}');
     let TEMPLATES = [];
 
     const SID_RASTREO = 'HXe843cc37a753b1bdf031e3f0f2a1d004';
@@ -1249,7 +1249,7 @@
         const sel = document.getElementById('tpl-' + guia);
         const sid = sel ? sel.value : '';
         if (!sid) { alert('Selecciona un template primero'); return; }
-        const opt  = sel?.options[sel.selectedIndex];
+        const opt = sel?.options[sel.selectedIndex];
         const contentVariables = {};
         btn.disabled = true;
         btn.innerHTML = '⏳';
@@ -1262,6 +1262,7 @@
             const nombreEnviado = opt?.text || sid;
             const horaEnviado   = new Date().toLocaleTimeString('es-CR', {timeZone:'America/Costa_Rica', hour:'2-digit', minute:'2-digit'});
             waLog[guia] = { nombre: nombreEnviado, hora: horaEnviado };
+            localStorage.setItem('wms_waLog', JSON.stringify(waLog));
             btn.innerHTML = '✅ Enviado';
             btn.style.background = 'var(--green-dim)';
             btn.style.color = 'var(--green)';
