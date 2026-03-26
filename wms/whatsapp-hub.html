@@ -821,14 +821,12 @@
 let templatesList = [];
 
 async function loadTemplates() {
-  const url = 'https://zenderbox.app.n8n.cloud/webhook/cr-templates-twilio';
   try {
-    const res = await fetch(url);
-    const text = await res.text();
-    const data = JSON.parse(text);
+    const res = await fetch('https://zenderbox.app.n8n.cloud/webhook/cr-templates-twilio');
+    const data = await res.json();
     templatesList = data.templates || data || [];
   } catch(e) {
-    console.warn('Error en fetch:', url, e.message);
+    console.error('Error cargando templates:', e);
     templatesList = [];
   }
 }
@@ -899,24 +897,14 @@ async function loadConversations() {
   document.getElementById('convList').innerHTML = '<div class="loading"><div class="spinner"></div> Cargando...</div>';
   const BASE = 'https://zenderbox.app.n8n.cloud/webhook/';
   try {
-    async function safeFetch(url, fallback) {
-      try {
-        const res = await fetch(url);
-        const text = await res.text();
-        return JSON.parse(text);
-      } catch(e) {
-        console.warn('Error en fetch:', url, e.message);
-        return fallback;
-      }
-    }
     let fetches = [];
     if (currentLine === 'cr' || currentLine === 'all') {
-      fetches.push(safeFetch(BASE + 'cr-wa-hub-conversaciones', { conversaciones: [], total: 0 }));
-      fetches.push(safeFetch(BASE + 'wa-hub-estado?pais=CR', { resueltos: [], timestamps: {} }));
+      fetches.push(fetch(BASE + 'cr-wa-hub-conversaciones').then(r => r.json()));
+      fetches.push(fetch(BASE + 'wa-hub-estado?pais=CR').then(r => r.json()).catch(() => ({ resueltos: [], timestamps: {} })));
     }
     if (currentLine === 'col' || currentLine === 'all') {
-      fetches.push(safeFetch(BASE + 'col-wa-hub-conversaciones', { conversaciones: [], total: 0 }));
-      fetches.push(safeFetch(BASE + 'wa-hub-estado?pais=COL', { resueltos: [], timestamps: {} }));
+      fetches.push(fetch(BASE + 'col-wa-hub-conversaciones').then(r => r.json()));
+      fetches.push(fetch(BASE + 'wa-hub-estado?pais=COL').then(r => r.json()).catch(() => ({ resueltos: [], timestamps: {} })));
     }
 
     const results = await Promise.all(fetches);
