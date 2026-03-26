@@ -1194,6 +1194,20 @@
 
     let waOk = 0, waErr = 0;
     let waLog = JSON.parse(localStorage.getItem('wms_waLog') || '{}');
+
+    async function fetchWALog() {
+        try {
+            const pais = sessionStorage.getItem('wms_agencia') || 'CR';
+            const res  = await fetch('https://zenderbox.app.n8n.cloud/webhook/wa-log?pais=' + pais + '&t=' + Date.now());
+            const json = await res.json();
+            if (json.ok && json.log) {
+                waLog = json.log;
+                localStorage.setItem('wms_waLog', JSON.stringify(waLog));
+            }
+        } catch(e) {
+            console.warn('waLog desde localStorage (fallback):', e);
+        }
+    }
     let TEMPLATES = [];
 
     const SID_RASTREO = 'HXe843cc37a753b1bdf031e3f0f2a1d004';
@@ -1292,13 +1306,11 @@
     window.addEventListener('wms:agencia', (e) => {
         currentAgencia = e.detail.agencia;
         waLog = {};
-        fetchTemplates();
-        fetchData();
+        fetchWALog().then(() => { fetchTemplates(); fetchData(); });
     });
 
     // Cargar al iniciar
-    fetchTemplates();
-    fetchData();
+    fetchWALog().then(() => { fetchTemplates(); fetchData(); });
     </script>
     <script src="sidebar.js"></script>
 </body>
