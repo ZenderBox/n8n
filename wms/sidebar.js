@@ -26,8 +26,15 @@ const WMS_NAV = [
     items: [
       { icon: '📞', label: 'Llamadas',          href: 'ia/llamadas.html',  id: 'llamadas' },
       { icon: '📧', label: 'Correos',           href: 'ia/correos.html',   id: 'correos' },
-      { icon: '💰', label: 'Cobros',            href: 'ia/cobros.html',    id: 'cobros',          coming: true },
       { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
+    ]
+  },
+  {
+    section: 'COBROS',
+    collapsible: true,
+    id: 'cobros-section',
+    items: [
+      { icon: '💰', label: 'QuickBooks',        href: 'cobros/quickbooks.html', id: 'quickbooks' },
     ]
   },
   {
