@@ -22,7 +22,6 @@
         --red-dim: rgba(239, 68, 68, 0.1);
         --yellow: #f59e0b;
         --yellow-dim: rgba(245, 158, 11, 0.1);
-        --purple: #a78bfa;
         --text: #e8f0f8;
         --text-muted: #5a7a9a;
         --text-mid: #8aaac8;
@@ -32,412 +31,105 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--sans);
-        min-height: 100vh;
-        display: flex;
-    }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; }
 
-    .main {
-        margin-left: 220px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
     .topbar {
         padding: 16px 32px;
         border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        gap: 16px;
+        display: flex; align-items: center; gap: 16px;
         background: var(--surface);
-        position: sticky;
-        top: 0;
-        z-index: 5;
+        position: sticky; top: 0; z-index: 5;
     }
 
-    .topbar-icon {
-        font-size: 20px;
-    }
+    .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .topbar-sub   { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 
-    .topbar-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text);
-    }
-
-    .topbar-sub {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--text-muted);
-    }
-
-    .topbar-right {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .topbar-live {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-family: var(--mono);
-        font-size: 10px;
-        color: var(--green);
-    }
-
-    .live-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--green);
-        animation: pulse 2s ease-in-out infinite;
-    }
+    .topbar-live  { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--green); }
+    .live-dot     { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
 
     @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
-    @keyframes spin { to { transform: rotate(360deg) } }
+    @keyframes spin  { to { transform: rotate(360deg) } }
 
     .btn-refresh {
-        background: transparent;
-        border: 1px solid var(--border2);
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-family: var(--mono);
-        font-size: 10px;
-        color: var(--text-muted);
-        cursor: pointer;
-        transition: all .15s;
+        background: transparent; border: 1px solid var(--border2); border-radius: 6px;
+        padding: 6px 12px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); cursor: pointer; transition: all .15s;
     }
-
     .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
 
     .btn-agent {
-        background: rgba(0, 156, 201, 0.12);
-        border: 1px solid rgba(0, 156, 201, 0.35);
-        border-radius: 6px;
-        padding: 6px 14px;
-        font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--blue);
-        cursor: pointer;
-        transition: all .15s;
+        background: rgba(0, 156, 201, 0.12); border: 1px solid rgba(0, 156, 201, 0.35); border-radius: 6px;
+        padding: 6px 14px; font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--blue); cursor: pointer; transition: all .15s;
     }
-
-    .btn-agent:hover { background: rgba(0, 156, 201, 0.2); border-color: var(--blue); }
+    .btn-agent:hover    { background: rgba(0, 156, 201, 0.2); border-color: var(--blue); }
     .btn-agent:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .content { padding: 28px 32px; flex: 1; }
 
-    .stats-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
-    }
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
 
-    .stat-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 16px 20px;
-    }
-
-    .stat-label {
-        font-family: var(--mono);
-        font-size: 9px;
-        color: var(--text-muted);
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        margin-bottom: 8px;
-    }
-
-    .stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: -1px;
-    }
-
-    .stat-value.green { color: var(--green); }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; }
+    .stat-label { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -1px; }
+    .stat-value.green  { color: var(--green); }
     .stat-value.yellow { color: var(--yellow); }
-    .stat-value.blue { color: var(--blue); }
-    .stat-value.red { color: var(--red); }
+    .stat-value.blue   { color: var(--blue); }
+    .stat-value.red    { color: var(--red); }
+    .stat-sub { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 
-    .stat-sub {
-        font-family: var(--mono);
-        font-size: 10px;
-        color: var(--text-muted);
-        margin-top: 4px;
-    }
+    .filters-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 
-    .filters-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 16px;
-    }
-
-    .filter-btn {
-        background: transparent;
-        border: 1px solid var(--border2);
-        border-radius: 5px;
-        padding: 5px 12px;
-        font-family: var(--mono);
-        font-size: 10px;
-        color: var(--text-muted);
-        cursor: pointer;
-        transition: all .15s;
-    }
-
-    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn { background: transparent; border: 1px solid var(--border2); border-radius: 5px; padding: 5px 12px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); cursor: pointer; transition: all .15s; }
+    .filter-btn:hover  { border-color: var(--accent); color: var(--accent); }
     .filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
-    .filter-search {
-        margin-left: auto;
-        background: var(--surface2);
-        border: 1px solid var(--border2);
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--text);
-        outline: none;
-        width: 220px;
-    }
-
-    .filter-search:focus { border-color: var(--accent); }
+    .filter-search { margin-left: auto; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 6px 12px; font-family: var(--mono); font-size: 11px; color: var(--text); outline: none; width: 220px; }
+    .filter-search:focus        { border-color: var(--accent); }
     .filter-search::placeholder { color: var(--text-muted); }
 
-    .table-wrapper {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    .table-header {
-        padding: 14px 20px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .table-title {
-        font-family: var(--mono);
-        font-size: 11px;
-        color: var(--text-muted);
-        letter-spacing: 2px;
-        text-transform: uppercase;
-    }
+    .table-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .table-header  { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-title   { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
 
     .cons-list { min-height: 200px; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: var(--text-muted); }
+    .empty-icon  { font-size: 32px; }
+    .empty-text  { font-family: var(--mono); font-size: 12px; }
 
-    .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        padding: 60px 20px;
-        color: var(--text-muted);
-    }
-
-    .empty-icon { font-size: 32px; }
-    .empty-text { font-family: var(--mono); font-size: 12px; }
-
-    .guias-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-
-    .guias-table thead { background: var(--surface2); }
-
-    .guias-table th {
-        padding: 10px 16px;
-        text-align: left;
-        font-family: var(--mono);
-        font-size: 9px;
-        color: var(--text-muted);
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        font-weight: 500;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .guias-table td {
-        padding: 11px 16px;
-        border-bottom: 1px solid var(--border);
-        color: var(--text-mid);
-        vertical-align: middle;
-    }
-
-    .guias-table tbody tr:hover { background: var(--surface2); }
+    .guias-table           { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .guias-table thead     { background: var(--surface2); }
+    .guias-table th        { padding: 10px 16px; text-align: left; font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; border-bottom: 1px solid var(--border); }
+    .guias-table td        { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: middle; }
+    .guias-table tbody tr:hover        { background: var(--surface2); }
     .guias-table tbody tr:last-child td { border-bottom: none; }
-
     .td-mono { font-family: var(--mono); font-size: 11px; }
-    .td-monto { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent); }
 
-    .badge-sm {
-        display: inline-block;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-family: var(--mono);
-        font-size: 9px;
-        font-weight: 600;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-    }
+    .badge-sm { display: inline-block; padding: 3px 8px; border-radius: 4px; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+    .badge-sm.critico   { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(239,68,68,0.2); }
+    .badge-sm.rutinario { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(0,156,201,0.2); }
+    .badge-sm.otro      { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(204,211,42,0.2); }
 
-    .badge-sm.creado    { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
-    .badge-sm.pendiente { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(245,158,11,0.2); }
-    .badge-sm.error     { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(239,68,68,0.2); }
-
-    /* Detail panel */
-    .detail-overlay {
-        display: none;
-        position: fixed; inset: 0;
-        background: rgba(4,13,24,0.7);
-        z-index: 50;
-    }
+    .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(4,13,24,0.7); z-index: 50; }
     .detail-overlay.visible { display: block; }
 
-    .detail-panel {
-        position: fixed;
-        right: -480px;
-        top: 0; bottom: 0;
-        width: 480px;
-        background: var(--surface);
-        border-left: 1px solid var(--border);
-        z-index: 51;
-        transition: right .25s ease;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+    .detail-panel { position: fixed; right: -480px; top: 0; bottom: 0; width: 480px; background: var(--surface); border-left: 1px solid var(--border); z-index: 51; transition: right .25s ease; display: flex; flex-direction: column; overflow: hidden; }
     .detail-panel.visible { right: 0; }
 
-    .detail-panel-hdr {
-        padding: 20px 24px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-    }
+    .detail-panel-hdr { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .detail-panel-hdr h3 { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; margin-right: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .detail-panel-hdr h3 {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text);
-        flex: 1;
-        margin-right: 16px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .btn-close {
-        background: transparent;
-        border: 1px solid var(--border2);
-        border-radius: 4px;
-        padding: 4px 8px;
-        font-size: 12px;
-        color: var(--text-muted);
-        cursor: pointer;
-    }
-
+    .btn-close { background: transparent; border: 1px solid var(--border2); border-radius: 4px; padding: 4px 8px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
     .btn-close:hover { border-color: var(--red); color: var(--red); }
 
-    .detail-body {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px 24px;
-    }
-
+    .detail-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
     .detail-section { margin-bottom: 20px; }
-    .detail-section-title {
-        font-family: var(--mono);
-        font-size: 9px;
-        color: var(--text-muted);
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        margin-bottom: 12px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .detail-row {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 8px;
-        align-items: flex-start;
-    }
-
-    .detail-lbl {
-        font-family: var(--mono);
-        font-size: 10px;
-        color: var(--text-muted);
-        width: 120px;
-        flex-shrink: 0;
-        padding-top: 1px;
-    }
-
-    .detail-val {
-        font-size: 13px;
-        color: var(--text);
-        flex: 1;
-        word-break: break-word;
-    }
-
+    .detail-section-title { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .detail-row  { display: flex; gap: 12px; margin-bottom: 8px; align-items: flex-start; }
+    .detail-lbl  { font-family: var(--mono); font-size: 10px; color: var(--text-muted); width: 100px; flex-shrink: 0; padding-top: 1px; }
+    .detail-val  { font-size: 13px; color: var(--text); flex: 1; word-break: break-word; }
     .detail-val.mono { font-family: var(--mono); font-size: 11px; }
-
-    /* QBO approve/reject buttons */
-    .action-btns {
-        display: flex;
-        gap: 8px;
-        margin-top: 16px;
-    }
-
-    .btn-aprobar {
-        flex: 1;
-        background: var(--green-dim);
-        border: 1px solid rgba(34,197,94,0.35);
-        border-radius: 6px;
-        padding: 10px;
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--green);
-        cursor: pointer;
-        transition: all .15s;
-    }
-
-    .btn-aprobar:hover { background: rgba(34,197,94,0.2); }
-
-    .btn-rechazar {
-        flex: 1;
-        background: var(--red-dim);
-        border: 1px solid rgba(239,68,68,0.35);
-        border-radius: 6px;
-        padding: 10px;
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--red);
-        cursor: pointer;
-        transition: all .15s;
-    }
-
-    .btn-rechazar:hover { background: rgba(239,68,68,0.2); }
     </style>
 </head>
 <body>
@@ -446,16 +138,13 @@
 
 <div class="main">
     <div class="topbar">
-        <div class="topbar-icon">💰</div>
+        <div style="font-size:20px">💰</div>
         <div>
             <div class="topbar-title">QuickBooks · Bills</div>
-            <div class="topbar-sub" id="qbo-sub">Bills pendientes de aprobación</div>
+            <div class="topbar-sub" id="qbo-sub">Correos procesados por el motor de contabilidad</div>
         </div>
         <div class="topbar-right">
-            <div class="topbar-live">
-                <div class="live-dot"></div>
-                LIVE
-            </div>
+            <div class="topbar-live"><div class="live-dot"></div>LIVE</div>
             <button class="btn-refresh" onclick="fetchData()">↻ Actualizar</button>
             <button class="btn-agent" id="btnAgent" onclick="ejecutarMotor()">▶ Ejecutar Motor</button>
         </div>
@@ -464,38 +153,37 @@
     <div class="content">
         <div class="stats-row">
             <div class="stat-card">
-                <div class="stat-label">Total Bills</div>
+                <div class="stat-label">Total</div>
                 <div class="stat-value" id="stat-total">—</div>
                 <div class="stat-sub">registros</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Creados en QBO</div>
-                <div class="stat-value green" id="stat-creados">—</div>
-                <div class="stat-sub">aprobados</div>
+                <div class="stat-label">Críticos</div>
+                <div class="stat-value red" id="stat-criticos">—</div>
+                <div class="stat-sub">requieren atención</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Pendientes</div>
-                <div class="stat-value yellow" id="stat-pendientes">—</div>
-                <div class="stat-sub">por revisar</div>
+                <div class="stat-label">Rutinarios</div>
+                <div class="stat-value blue" id="stat-rutinarios">—</div>
+                <div class="stat-sub">procesados</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Errores</div>
-                <div class="stat-value red" id="stat-errores">—</div>
-                <div class="stat-sub">fallidos</div>
+                <div class="stat-label">Hoy</div>
+                <div class="stat-value yellow" id="stat-hoy">—</div>
+                <div class="stat-sub">procesados hoy</div>
             </div>
         </div>
 
         <div class="filters-row">
             <button class="filter-btn active" id="f-todos"     onclick="setFilter('todos')">Todos</button>
-            <button class="filter-btn"        id="f-pendiente" onclick="setFilter('pendiente')">Pendientes</button>
-            <button class="filter-btn"        id="f-creado"    onclick="setFilter('creado')">Creados</button>
-            <button class="filter-btn"        id="f-error"     onclick="setFilter('error')">Errores</button>
-            <input class="filter-search" id="filterSearch" placeholder="Buscar vendor, monto..." oninput="renderList()">
+            <button class="filter-btn"        id="f-critico"   onclick="setFilter('critico')">Críticos</button>
+            <button class="filter-btn"        id="f-rutinario" onclick="setFilter('rutinario')">Rutinarios</button>
+            <input class="filter-search" id="filterSearch" placeholder="Buscar remitente, asunto..." oninput="renderList()">
         </div>
 
         <div class="table-wrapper">
             <div class="table-header">
-                <div class="table-title">📋 Registro de Bills</div>
+                <div class="table-title">📋 BillsLog — Correos procesados</div>
             </div>
             <div class="cons-list" id="billList">
                 <div class="empty-state">
@@ -517,30 +205,30 @@
 </div>
 
 <script>
-const WEBHOOK_DATA_URL  = 'https://zenderbox.app.n8n.cloud/webhook/qbo-bills-data';
+const WEBHOOK_DATA_URL  = 'https://zenderbox.app.n8n.cloud/webhook/bills-ia-data';
 const WEBHOOK_MOTOR_URL = 'https://zenderbox.app.n8n.cloud/webhook/qbo-ejecutar-motor';
-const WEBHOOK_ACCION_URL = 'https://zenderbox.app.n8n.cloud/webhook/qbo-bill-accion';
 
 let BILLS = [];
 let currentFilter = 'todos';
 
-function normalizeStatus(raw) {
-    if (!raw) return 'pendiente';
-    const s = raw.toLowerCase().trim();
-    if (s === 'creado' || s === 'aprobado' || s === 'created') return 'creado';
-    if (s === 'error' || s === 'fallido' || s === 'failed' || s === 'no creado') return 'error';
-    return 'pendiente';
+function normalizeCategoria(raw) {
+    if (!raw) return 'otro';
+    const s = raw.toUpperCase().trim();
+    if (s === 'CRITICO') return 'critico';
+    if (s === 'RUTINARIO') return 'rutinario';
+    return 'otro';
 }
 
 function updateStats() {
-    const creados    = BILLS.filter(b => normalizeStatus(b.STATUS) === 'creado').length;
-    const pendientes = BILLS.filter(b => normalizeStatus(b.STATUS) === 'pendiente').length;
-    const errores    = BILLS.filter(b => normalizeStatus(b.STATUS) === 'error').length;
+    const today      = new Date().toISOString().substring(0, 10);
+    const criticos   = BILLS.filter(b => normalizeCategoria(b.categoria || b.categoria || b.Categoria) === 'critico').length;
+    const rutinarios = BILLS.filter(b => normalizeCategoria(b.categoria || b.categoria || b.Categoria) === 'rutinario').length;
+    const hoy        = BILLS.filter(b => String(b.fecha || b.fecha || b.Fecha || '').includes(today)).length;
     const safe = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    safe('stat-total',    BILLS.length);
-    safe('stat-creados',  creados);
-    safe('stat-pendientes', pendientes);
-    safe('stat-errores',  errores);
+    safe('stat-total',     BILLS.length);
+    safe('stat-criticos',  criticos);
+    safe('stat-rutinarios', rutinarios);
+    safe('stat-hoy',       hoy);
 }
 
 async function fetchData() {
@@ -550,11 +238,13 @@ async function fetchData() {
         const t = setTimeout(() => ctrl.abort(), 30000);
         const res = await fetch(WEBHOOK_DATA_URL + '?t=' + Date.now(), { signal: ctrl.signal });
         clearTimeout(t);
-        const json = await res.json();
+        const text = await res.text();
+        if (!text || !text.trim()) throw new Error('Respuesta vacía');
+        const json = JSON.parse(text);
         if (!json.ok) throw new Error('Error en workflow');
-        BILLS = json.bills || [];
+        BILLS = json.correos || json.bills || [];
         updateStats();
-        document.getElementById('qbo-sub').textContent = `Bills registrados · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
+        document.getElementById('qbo-sub').textContent = `Correos procesados · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
         renderList();
     } catch (err) {
         document.getElementById('billList').innerHTML = `<div style="padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red)">✕ ${err.message} <button onclick="fetchData()" style="margin-left:12px;background:var(--accent);border:none;border-radius:4px;padding:6px 12px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer">↻ Reintentar</button></div>`;
@@ -563,17 +253,17 @@ async function fetchData() {
 
 function setFilter(f) {
     currentFilter = f;
-    ['todos','pendiente','creado','error'].forEach(id =>
+    ['todos','critico','rutinario'].forEach(id =>
         document.getElementById('f-' + id).classList.toggle('active', id === f)
     );
     renderList();
 }
 
-function badgeStatus(status) {
-    const s = normalizeStatus(status);
-    if (s === 'creado')    return '<span class="badge-sm creado">CREADO</span>';
-    if (s === 'error')     return '<span class="badge-sm error">ERROR</span>';
-    return '<span class="badge-sm pendiente">PENDIENTE</span>';
+function badgeCategoria(cat) {
+    const c = normalizeCategoria(cat);
+    if (c === 'critico')   return '<span class="badge-sm critico">CRÍTICO</span>';
+    if (c === 'rutinario') return '<span class="badge-sm rutinario">RUTINARIO</span>';
+    return '<span class="badge-sm otro">—</span>';
 }
 
 function escHtml(str) {
@@ -582,37 +272,17 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
-function parseMonto(raw) {
-    if (!raw) return '—';
-    try {
-        const parsed = JSON.parse(raw);
-        if (parsed.amount) return `$${Number(parsed.amount).toLocaleString('en-US', {minimumFractionDigits:2})}`;
-        if (parsed.total_amount) return `$${Number(parsed.total_amount).toLocaleString('en-US', {minimumFractionDigits:2})}`;
-    } catch(e) {}
-    return raw;
-}
-
-function parseVendor(raw) {
-    if (!raw) return '—';
-    try {
-        const parsed = JSON.parse(raw);
-        return parsed.vendor || parsed.vendor_name || '—';
-    } catch(e) {}
-    return raw;
-}
-
 function renderList() {
     const search = (document.getElementById('filterSearch').value || '').toLowerCase();
     const filtered = BILLS.filter(b => {
-        const status = normalizeStatus(b.STATUS);
-        if (currentFilter === 'pendiente' && status !== 'pendiente') return false;
-        if (currentFilter === 'creado'    && status !== 'creado')    return false;
-        if (currentFilter === 'error'     && status !== 'error')     return false;
+        const cat = normalizeCategoria(b.categoria || b.categoria || b.Categoria);
+        if (currentFilter === 'critico'   && cat !== 'critico')   return false;
+        if (currentFilter === 'rutinario' && cat !== 'rutinario') return false;
         if (search) {
-            const vendor = parseVendor(b.RAW_PAYLOAD).toLowerCase();
-            const monto  = String(b.RAW_PAYLOAD || '').toLowerCase();
-            const entity = String(b.ENTITY_ID || '').toLowerCase();
-            if (!vendor.includes(search) && !monto.includes(search) && !entity.includes(search)) return false;
+            const rem  = String(b.remitente || b.Remitente || '').toLowerCase();
+            const asun = String(b.asunto || b.Asunto    || '').toLowerCase();
+            const acc  = String(b.accion || b.Accion    || '').toLowerCase();
+            if (!rem.includes(search) && !asun.includes(search) && !acc.includes(search)) return false;
         }
         return true;
     });
@@ -625,16 +295,18 @@ function renderList() {
 
     list.innerHTML = `<div style="overflow-x:auto"><table class="guias-table">
         <thead><tr>
-            <th>FECHA</th><th>VENDOR</th><th>MONTO</th>
-            <th>BILL ID (QBO)</th><th>OPERACIÓN</th><th>STATUS</th>
+            <th>FECHA</th>
+            <th>REMITENTE</th>
+            <th>ASUNTO</th>
+            <th>ACCIÓN</th>
+            <th>CATEGORÍA</th>
         </tr></thead>
         <tbody>${filtered.map((b, i) => `<tr onclick="openDetail(${i})" style="cursor:pointer">
-            <td class="td-mono">${escHtml(String(b.FECHA_EVENTO || '—').substring(0,16))}</td>
-            <td style="color:var(--text)">${escHtml(parseVendor(b.RAW_PAYLOAD))}</td>
-            <td class="td-monto">${escHtml(parseMonto(b.RAW_PAYLOAD))}</td>
-            <td class="td-mono">${escHtml(b.ENTITY_ID || '—')}</td>
-            <td class="td-mono">${escHtml(b.OPERATION || '—')}</td>
-            <td>${badgeStatus(b.STATUS)}</td>
+            <td class="td-mono">${escHtml(String(b.fecha || b.fecha || b.Fecha || '—').substring(0,16))}</td>
+            <td style="color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(b.remitente || b.remitente || b.Remitente || '—')}</td>
+            <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(b.asunto || b.asunto || b.Asunto || '—')}</td>
+            <td class="td-mono">${escHtml(b.accion || b.accion || b.Accion || '—')}</td>
+            <td>${badgeCategoria(b.categoria || b.Categoria)}</td>
         </tr>`).join('')}
         </tbody></table></div>`;
 
@@ -644,54 +316,16 @@ function renderList() {
 function openDetail(idx) {
     const b = window._filteredBills?.[idx];
     if (!b) return;
-
-    let parsed = {};
-    try { parsed = JSON.parse(b.RAW_PAYLOAD || '{}'); } catch(e) {}
-
-    const vendor   = parsed.vendor || parsed.vendor_name || b.ENTITY_ID || '—';
-    const monto    = parsed.amount || parsed.total_amount || '—';
-    const billDate = parsed.bill_date || '—';
-    const dueDate  = parsed.due_date || '—';
-    const currency = parsed.currency || 'USD';
-    const invoice  = parsed.invoice_number || '—';
-    const desc     = parsed.description || '—';
-
-    document.getElementById('dp-title').textContent = `Bill · ${vendor}`;
-
-    const isPendiente = normalizeStatus(b.STATUS) === 'pendiente';
-
+    document.getElementById('dp-title').textContent = b.asunto || b.Asunto || 'Sin asunto';
     document.getElementById('dp-body').innerHTML = `
     <div class="detail-section">
-        <div class="detail-section-title">Información del Bill</div>
-        <div class="detail-row"><span class="detail-lbl">Vendor</span><span class="detail-val">${escHtml(vendor)}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Monto</span><span class="detail-val mono" style="color:var(--accent)">$${Number(monto||0).toLocaleString('en-US',{minimumFractionDigits:2})} ${escHtml(currency)}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Fecha Bill</span><span class="detail-val mono">${escHtml(billDate)}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Vencimiento</span><span class="detail-val mono">${escHtml(dueDate)}</span></div>
-        <div class="detail-row"><span class="detail-lbl">N° Factura</span><span class="detail-val mono">${escHtml(invoice)}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Descripción</span><span class="detail-val">${escHtml(desc)}</span></div>
-    </div>
-    <div class="detail-section">
-        <div class="detail-section-title">Metadata QBO</div>
-        <div class="detail-row"><span class="detail-lbl">Bill ID QBO</span><span class="detail-val mono">${escHtml(b.ENTITY_ID || '—')}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Realm ID</span><span class="detail-val mono">${escHtml(b.REALM_ID || '—')}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Operación</span><span class="detail-val mono">${escHtml(b.OPERATION || '—')}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Última act.</span><span class="detail-val mono">${escHtml(b.LAST_UPDATED || '—')}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Status</span><span class="detail-val">${badgeStatus(b.STATUS)}</span></div>
-        <div class="detail-row"><span class="detail-lbl">Registrado</span><span class="detail-val mono">${escHtml(String(b.FECHA_EVENTO||'—').substring(0,16))}</span></div>
-    </div>
-    ${parsed.line_items ? `<div class="detail-section">
-        <div class="detail-section-title">Líneas del Bill</div>
-        ${parsed.line_items.map(li => `
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:8px">
-            <div style="font-size:13px;color:var(--text);margin-bottom:4px">${escHtml(li.description || '—')}</div>
-            <div style="font-family:var(--mono);font-size:11px;color:var(--accent)">$${Number(li.amount||0).toLocaleString('en-US',{minimumFractionDigits:2})} · ${escHtml(li.account||'—')}</div>
-        </div>`).join('')}
-    </div>` : ''}
-    ${isPendiente ? `<div class="action-btns">
-        <button class="btn-aprobar" onclick="accionBill('${b.ENTITY_ID}', 'APROBAR')">✅ Aprobar Bill</button>
-        <button class="btn-rechazar" onclick="accionBill('${b.ENTITY_ID}', 'RECHAZAR')">❌ Rechazar</button>
-    </div>` : ''}`;
-
+        <div class="detail-section-title">Información del correo</div>
+        <div class="detail-row"><span class="detail-lbl">Fecha</span><span class="detail-val mono">${escHtml(b.fecha || b.Fecha || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Remitente</span><span class="detail-val">${escHtml(b.remitente || b.remitente || b.Remitente || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Asunto</span><span class="detail-val">${escHtml(b.asunto || b.asunto || b.Asunto || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Acción</span><span class="detail-val mono">${escHtml(b.accion || b.accion || b.Accion || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Categoría</span><span class="detail-val">${badgeCategoria(b.categoria || b.Categoria)}</span></div>
+    </div>`;
     document.getElementById('detailOverlay').classList.add('visible');
     document.getElementById('detailPanel').classList.add('visible');
 }
@@ -699,14 +333,6 @@ function openDetail(idx) {
 function closeDetail() {
     document.getElementById('detailOverlay').classList.remove('visible');
     document.getElementById('detailPanel').classList.remove('visible');
-}
-
-async function accionBill(entityId, accion) {
-    try {
-        await fetch(`${WEBHOOK_ACCION_URL}?entity_id=${entityId}&accion=${accion}`, { method: 'GET', mode: 'no-cors' });
-        closeDetail();
-        setTimeout(fetchData, 2000);
-    } catch(e) {}
 }
 
 async function ejecutarMotor() {
@@ -737,6 +363,6 @@ async function ejecutarMotor() {
 
 setTimeout(fetchData, 300);
 </script>
-<script src="../../sidebar.js"></script>
+<script src="../sidebar.js"></script>
 </body>
 </html>
