@@ -1077,10 +1077,10 @@ function renderChatShell(contact, conv) {
     <div class="messages" id="msgContainer"><div class="loading"><div class="spinner"></div> Cargando mensajes...</div></div>
     <div class="input-area">
       <div class="template-bar" id="templateBar">
-        ${templatesList.slice(0,5).map(t =>
+        ${(Array.isArray(templatesList) ? templatesList : (templatesList.templates || [])).slice(0,5).map(t =>
           `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this, '${conv.linea}')">${t.nombre}</button>`
         ).join('')}
-        ${templatesList.length > 5 ? `<button class="template-chip" onclick="toggleAllTemplates('${contact}','${conv.linea}')">+ más</button>` : ''}
+        ${(Array.isArray(templatesList) ? templatesList : (templatesList.templates || [])).length > 5 ? `<button class="template-chip" onclick="toggleAllTemplates('${contact}','${conv.linea}')">+ más</button>` : ''}
       </div>
       <div class="input-row">
         <textarea class="msg-input" id="msgInput" placeholder="Escribe un mensaje... (solo dentro de la ventana de 24h)" rows="1"
@@ -1124,7 +1124,7 @@ function renderMessages(messages) {
 function toggleAllTemplates(contact, line) {
   const bar = document.getElementById('templateBar');
   if (!bar) return;
-  bar.innerHTML = templatesList.map(t =>
+  bar.innerHTML = (Array.isArray(templatesList) ? templatesList : (templatesList.templates || [])).map(t =>
     `<button class="template-chip" onclick="sendTemplate('${contact}', '${t.sid}', ${JSON.stringify(t.variables || [])}, this, '${line}')">${t.nombre}</button>`
   ).join('');
 }
