@@ -27,7 +27,7 @@ const WMS_NAV = [
     items: [
       { icon: '💬', label: 'WhatsApp',  href: 'whatsapp.html',     id: 'whatsapp' },
       { icon: '🗨️', label: 'WA Hub',    href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
-      { icon: '📞', label: 'Llamadas',  href: 'ia/llamadas.html',  id: 'llamadas' },
+      { icon: '📞', label: 'Llamadas',  href: 'llamadas.html',  id: 'llamadas' },
     ]
   },
   {
@@ -36,7 +36,7 @@ const WMS_NAV = [
     id: 'ia-section',
     items: [
       { icon: '📧', label: 'Correos',           href: 'correos.html',   id: 'correos' },
-      { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
+      { icon: '🎁', label: 'Primer Paquete',    href: 'primer.html',    id: 'primer-paquete',  coming: true },
     ]
   },
   {
@@ -44,7 +44,7 @@ const WMS_NAV = [
     collapsible: true,
     id: 'cobros-section',
     items: [
-      { icon: '💰', label: 'QuickBooks',        href: 'cobros/quickbooks.html', id: 'quickbooks' },
+      { icon: '💰', label: 'QuickBooks',        href: 'quickbooks.html', id: 'quickbooks' },
     ]
   },
   {
