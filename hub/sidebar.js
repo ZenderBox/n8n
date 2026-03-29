@@ -74,10 +74,10 @@ function getActivePage() {
 function getBaseUrl() {
   const path = window.location.pathname;
   // Si path contiene /wms/ia/ u otra subcarpeta dentro de wms
-  const hubIdx = path.indexOf('/hub/');
-  if (hubIdx < 0) return '';
-  const afterHub = path.substring(hubIdx + 5); // después de /hub/
-  const depth = afterHub.split('/').length - 1; // niveles de subcarpeta
+  const wmsIdx = path.indexOf('/wms/');
+  if (wmsIdx < 0) return '';
+  const afterWms = path.substring(wmsIdx + 5); // después de /wms/
+  const depth = afterWms.split('/').length - 1; // niveles de subcarpeta
   return depth > 0 ? '../'.repeat(depth) : '';
 }
 
