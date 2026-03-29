@@ -14,9 +14,17 @@ const WMS_NAV = [
       { icon: '📦', label: 'Consolidados',      href: 'consolidados.html', id: 'consolidados' },
       { icon: '📥', label: 'Cargar Manifiesto', href: 'manifiesto.html',   id: 'manifiesto' },
       { icon: '🚚', label: 'Despachos',         href: 'despachos.html',    id: 'despachos' },
-      { icon: '💬', label: 'WhatsApp',          href: 'whatsapp.html',     id: 'whatsapp' },
-      { icon: '💬', label: 'WA Hub',            href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
+
       { icon: '🧾', label: 'Pre-liquidador',    href: 'preliquidador.html', id: 'preliquidador' },
+    ]
+  },
+  {
+    section: 'COMUNICACIONES',
+    collapsible: true,
+    id: 'comunicaciones-section',
+    items: [
+      { icon: '💬', label: 'WhatsApp',  href: 'whatsapp.html',     id: 'whatsapp' },
+      { icon: '🗨️', label: 'WA Hub',    href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
     ]
   },
   {
