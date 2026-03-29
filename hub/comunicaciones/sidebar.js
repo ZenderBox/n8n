@@ -10,13 +10,13 @@ const WMS_NAV = [
   {
     section: 'OPERACIONES',
     items: [
-      { icon: '🔍', label: 'Buscar Guía',      href: '/hub/buscar.html',       id: 'buscar' },
-      { icon: '📦', label: 'Consolidados',      href: '/hub/operaciones/consolidados.html', id: 'consolidados' },
-      { icon: '📥', label: 'Cargar Manifiesto', href: '/hub/operaciones/manifiesto.html',   id: 'manifiesto' },
-      { icon: '🚚', label: 'Despachos',         href: '/hub/operaciones/despachos.html',    id: 'despachos' },
-      { icon: '💬', label: 'WhatsApp',          href: '/hub/comunicaciones/whatsapp.html',     id: 'whatsapp' },
-      { icon: '💬', label: 'WA Hub',            href: '/hub/comunicaciones/whatsapp-hub.html', id: 'whatsapp-hub' },
-      { icon: '🧾', label: 'Pre-liquidador',    href: '/hub/operaciones/preliquidador.html', id: 'preliquidador' },
+      { icon: '🔍', label: 'Buscar Guía',      href: 'buscar.html',       id: 'buscar' },
+      { icon: '📦', label: 'Consolidados',      href: 'consolidados.html', id: 'consolidados' },
+      { icon: '📥', label: 'Cargar Manifiesto', href: 'manifiesto.html',   id: 'manifiesto' },
+      { icon: '🚚', label: 'Despachos',         href: 'despachos.html',    id: 'despachos' },
+      { icon: '💬', label: 'WhatsApp',          href: 'whatsapp.html',     id: 'whatsapp' },
+      { icon: '💬', label: 'WA Hub',            href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
+      { icon: '🧾', label: 'Pre-liquidador',    href: 'preliquidador.html', id: 'preliquidador' },
     ]
   },
   {
@@ -24,9 +24,9 @@ const WMS_NAV = [
     collapsible: true,
     id: 'ia-section',
     items: [
-      { icon: '📞', label: 'Llamadas',          href: '/hub/ia/llamadas.html',  id: 'llamadas' },
-      { icon: '📧', label: 'Correos',           href: '/hub/ia/correos.html',   id: 'correos' },
-      { icon: '🎁', label: 'Primer Paquete',    href: '/hub/ia/primer.html',    id: 'primer-paquete',  coming: true },
+      { icon: '📞', label: 'Llamadas',          href: 'ia/llamadas.html',  id: 'llamadas' },
+      { icon: '📧', label: 'Correos',           href: 'ia/correos.html',   id: 'correos' },
+      { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
     ]
   },
   {
@@ -34,7 +34,7 @@ const WMS_NAV = [
     collapsible: true,
     id: 'cobros-section',
     items: [
-      { icon: '💰', label: 'QuickBooks',        href: '/hub/contabilidad/quickbooks.html', id: 'quickbooks' },
+      { icon: '💰', label: 'QuickBooks',        href: 'cobros/quickbooks.html', id: 'quickbooks' },
     ]
   },
   {
@@ -42,7 +42,7 @@ const WMS_NAV = [
     collapsible: true,
     id: 'casillero-section',
     items: [
-      { icon: '✈️', label: 'Despachos USA',    href: '/hub/casillero/despachos-usa.html', id: 'despachos-usa' },
+      { icon: '✈️', label: 'Despachos USA',    href: 'casillero/despachos-usa.html', id: 'despachos-usa' },
     ]
   },
   {
@@ -61,7 +61,7 @@ function getActivePage() {
 }
 
 // Detectar si estamos en subcarpeta (ej: /wms/ia/)
-function getBaseUrl() { return ''; }
+function getBaseUrl() {
   const path = window.location.pathname;
   // Si path contiene /wms/ia/ u otra subcarpeta dentro de wms
   const wmsIdx = path.indexOf('/wms/');
