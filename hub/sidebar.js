@@ -27,6 +27,7 @@ const WMS_NAV = [
     items: [
       { icon: '💬', label: 'WhatsApp',  href: 'whatsapp.html',     id: 'whatsapp' },
       { icon: '🗨️', label: 'WA Hub',    href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
+      { icon: '📞', label: 'Llamadas',  href: 'ia/llamadas.html',  id: 'llamadas' },
     ]
   },
   {
@@ -34,7 +35,6 @@ const WMS_NAV = [
     collapsible: true,
     id: 'ia-section',
     items: [
-      { icon: '📞', label: 'Llamadas',          href: 'ia/llamadas.html',  id: 'llamadas' },
       { icon: '📧', label: 'Correos',           href: 'ia/correos.html',   id: 'correos' },
       { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
     ]
