@@ -9,6 +9,8 @@ const WMS_BASE = '/n8n/wms';
 const WMS_NAV = [
   {
     section: 'OPERACIONES',
+    collapsible: true,
+    id: 'operaciones-section',
     items: [
       { icon: '🔍', label: 'Buscar Guía',      href: 'buscar.html',       id: 'buscar' },
       { icon: '📦', label: 'Consolidados',      href: 'consolidados.html', id: 'consolidados' },

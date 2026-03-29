@@ -9,14 +9,24 @@ const WMS_BASE = '/n8n/wms';
 const WMS_NAV = [
   {
     section: 'OPERACIONES',
+    collapsible: true,
+    id: 'operaciones-section',
     items: [
       { icon: '🔍', label: 'Buscar Guía',      href: 'buscar.html',       id: 'buscar' },
       { icon: '📦', label: 'Consolidados',      href: 'consolidados.html', id: 'consolidados' },
       { icon: '📥', label: 'Cargar Manifiesto', href: 'manifiesto.html',   id: 'manifiesto' },
       { icon: '🚚', label: 'Despachos',         href: 'despachos.html',    id: 'despachos' },
-      { icon: '💬', label: 'WhatsApp',          href: 'whatsapp.html',     id: 'whatsapp' },
-      { icon: '💬', label: 'WA Hub',            href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
+
       { icon: '🧾', label: 'Pre-liquidador',    href: 'preliquidador.html', id: 'preliquidador' },
+    ]
+  },
+  {
+    section: 'COMUNICACIONES',
+    collapsible: true,
+    id: 'comunicaciones-section',
+    items: [
+      { icon: '💬', label: 'WhatsApp',  href: 'whatsapp.html',     id: 'whatsapp' },
+      { icon: '🗨️', label: 'WA Hub',    href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
     ]
   },
   {
