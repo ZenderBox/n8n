@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox · QuickBooks Bills</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #040d18;
+        --surface: #081F3A;
+        --surface2: #0d2748;
+        --border: #0f3058;
+        --border2: #1a4575;
+        --accent: #CCD32A;
+        --accent-dim: rgba(204, 211, 42, 0.12);
+        --blue: #009CC9;
+        --blue-dim: rgba(0, 156, 201, 0.12);
+        --green: #22c55e;
+        --green-dim: rgba(34, 197, 94, 0.1);
+        --red: #ef4444;
+        --red-dim: rgba(239, 68, 68, 0.1);
+        --yellow: #f59e0b;
+        --yellow-dim: rgba(245, 158, 11, 0.1);
+        --text: #e8f0f8;
+        --text-muted: #5a7a9a;
+        --text-mid: #8aaac8;
+        --mono: 'IBM Plex Mono', monospace;
+        --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; }
+
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    .topbar {
+        padding: 16px 32px;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; gap: 16px;
+        background: var(--surface);
+        position: sticky; top: 0; z-index: 5;
+    }
+
+    .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .topbar-sub   { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+    .topbar-live  { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--green); }
+    .live-dot     { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+
+    @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
+    @keyframes spin  { to { transform: rotate(360deg) } }
+
+    .btn-refresh {
+        background: transparent; border: 1px solid var(--border2); border-radius: 6px;
+        padding: 6px 12px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); cursor: pointer; transition: all .15s;
+    }
+    .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-agent {
+        background: rgba(0, 156, 201, 0.12); border: 1px solid rgba(0, 156, 201, 0.35); border-radius: 6px;
+        padding: 6px 14px; font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--blue); cursor: pointer; transition: all .15s;
+    }
+    .btn-agent:hover    { background: rgba(0, 156, 201, 0.2); border-color: var(--blue); }
+    .btn-agent:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .content { padding: 28px 32px; flex: 1; }
+
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; }
+    .stat-label { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -1px; }
+    .stat-value.green  { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.blue   { color: var(--blue); }
+    .stat-value.red    { color: var(--red); }
+    .stat-sub { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+    .filters-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+
+    .filter-btn { background: transparent; border: 1px solid var(--border2); border-radius: 5px; padding: 5px 12px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); cursor: pointer; transition: all .15s; }
+    .filter-btn:hover  { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+    .filter-search { margin-left: auto; background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 6px 12px; font-family: var(--mono); font-size: 11px; color: var(--text); outline: none; width: 220px; }
+    .filter-search:focus        { border-color: var(--accent); }
+    .filter-search::placeholder { color: var(--text-muted); }
+
+    .table-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .table-header  { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-title   { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+
+    .cons-list { min-height: 200px; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: var(--text-muted); }
+    .empty-icon  { font-size: 32px; }
+    .empty-text  { font-family: var(--mono); font-size: 12px; }
+
+    .guias-table           { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .guias-table thead     { background: var(--surface2); }
+    .guias-table th        { padding: 10px 16px; text-align: left; font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; border-bottom: 1px solid var(--border); }
+    .guias-table td        { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: middle; }
+    .guias-table tbody tr:hover        { background: var(--surface2); }
+    .guias-table tbody tr:last-child td { border-bottom: none; }
+    .td-mono { font-family: var(--mono); font-size: 11px; }
+
+    .badge-sm { display: inline-block; padding: 3px 8px; border-radius: 4px; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+    .badge-sm.critico   { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(239,68,68,0.2); }
+    .badge-sm.rutinario { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(0,156,201,0.2); }
+    .badge-sm.otro      { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(204,211,42,0.2); }
+
+    .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(4,13,24,0.7); z-index: 50; }
+    .detail-overlay.visible { display: block; }
+
+    .detail-panel { position: fixed; right: -480px; top: 0; bottom: 0; width: 480px; background: var(--surface); border-left: 1px solid var(--border); z-index: 51; transition: right .25s ease; display: flex; flex-direction: column; overflow: hidden; }
+    .detail-panel.visible { right: 0; }
+
+    .detail-panel-hdr { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .detail-panel-hdr h3 { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; margin-right: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .btn-close { background: transparent; border: 1px solid var(--border2); border-radius: 4px; padding: 4px 8px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+    .btn-close:hover { border-color: var(--red); color: var(--red); }
+
+    .detail-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+    .detail-section { margin-bottom: 20px; }
+    .detail-section-title { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .detail-row  { display: flex; gap: 12px; margin-bottom: 8px; align-items: flex-start; }
+    .detail-lbl  { font-family: var(--mono); font-size: 10px; color: var(--text-muted); width: 100px; flex-shrink: 0; padding-top: 1px; }
+    .detail-val  { font-size: 13px; color: var(--text); flex: 1; word-break: break-word; }
+    .detail-val.mono { font-family: var(--mono); font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div id="wms-sidebar"></div>
+
+<div class="main">
+    <div class="topbar">
+        <div style="font-size:20px">💰</div>
+        <div>
+            <div class="topbar-title">QuickBooks · Bills</div>
+            <div class="topbar-sub" id="qbo-sub">Correos procesados por el motor de contabilidad</div>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-live"><div class="live-dot"></div>LIVE</div>
+            <button class="btn-refresh" onclick="fetchData()">↻ Actualizar</button>
+            <button class="btn-agent" id="btnAgent" onclick="ejecutarMotor()">▶ Ejecutar Motor</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Total</div>
+                <div class="stat-value" id="stat-total">—</div>
+                <div class="stat-sub">registros</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Críticos</div>
+                <div class="stat-value red" id="stat-criticos">—</div>
+                <div class="stat-sub">requieren atención</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Rutinarios</div>
+                <div class="stat-value blue" id="stat-rutinarios">—</div>
+                <div class="stat-sub">procesados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Hoy</div>
+                <div class="stat-value yellow" id="stat-hoy">—</div>
+                <div class="stat-sub">procesados hoy</div>
+            </div>
+        </div>
+
+        <div class="filters-row">
+            <button class="filter-btn active" id="f-todos"     onclick="setFilter('todos')">Todos</button>
+            <button class="filter-btn"        id="f-critico"   onclick="setFilter('critico')">Críticos</button>
+            <button class="filter-btn"        id="f-rutinario" onclick="setFilter('rutinario')">Rutinarios</button>
+            <input class="filter-search" id="filterSearch" placeholder="Buscar remitente, asunto..." oninput="renderList()">
+        </div>
+
+        <div class="table-wrapper">
+            <div class="table-header">
+                <div class="table-title">📋 BillsLog — Correos procesados</div>
+            </div>
+            <div class="cons-list" id="billList">
+                <div class="empty-state">
+                    <div class="empty-icon">💰</div>
+                    <div class="empty-text">Cargando...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+    <div class="detail-panel-hdr">
+        <h3 id="dp-title">—</h3>
+        <button class="btn-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-body" id="dp-body"></div>
+</div>
+
+<script>
+const WEBHOOK_DATA_URL  = 'https://hub.zenderbox.com/webhook/bills-ia-data';
+const WEBHOOK_MOTOR_URL = 'https://hub.zenderbox.com/webhook/qbo-ejecutar-motor';
+
+let BILLS = [];
+let currentFilter = 'todos';
+
+function normalizeCategoria(raw) {
+    if (!raw) return 'otro';
+    const s = raw.toUpperCase().trim();
+    if (s === 'CRITICO') return 'critico';
+    if (s === 'RUTINARIO') return 'rutinario';
+    return 'otro';
+}
+
+function updateStats() {
+    const today      = new Date().toISOString().substring(0, 10);
+    const criticos   = BILLS.filter(b => normalizeCategoria(b.categoria || b.categoria || b.Categoria) === 'critico').length;
+    const rutinarios = BILLS.filter(b => normalizeCategoria(b.categoria || b.categoria || b.Categoria) === 'rutinario').length;
+    const hoy        = BILLS.filter(b => String(b.fecha || b.fecha || b.Fecha || '').includes(today)).length;
+    const safe = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    safe('stat-total',     BILLS.length);
+    safe('stat-criticos',  criticos);
+    safe('stat-rutinarios', rutinarios);
+    safe('stat-hoy',       hoy);
+}
+
+async function fetchData() {
+    document.getElementById('billList').innerHTML = '<div class="empty-state"><div style="width:24px;height:24px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div><div class="empty-text">Cargando...</div></div>';
+    try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 30000);
+        const res = await fetch(WEBHOOK_DATA_URL + '?t=' + Date.now(), { signal: ctrl.signal });
+        clearTimeout(t);
+        const text = await res.text();
+        if (!text || !text.trim()) throw new Error('Respuesta vacía');
+        const json = JSON.parse(text);
+        if (!json.ok) throw new Error('Error en workflow');
+        BILLS = json.correos || json.bills || [];
+        updateStats();
+        document.getElementById('qbo-sub').textContent = `Correos procesados · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
+        renderList();
+    } catch (err) {
+        document.getElementById('billList').innerHTML = `<div style="padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red)">✕ ${err.message} <button onclick="fetchData()" style="margin-left:12px;background:var(--accent);border:none;border-radius:4px;padding:6px 12px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer">↻ Reintentar</button></div>`;
+    }
+}
+
+function setFilter(f) {
+    currentFilter = f;
+    ['todos','critico','rutinario'].forEach(id =>
+        document.getElementById('f-' + id).classList.toggle('active', id === f)
+    );
+    renderList();
+}
+
+function badgeCategoria(cat) {
+    const c = normalizeCategoria(cat);
+    if (c === 'critico')   return '<span class="badge-sm critico">CRÍTICO</span>';
+    if (c === 'rutinario') return '<span class="badge-sm rutinario">RUTINARIO</span>';
+    return '<span class="badge-sm otro">—</span>';
+}
+
+function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = String(str || '');
+    return d.innerHTML;
+}
+
+function renderList() {
+    const search = (document.getElementById('filterSearch').value || '').toLowerCase();
+    const filtered = BILLS.filter(b => {
+        const cat = normalizeCategoria(b.categoria || b.categoria || b.Categoria);
+        if (currentFilter === 'critico'   && cat !== 'critico')   return false;
+        if (currentFilter === 'rutinario' && cat !== 'rutinario') return false;
+        if (search) {
+            const rem  = String(b.remitente || b.Remitente || '').toLowerCase();
+            const asun = String(b.asunto || b.Asunto    || '').toLowerCase();
+            const acc  = String(b.accion || b.Accion    || '').toLowerCase();
+            if (!rem.includes(search) && !asun.includes(search) && !acc.includes(search)) return false;
+        }
+        return true;
+    });
+
+    const list = document.getElementById('billList');
+    if (!filtered.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💰</div><div class="empty-text">Sin resultados</div></div>';
+        return;
+    }
+
+    list.innerHTML = `<div style="overflow-x:auto"><table class="guias-table">
+        <thead><tr>
+            <th>FECHA</th>
+            <th>REMITENTE</th>
+            <th>ASUNTO</th>
+            <th>ACCIÓN</th>
+            <th>CATEGORÍA</th>
+        </tr></thead>
+        <tbody>${filtered.map((b, i) => `<tr onclick="openDetail(${i})" style="cursor:pointer">
+            <td class="td-mono">${escHtml(String(b.fecha || b.fecha || b.Fecha || '—').substring(0,16))}</td>
+            <td style="color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(b.remitente || b.remitente || b.Remitente || '—')}</td>
+            <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(b.asunto || b.asunto || b.Asunto || '—')}</td>
+            <td class="td-mono">${escHtml(b.accion || b.accion || b.Accion || '—')}</td>
+            <td>${badgeCategoria(b.categoria || b.Categoria)}</td>
+        </tr>`).join('')}
+        </tbody></table></div>`;
+
+    window._filteredBills = filtered;
+}
+
+function openDetail(idx) {
+    const b = window._filteredBills?.[idx];
+    if (!b) return;
+    document.getElementById('dp-title').textContent = b.asunto || b.Asunto || 'Sin asunto';
+    document.getElementById('dp-body').innerHTML = `
+    <div class="detail-section">
+        <div class="detail-section-title">Información del correo</div>
+        <div class="detail-row"><span class="detail-lbl">Fecha</span><span class="detail-val mono">${escHtml(b.fecha || b.Fecha || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Remitente</span><span class="detail-val">${escHtml(b.remitente || b.remitente || b.Remitente || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Asunto</span><span class="detail-val">${escHtml(b.asunto || b.asunto || b.Asunto || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Acción</span><span class="detail-val mono">${escHtml(b.accion || b.accion || b.Accion || '—')}</span></div>
+        <div class="detail-row"><span class="detail-lbl">Categoría</span><span class="detail-val">${badgeCategoria(b.categoria || b.Categoria)}</span></div>
+    </div>`;
+    document.getElementById('detailOverlay').classList.add('visible');
+    document.getElementById('detailPanel').classList.add('visible');
+}
+
+function closeDetail() {
+    document.getElementById('detailOverlay').classList.remove('visible');
+    document.getElementById('detailPanel').classList.remove('visible');
+}
+
+async function ejecutarMotor() {
+    const btn = document.getElementById('btnAgent');
+    btn.disabled = true;
+    btn.textContent = '⏳ Ejecutando...';
+    try {
+        await fetch(WEBHOOK_MOTOR_URL, { method: 'GET', mode: 'no-cors' });
+        btn.textContent = '✅ Motor ejecutado';
+        btn.style.background = 'var(--green-dim)';
+        btn.style.borderColor = 'rgba(34,197,94,0.35)';
+        btn.style.color = 'var(--green)';
+        setTimeout(fetchData, 4000);
+    } catch(e) {
+        btn.textContent = '❌ Error';
+        btn.style.background = 'var(--red-dim)';
+        btn.style.borderColor = 'rgba(239,68,68,0.35)';
+        btn.style.color = 'var(--red)';
+    }
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '▶ Ejecutar Motor';
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+    }, 5000);
+}
+
+setTimeout(fetchData, 300);
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>
