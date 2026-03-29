@@ -1035,7 +1035,21 @@ function onSearch() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 function fetchJSON(url) {
-  return fetch(url).then(function(r) { return r.json(); });
+  return fetch(url).then(function(r) {
+    return r.text().then(function(text) {
+      if (!text || !text.trim()) return [];
+      try {
+        var data = JSON.parse(text);
+        // Flujos de conversaciones devuelven { conversaciones: [...] }
+        if (data && Array.isArray(data.conversaciones)) return data.conversaciones;
+        // Flujos de estado devuelven { resueltos: [], timestamps: {} }
+        if (data && data.resueltos !== undefined) return data;
+        // Si ya es array directo
+        if (Array.isArray(data)) return data;
+        return data;
+      } catch(e) { return []; }
+    });
+  });
 }
 
 function escHtml(str) {
