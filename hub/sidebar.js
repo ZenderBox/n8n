@@ -1,293 +1,237 @@
 /**
- * ZenderBox — hub/sidebar.js
- * Sidebar de navegación para hub.zenderbox.com
- * Versión: 1.0 — Marzo 2026
+ * ZenderBox WMS — Sidebar compartido multiagencia
+ * Importar en cada módulo: <script src="../sidebar.js"></script>
+ * El sidebar se inyecta automáticamente en #wms-sidebar
  */
 
-(function () {
-  // ─── Colores corporativos (hardcoded — no usar CSS variables) ───
-  var C = {
-    navy:    '#081F3A',
-    lime:    '#CCD32A',
-    white:   '#FFFFFF',
-    gray:    '#F5F5F5',
-    navyHov: '#0d2d56',
-    text:    '#FFFFFF',
-    muted:   'rgba(255,255,255,0.5)',
-    divider: 'rgba(255,255,255,0.08)',
-  };
+const WMS_BASE = '/n8n/wms';
 
-  // ─── Módulos de navegación ───────────────────────────────────────
-  var NAV = [
-    {
-      section: 'Principal',
-      items: [
-        { label: 'Dashboard',     icon: '⊞', path: 'index.html',       depth: 0 },
-        { label: 'Buscar Guía',   icon: '🔍', path: 'buscar.html',      depth: 0 },
-      ],
-    },
-    {
-      section: 'Comunicaciones',
-      items: [
-        { label: 'WhatsApp Hub',  icon: '💬', path: 'comunicaciones/whatsapp-hub.html',  depth: 0 },
-        { label: 'WhatsApp WMS',  icon: '📱', path: 'comunicaciones/whatsapp.html',       depth: 0 },
-      ],
-    },
-    {
-      section: 'Operaciones',
-      items: [
-        { label: 'Despachos',     icon: '📦', path: 'operaciones/despachos.html',        depth: 0 },
-        { label: 'Consolidados',  icon: '🗂',  path: 'operaciones/consolidados.html',     depth: 0 },
-        { label: 'Manifiesto',    icon: '📋', path: 'operaciones/manifiesto.html',       depth: 0 },
-        { label: 'Guías',         icon: '🏷',  path: 'operaciones/guias.html',            depth: 0 },
-        { label: 'Pre-liquidador',icon: '⚖️', path: 'operaciones/preliquidador.html',   depth: 0 },
-      ],
-    },
-    {
-      section: 'Casillero',
-      items: [
-        { label: 'Despachos USA', icon: '✈️', path: 'casillero/despachos-usa.html',     depth: 0 },
-      ],
-    },
-    {
-      section: 'Contabilidad',
-      items: [
-        { label: 'QuickBooks',    icon: '💰', path: 'contabilidad/quickbooks.html',     depth: 0 },
-      ],
-    },
-    {
-      section: 'Inteligencia Artificial',
-      items: [
-        { label: 'Llamadas IA',   icon: '📞', path: 'ia/llamadas.html',                 depth: 0 },
-        { label: 'Correos IA',    icon: '✉️', path: 'ia/correos.html',                  depth: 0 },
-      ],
-    },
-    {
-      section: 'Growth',
-      items: [
-        { label: 'Campañas',      icon: '📣', path: 'growth/campanias.html',            depth: 0, badge: 'Próximo' },
-      ],
-    },
-  ];
-
-  // ─── Detectar profundidad del archivo actual ─────────────────────
-  function getBase() {
-    var path = window.location.pathname;
-    // Contar segmentos después de /hub/
-    var hubIdx = path.indexOf('/hub/');
-    if (hubIdx === -1) return './';
-    var after = path.slice(hubIdx + 5); // quita "/hub/"
-    var depth = (after.match(/\//g) || []).length;
-    var base = '';
-    for (var i = 0; i < depth; i++) base += '../';
-    return base || './';
+const WMS_NAV = [
+  {
+    section: 'OPERACIONES',
+    items: [
+      { icon: '🔍', label: 'Buscar Guía',      href: 'buscar.html',       id: 'buscar' },
+      { icon: '📦', label: 'Consolidados',      href: 'consolidados.html', id: 'consolidados' },
+      { icon: '📥', label: 'Cargar Manifiesto', href: 'manifiesto.html',   id: 'manifiesto' },
+      { icon: '🚚', label: 'Despachos',         href: 'despachos.html',    id: 'despachos' },
+      { icon: '💬', label: 'WhatsApp',          href: 'whatsapp.html',     id: 'whatsapp' },
+      { icon: '💬', label: 'WA Hub',            href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
+      { icon: '🧾', label: 'Pre-liquidador',    href: 'preliquidador.html', id: 'preliquidador' },
+    ]
+  },
+  {
+    section: 'IA',
+    collapsible: true,
+    id: 'ia-section',
+    items: [
+      { icon: '📞', label: 'Llamadas',          href: 'ia/llamadas.html',  id: 'llamadas' },
+      { icon: '📧', label: 'Correos',           href: 'ia/correos.html',   id: 'correos' },
+      { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
+    ]
+  },
+  {
+    section: 'COBROS',
+    collapsible: true,
+    id: 'cobros-section',
+    items: [
+      { icon: '💰', label: 'QuickBooks',        href: 'cobros/quickbooks.html', id: 'quickbooks' },
+    ]
+  },
+  {
+    section: 'CASILLERO',
+    collapsible: true,
+    id: 'casillero-section',
+    items: [
+      { icon: '✈️', label: 'Despachos USA',    href: 'casillero/despachos-usa.html', id: 'despachos-usa' },
+    ]
+  },
+  {
+    section: 'SISTEMA',
+    items: [
+      { icon: '⚙️', label: 'Settings',          href: 'settings.html',     id: 'settings',        coming: true },
+    ]
   }
+];
 
-  // ─── Detectar ítem activo ────────────────────────────────────────
-  function isActive(itemPath, base) {
-    var current = window.location.pathname;
-    // Resolver path absoluto del ítem
-    var resolved = base + itemPath;
-    return current.indexOf(itemPath.replace('index.html', '').replace(/\.html$/, '')) !== -1
-      && itemPath !== 'buscar.html'; // evitar falso positivo en paths que contengan partes comunes
-  }
+// Detectar página activa y profundidad de carpeta
+function getActivePage() {
+  const path = window.location.pathname;
+  const file = path.split('/').pop().replace('.html', '');
+  return file || 'index';
+}
 
-  function isActivePath(itemPath) {
-    var current = window.location.pathname;
-    var file = itemPath.split('/').pop().replace('.html', '');
-    if (file === 'index') {
-      return current.endsWith('/hub/') || current.endsWith('/hub/index.html');
-    }
-    return current.indexOf(file) !== -1;
-  }
+// Detectar si estamos en subcarpeta (ej: /wms/ia/)
+function getBaseUrl() {
+  const path = window.location.pathname;
+  // Si path contiene /wms/ia/ u otra subcarpeta dentro de wms
+  const wmsIdx = path.indexOf('/wms/');
+  if (wmsIdx < 0) return '';
+  const afterWms = path.substring(wmsIdx + 5); // después de /wms/
+  const depth = afterWms.split('/').length - 1; // niveles de subcarpeta
+  return depth > 0 ? '../'.repeat(depth) : '';
+}
 
-  // ─── Inyectar CSS ────────────────────────────────────────────────
-  function injectCSS() {
-    var css = [
-      '* { box-sizing: border-box; margin: 0; padding: 0; }',
-      'body { display: flex; min-height: 100vh; font-family: "Exo 2", "Segoe UI", sans-serif; background: ' + C.gray + '; }',
-      '@import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap");',
+// Agencias disponibles
+const WMS_AGENCIAS = [
+  { id: 'CR', label: '🇨🇷 Costa Rica',  color: '#009CC9' },
+  { id: 'COL', label: '🇨🇴 Colombia',   color: '#F5A623' },
+];
 
-      /* ── Sidebar ── */
-      '#zb-sidebar {',
-      '  width: 240px; min-width: 240px; height: 100vh;',
-      '  background: ' + C.navy + ';',
-      '  display: flex; flex-direction: column;',
-      '  position: fixed; left: 0; top: 0; z-index: 100;',
-      '  overflow-y: auto; overflow-x: hidden;',
-      '  transition: width 0.25s ease;',
-      '}',
-      '#zb-sidebar::-webkit-scrollbar { width: 4px; }',
-      '#zb-sidebar::-webkit-scrollbar-track { background: transparent; }',
-      '#zb-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }',
+// Estado global de agencia — persiste en sessionStorage
+function getAgencia() {
+  return sessionStorage.getItem('wms_agencia') || 'CR';
+}
+function setAgencia(id) {
+  sessionStorage.setItem('wms_agencia', id);
+  // Disparar evento para que cada módulo reaccione
+  window.dispatchEvent(new CustomEvent('wms:agencia', { detail: { agencia: id } }));
+  updateAgenciaUI(id);
+}
 
-      /* ── Logo ── */
-      '#zb-sidebar .zb-logo {',
-      '  padding: 20px 16px 16px;',
-      '  border-bottom: 1px solid ' + C.divider + ';',
-      '  display: flex; align-items: center; gap: 10px;',
-      '  text-decoration: none;',
-      '}',
-      '#zb-sidebar .zb-logo-mark {',
-      '  width: 32px; height: 32px; border-radius: 6px;',
-      '  background: ' + C.lime + ';',
-      '  display: flex; align-items: center; justify-content: center;',
-      '  font-weight: 700; font-size: 14px; color: ' + C.navy + '; flex-shrink: 0;',
-      '}',
-      '#zb-sidebar .zb-logo-text {',
-      '  display: flex; flex-direction: column; line-height: 1.1;',
-      '}',
-      '#zb-sidebar .zb-logo-name {',
-      '  font-size: 14px; font-weight: 700; color: ' + C.white + '; letter-spacing: 0.5px;',
-      '}',
-      '#zb-sidebar .zb-logo-sub {',
-      '  font-size: 10px; font-weight: 400; color: ' + C.muted + '; letter-spacing: 1px; text-transform: uppercase;',
-      '}',
+function updateAgenciaUI(id) {
+  document.querySelectorAll('.agency-opt').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.id === id);
+  });
+  const lbl = WMS_AGENCIAS.find(a => a.id === id)?.label || id;
+  const el = document.getElementById('wms-agencia-label');
+  if (el) el.textContent = lbl;
+}
 
-      /* ── Nav ── */
-      '#zb-sidebar nav { padding: 8px 0; flex: 1; }',
+// Render del sidebar
+function renderSidebar() {
+  const activePage = getActivePage();
+  const agencia    = getAgencia();
 
-      '#zb-sidebar .zb-section {',
-      '  padding: 16px 16px 4px;',
-      '  font-size: 10px; font-weight: 600; letter-spacing: 1.5px;',
-      '  text-transform: uppercase; color: ' + C.muted + ';',
-      '}',
+  const agenciaBtns = WMS_AGENCIAS.map(a =>
+    `<button class="agency-opt${a.id === agencia ? ' active' : ''}" data-id="${a.id}" onclick="setAgencia('${a.id}')">${a.label}</button>`
+  ).join('');
 
-      '#zb-sidebar a.zb-item {',
-      '  display: flex; align-items: center; gap: 10px;',
-      '  padding: 9px 16px;',
-      '  color: rgba(255,255,255,0.75);',
-      '  text-decoration: none;',
-      '  font-size: 13px; font-weight: 400;',
-      '  border-left: 3px solid transparent;',
-      '  transition: all 0.15s ease;',
-      '  position: relative;',
-      '}',
-      '#zb-sidebar a.zb-item:hover {',
-      '  background: ' + C.navyHov + ';',
-      '  color: ' + C.white + ';',
-      '  border-left-color: rgba(204,211,42,0.4);',
-      '}',
-      '#zb-sidebar a.zb-item.active {',
-      '  background: rgba(204,211,42,0.1);',
-      '  color: ' + C.lime + ';',
-      '  border-left-color: ' + C.lime + ';',
-      '  font-weight: 600;',
-      '}',
-      '#zb-sidebar a.zb-item .zb-icon {',
-      '  font-size: 15px; width: 20px; text-align: center; flex-shrink: 0;',
-      '}',
-      '#zb-sidebar a.zb-item .zb-badge {',
-      '  margin-left: auto; font-size: 9px; font-weight: 600;',
-      '  padding: 2px 6px; border-radius: 10px;',
-      '  background: rgba(255,255,255,0.1); color: ' + C.muted + ';',
-      '  letter-spacing: 0.5px;',
-      '}',
+  const navHtml = WMS_NAV.map(group => {
+    const isCollapsible = group.collapsible;
+    const sectionId     = group.id || group.section.toLowerCase();
+    const isOpen        = sessionStorage.getItem('wms_nav_' + sectionId) !== 'closed';
 
-      /* ── Footer ── */
-      '#zb-sidebar .zb-footer {',
-      '  padding: 12px 16px;',
-      '  border-top: 1px solid ' + C.divider + ';',
-      '  font-size: 11px; color: ' + C.muted + ';',
-      '  display: flex; align-items: center; gap: 8px;',
-      '}',
-      '#zb-sidebar .zb-env {',
-      '  display: inline-flex; align-items: center; gap: 4px;',
-      '  font-size: 10px; font-weight: 600; letter-spacing: 0.5px;',
-      '  padding: 2px 8px; border-radius: 10px;',
-      '  background: rgba(204,211,42,0.15); color: ' + C.lime + ';',
-      '}',
-      '#zb-sidebar .zb-env::before { content: "●"; font-size: 8px; }',
+    const itemsHtml = group.items.map(item => {
+      const isActive = activePage === item.id || activePage.includes(item.id);
+      return `<a class="nav-item${isActive ? ' active' : ''}${item.coming ? ' nav-coming-item' : ''}"
+        href="${item.coming ? '#' : (getBaseUrl() + item.href)}"
+        onclick="${item.coming ? 'return false' : ''}"
+        style="${item.coming ? 'cursor:default;pointer-events:none;opacity:0.45' : ''}">
+        <span class="nav-icon">${item.icon}</span>
+        <span class="nav-label">${item.label}</span>
+        ${item.coming ? '<span class="nav-coming">pronto</span>' : ''}
+      </a>`;
+    }).join('');
 
-      /* ── Main content wrapper ── */
-      '#zb-main {',
-      '  margin-left: 240px;',
-      '  flex: 1;',
-      '  min-height: 100vh;',
-      '  display: flex; flex-direction: column;',
-      '}',
-
-      /* ── Responsive ── */
-      '@media (max-width: 768px) {',
-      '  #zb-sidebar { width: 60px; }',
-      '  #zb-sidebar .zb-logo-text, #zb-sidebar .zb-section,',
-      '  #zb-sidebar a.zb-item span.zb-label, #zb-sidebar a.zb-item .zb-badge,',
-      '  #zb-sidebar .zb-footer span { display: none; }',
-      '  #zb-sidebar a.zb-item { padding: 12px; justify-content: center; }',
-      '  #zb-main { margin-left: 60px; }',
-      '}',
-    ].join('\n');
-
-    var style = document.createElement('style');
-    style.textContent = css;
-    document.head.insertBefore(style, document.head.firstChild);
-  }
-
-  // ─── Construir HTML del sidebar ──────────────────────────────────
-  function buildSidebar() {
-    var base = getBase();
-    var html = [];
-
-    // Logo
-    html.push('<a href="' + base + 'index.html" class="zb-logo">');
-    html.push('  <div class="zb-logo-mark">ZB</div>');
-    html.push('  <div class="zb-logo-text">');
-    html.push('    <span class="zb-logo-name">ZenderBox</span>');
-    html.push('    <span class="zb-logo-sub">Hub WMS</span>');
-    html.push('  </div>');
-    html.push('</a>');
-
-    // Nav
-    html.push('<nav>');
-    NAV.forEach(function (group) {
-      html.push('<div class="zb-section">' + group.section + '</div>');
-      group.items.forEach(function (item) {
-        var href = base + item.path;
-        var active = isActivePath(item.path) ? ' active' : '';
-        html.push('<a href="' + href + '" class="zb-item' + active + '">');
-        html.push('  <span class="zb-icon">' + item.icon + '</span>');
-        html.push('  <span class="zb-label">' + item.label + '</span>');
-        if (item.badge) {
-          html.push('  <span class="zb-badge">' + item.badge + '</span>');
-        }
-        html.push('</a>');
-      });
-    });
-    html.push('</nav>');
-
-    // Footer
-    html.push('<div class="zb-footer">');
-    html.push('  <span class="zb-env">PRD</span>');
-    html.push('  <span>hub.zenderbox.com</span>');
-    html.push('</div>');
-
-    return html.join('\n');
-  }
-
-  // ─── Init ────────────────────────────────────────────────────────
-  function init() {
-    injectCSS();
-
-    // Crear sidebar
-    var sidebar = document.createElement('div');
-    sidebar.id = 'zb-sidebar';
-    sidebar.innerHTML = buildSidebar();
-
-    // Wrap content existente en #zb-main
-    var main = document.createElement('div');
-    main.id = 'zb-main';
-    while (document.body.firstChild) {
-      main.appendChild(document.body.firstChild);
+    if (isCollapsible) {
+      return `
+        <div class="nav-section">
+          <div class="nav-section-label nav-collapsible" onclick="toggleNavSection('${sectionId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding-right:8px">
+            <span>${group.section}</span>
+            <span id="nav-arrow-${sectionId}" style="font-size:10px;transition:transform 0.2s;transform:rotate(${isOpen ? '90' : '0'}deg)">▶</span>
+          </div>
+          <div id="nav-items-${sectionId}" style="display:${isOpen ? 'block' : 'none'}">
+            ${itemsHtml}
+          </div>
+        </div>`;
     }
 
-    document.body.appendChild(sidebar);
-    document.body.appendChild(main);
-  }
+    return `
+      <div class="nav-section">
+        <div class="nav-section-label">${group.section}</div>
+        ${itemsHtml}
+      </div>`;
+  }).join('');
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  const html = `
+    <div class="sidebar-logo">
+      <div class="zb">ZENDERBOX</div>
+      <h2 style="font-size:15px;font-weight:600;color:var(--text)">WMS</h2>
+      <div class="country" style="font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px">
+        <span id="wms-agencia-label">${WMS_AGENCIAS.find(a => a.id === agencia)?.label || agencia}</span>
+      </div>
+    </div>
+    <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">AGENCIA</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        ${agenciaBtns}
+      </div>
+    </div>
+    ${navHtml}
+    <div class="sidebar-footer">
+      <div class="version">v2.0 · WMS Multiagencia</div>
+    </div>`;
 
-})();
+  const container = document.getElementById('wms-sidebar');
+  if (container) container.innerHTML = html;
+}
+
+function toggleNavSection(sectionId) {
+  const items = document.getElementById('nav-items-' + sectionId);
+  const arrow = document.getElementById('nav-arrow-' + sectionId);
+  if (!items) return;
+  const isOpen = items.style.display !== 'none';
+  items.style.display = isOpen ? 'none' : 'block';
+  arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+  sessionStorage.setItem('wms_nav_' + sectionId, isOpen ? 'closed' : 'open');
+}
+
+// CSS del sidebar y agency buttons — hardcoded para funcionar en cualquier página
+function injectSidebarStyles() {
+  if (document.getElementById('wms-sidebar-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'wms-sidebar-styles';
+  style.textContent = `
+    #wms-sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: #081F3A;
+      border-right: 1px solid #0f3058;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+      overflow-y: auto;
+      font-family: 'IBM Plex Sans', 'Space Mono', monospace;
+    }
+    #wms-sidebar .sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid #0f3058; }
+    #wms-sidebar .zb { font-size: 11px; font-weight: 600; color: #CCD32A; letter-spacing: 3px; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    #wms-sidebar .country { font-size: 10px; color: #5a7a9a; margin-top: 2px; display: block; }
+    #wms-sidebar .nav-section { padding: 12px 12px 4px; }
+    #wms-sidebar .nav-section-label { font-size: 9px; color: #5a7a9a; letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; display: flex; cursor: pointer; }
+    #wms-sidebar .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; transition: all 0.15s; margin-bottom: 2px; border: 1px solid transparent; text-decoration: none; color: #8aaac8; }
+    #wms-sidebar .nav-item:hover { background: #0d2748; }
+    #wms-sidebar .nav-item.active { background: rgba(204,211,42,0.12); border-color: rgba(204,211,42,0.2); }
+    #wms-sidebar .nav-item.active .nav-label { color: #CCD32A !important; }
+    #wms-sidebar .nav-icon { font-size: 14px; flex-shrink: 0; }
+    #wms-sidebar .nav-label { font-size: 13px; font-weight: 500; color: #8aaac8; }
+    #wms-sidebar .nav-coming { font-size: 9px; color: #5a7a9a; padding: 2px 6px; background: #0d2748; border-radius: 3px; margin-left: auto; }
+    #wms-sidebar .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid #0f3058; }
+    #wms-sidebar .version { font-size: 10px; color: #5a7a9a; }
+    #wms-sidebar h2 { font-size: 15px; font-weight: 600; color: #e8f0f8; }
+    .agency-opt {
+      display: block; width: 100%; text-align: left;
+      padding: 6px 10px; font-size: 11px;
+      border: 1px solid #0f3058; border-radius: 4px;
+      background: transparent; color: #5a7a9a;
+      cursor: pointer; transition: all 0.15s; margin-bottom: 4px;
+    }
+    .agency-opt:hover { background: #0d2748; color: #e8f0f8; }
+    .agency-opt.active { background: rgba(204,211,42,0.12); border-color: #CCD32A; color: #CCD32A; font-weight: 600; }
+  `;
+  document.head.appendChild(style);
+}
+
+// Init — funciona aunque el DOM ya haya cargado
+function initSidebar() {
+  injectSidebarStyles();
+  renderSidebar();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSidebar);
+} else {
+  initSidebar();
+}
