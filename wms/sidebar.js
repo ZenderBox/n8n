@@ -12,12 +12,12 @@ const WMS_NAV = [
     collapsible: true,
     id: 'operaciones-section',
     items: [
-      { icon: '🔍', label: 'Buscar Guía',      href: 'buscar.html',       id: 'buscar' },
-      { icon: '📦', label: 'Consolidados',      href: 'consolidados.html', id: 'consolidados' },
-      { icon: '📥', label: 'Cargar Manifiesto', href: 'manifiesto.html',   id: 'manifiesto' },
-      { icon: '🚚', label: 'Despachos',         href: 'despachos.html',    id: 'despachos' },
+      { icon: '🔍', label: 'Buscar Guía',      href: 'operaciones/buscar.html',       id: 'buscar' },
+      { icon: '📦', label: 'Consolidados',      href: 'operaciones/consolidados.html', id: 'consolidados' },
+      { icon: '📥', label: 'Cargar Manifiesto', href: 'operaciones/manifiesto.html',   id: 'manifiesto' },
+      { icon: '🚚', label: 'Despachos',         href: 'operaciones/despachos.html',    id: 'despachos' },
 
-      { icon: '🧾', label: 'Pre-liquidador',    href: 'preliquidador.html', id: 'preliquidador' },
+      { icon: '🧾', label: 'Pre-liquidador',    href: 'operaciones/preliquidador.html', id: 'preliquidador' },
     ]
   },
   {
@@ -25,9 +25,9 @@ const WMS_NAV = [
     collapsible: true,
     id: 'comunicaciones-section',
     items: [
-      { icon: '💬', label: 'WhatsApp',  href: 'whatsapp.html',     id: 'whatsapp' },
-      { icon: '🗨️', label: 'WA Hub',    href: 'whatsapp-hub.html', id: 'whatsapp-hub' },
-      { icon: '📞', label: 'Llamadas',  href: 'ia/llamadas.html',  id: 'llamadas' },
+      { icon: '💬', label: 'WhatsApp',  href: 'comunicaciones/whatsapp.html',     id: 'whatsapp' },
+      { icon: '🗨️', label: 'WA Hub',    href: 'comunicaciones/whatsapp-hub.html', id: 'whatsapp-hub' },
+      { icon: '📞', label: 'Llamadas',  href: 'comunicaciones/llamadas.html',  id: 'llamadas' },
     ]
   },
   {
@@ -44,7 +44,7 @@ const WMS_NAV = [
     collapsible: true,
     id: 'cobros-section',
     items: [
-      { icon: '💰', label: 'QuickBooks',        href: 'cobros/quickbooks.html', id: 'quickbooks' },
+      { icon: '💰', label: 'QuickBooks',        href: 'contabilidad/quickbooks.html', id: 'quickbooks' },
     ]
   },
   {
