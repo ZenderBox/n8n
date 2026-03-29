@@ -692,14 +692,14 @@
             <div class="card-body">
                 <div class="webhook-row">
                     <span class="method-badge">POST</span>
-                    <input class="webhook-url" id="webhookUrl" value="https://zenderbox.app.n8n.cloud/webhook/cr-consolidados"/>
+                    <input class="webhook-url" id="webhookUrl" value="https://hub.zenderbox.com/webhook/cr-consolidados"/>
                 </div>
                 <p class="edit-hint">// Endpoint procesar archivo</p>
 
                 <div style="margin-top:10px;">
                     <div class="webhook-row">
                         <span class="method-badge" style="background:#2a1a3a;color:#a78bfa;">GET</span>
-                        <input class="webhook-url" id="webhookConsulta" value="https://zenderbox.app.n8n.cloud/webhook/cr-consultar-agencia"/>
+                        <input class="webhook-url" id="webhookConsulta" value="https://hub.zenderbox.com/webhook/cr-consultar-agencia"/>
                     </div>
                     <p class="edit-hint">// Endpoint consultar agencia</p>
                 </div>
@@ -796,7 +796,7 @@
     </div>
 
     <script>
-    const BASE = 'https://zenderbox.app.n8n.cloud/webhook';
+    const BASE = 'https://hub.zenderbox.com/webhook';
 
     // Config por país
     const CONFIG = {
@@ -1173,7 +1173,7 @@
         applyConfig(savedPais === 'COL' ? 'COL' : 'CR');
     });
     </script>
-    <script src="../sidebar.js"></script>
+    <script src="sidebar.js"></script>
 </body>
 </html>
 
