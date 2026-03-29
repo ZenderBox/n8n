@@ -35,7 +35,7 @@ const WMS_NAV = [
     collapsible: true,
     id: 'ia-section',
     items: [
-      { icon: '📧', label: 'Correos',           href: 'ia/correos.html',   id: 'correos' },
+      { icon: '📧', label: 'Correos',           href: 'correos.html',   id: 'correos' },
       { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
     ]
   },
@@ -52,7 +52,7 @@ const WMS_NAV = [
     collapsible: true,
     id: 'casillero-section',
     items: [
-      { icon: '✈️', label: 'Despachos USA',    href: 'casillero/despachos-usa.html', id: 'despachos-usa' },
+      { icon: '✈️', label: 'Despachos USA',    href: 'despachos-usa.html', id: 'despachos-usa' },
     ]
   },
   {
