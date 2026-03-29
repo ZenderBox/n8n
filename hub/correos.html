@@ -593,7 +593,7 @@
     </div>
 
     <script>
-    const WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/correos-ia-data';
+    const WEBHOOK_URL = 'https://hub.zenderbox.com/webhook/correos-ia-data';
 
     let EMAILS = [];
     let currentFilter = 'todos';
@@ -754,7 +754,7 @@
         btn.disabled = true;
         btn.textContent = '⏳ Ejecutando...';
         try {
-            await fetch('https://zenderbox.app.n8n.cloud/webhook/ejecutar-motor-email', { method: 'GET', mode: 'no-cors' });
+            await fetch('https://hub.zenderbox.com/webhook/ejecutar-motor-email', { method: 'GET', mode: 'no-cors' });
             btn.textContent = '✅ Agente ejecutado';
             btn.style.background = 'var(--green-dim)';
             btn.style.borderColor = 'rgba(34,197,94,0.35)';
@@ -789,6 +789,6 @@
     // Load on init
     setTimeout(fetchData, 300);
     </script>
-    <script src="../sidebar.js"></script>
+    <script src="sidebar.js"></script>
 </body>
 </html>
