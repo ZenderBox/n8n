@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox · Correos IA</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #040d18;
+        --surface: #081F3A;
+        --surface2: #0d2748;
+        --border: #0f3058;
+        --border2: #1a4575;
+        --accent: #CCD32A;
+        --accent-dim: rgba(204, 211, 42, 0.12);
+        --blue: #009CC9;
+        --blue-dim: rgba(0, 156, 201, 0.12);
+        --green: #22c55e;
+        --green-dim: rgba(34, 197, 94, 0.1);
+        --red: #ef4444;
+        --red-dim: rgba(239, 68, 68, 0.1);
+        --yellow: #f59e0b;
+        --yellow-dim: rgba(245, 158, 11, 0.1);
+        --purple: #a78bfa;
+        --text: #e8f0f8;
+        --text-muted: #5a7a9a;
+        --text-mid: #8aaac8;
+        --mono: 'IBM Plex Mono', monospace;
+        --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        display: flex;
+    }
+
+    .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+    }
+
+    .main {
+        margin-left: 220px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .topbar {
+        padding: 16px 32px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--surface);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    .topbar-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .topbar-sub {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .topbar-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-live {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--green);
+    }
+
+    .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1 }
+        50% { opacity: 0.4 }
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg) }
+    }
+
+    .btn-refresh {
+        background: transparent;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+    .btn-refresh:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .btn-agent {
+        background: rgba(167, 139, 250, 0.12);
+        border: 1px solid rgba(167, 139, 250, 0.35);
+        border-radius: 6px;
+        padding: 6px 14px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--purple);
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+    .btn-agent:hover {
+        background: rgba(167, 139, 250, 0.2);
+        border-color: var(--purple);
+    }
+
+    .btn-agent:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .content {
+        padding: 28px 32px;
+        flex: 1;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px 20px;
+    }
+
+    .stat-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -1px;
+    }
+
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.blue { color: var(--blue); }
+    .stat-value.red { color: var(--red); }
+
+    .stat-sub {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    .filters-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 6px 14px;
+        border: 1px solid var(--border2);
+        border-radius: 20px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text-muted);
+        transition: all 0.15s;
+    }
+
+    .filter-btn.active {
+        background: var(--accent-dim);
+        border-color: rgba(245, 166, 35, 0.4);
+        color: var(--accent);
+    }
+
+    .filter-btn.f-green.active {
+        background: var(--green-dim);
+        border-color: rgba(34, 197, 94, 0.4);
+        color: var(--green);
+    }
+
+    .filter-btn.f-red.active {
+        background: var(--red-dim);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: var(--red);
+    }
+
+    .filter-btn.f-blue.active {
+        background: var(--blue-dim);
+        border-color: rgba(79, 142, 247, 0.4);
+        color: var(--blue);
+    }
+
+    .filter-btn.f-yellow.active {
+        background: var(--yellow-dim);
+        border-color: rgba(245, 158, 11, 0.4);
+        color: var(--yellow);
+    }
+
+    .filter-search {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 6px 12px;
+    }
+
+    .filter-search input {
+        background: transparent;
+        border: none;
+        outline: none;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text);
+        width: 180px;
+    }
+
+    .filter-search input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .cons-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .guias-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .guias-table th {
+        padding: 10px 14px;
+        text-align: left;
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: var(--surface2);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .guias-table td {
+        padding: 10px 14px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .guias-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .guias-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .td-guia {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--accent);
+        cursor: pointer;
+    }
+
+    .td-guia:hover {
+        text-decoration: underline;
+    }
+
+    .td-cliente {
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .td-cob {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+    }
+
+    .badge-sm {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 600;
+    }
+
+    .badge-sm.enviado {
+        background: var(--green-dim);
+        color: var(--green);
+    }
+
+    .badge-sm.fallido {
+        background: var(--red-dim);
+        color: var(--red);
+    }
+
+    .badge-sm.pendiente {
+        background: var(--surface2);
+        color: var(--text-muted);
+    }
+
+    .badge-sm.abierto {
+        background: var(--blue-dim);
+        color: var(--blue);
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 0;
+        gap: 12px;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        opacity: 0.3;
+    }
+
+    .empty-text {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .detail-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 50;
+    }
+
+    .detail-overlay.visible {
+        display: block;
+    }
+
+    .detail-panel {
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 520px;
+        background: var(--surface);
+        border-left: 1px solid var(--border2);
+        z-index: 51;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+    }
+
+    .detail-panel.visible {
+        transform: translateX(0);
+    }
+
+    .detail-panel-hdr {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        background: var(--surface);
+    }
+
+    .detail-panel-hdr h3 {
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        flex: 1;
+    }
+
+    .btn-close {
+        background: transparent;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 6px 10px;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-close:hover {
+        border-color: var(--red);
+        color: var(--red);
+    }
+
+    .detail-body {
+        padding: 20px 24px;
+    }
+
+    .detail-section {
+        margin-bottom: 20px;
+    }
+
+    .detail-section-title {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 6px 0;
+    }
+
+    .detail-lbl {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        min-width: 110px;
+        flex-shrink: 0;
+    }
+
+    .detail-val {
+        font-size: 13px;
+        color: var(--text);
+        font-weight: 500;
+    }
+
+    .detail-val.mono {
+        font-family: var(--mono);
+        font-size: 12px;
+    }
+
+    .email-body-preview {
+        font-size: 13px;
+        color: var(--text-mid);
+        line-height: 1.6;
+        padding: 12px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="wms-sidebar"></div>
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Correos IA</div>
+                <div class="topbar-sub" id="correos-sub">Emails procesados por agente IA</div>
+            </div>
+            <div class="topbar-right">
+                <a href="https://docs.google.com/spreadsheets/d/1nTU-pkmHKiiSUs5ro5dVmZLawxUEKGoL53wE0Mhxt0g/edit" target="_blank" style="font-family:var(--mono);font-size:10px;color:#CCD32A;text-decoration:none;border:1px solid rgba(204,211,42,0.3);border-radius:4px;padding:5px 12px;">📊 Abrir Sheet</a>
+                <button class="btn-agent" id="btnAgent" onclick="ejecutarAgente()">▶ Ejecutar Agente Ahora</button>
+                <button class="btn-refresh" onclick="fetchData()">↻ ACTUALIZAR</button>
+                <div class="topbar-live">
+                    <div class="live-dot"></div>
+                    CONECTADO
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Total Emails</div>
+                    <div class="stat-value blue" id="stat-total">—</div>
+                    <div class="stat-sub">procesados por IA</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Enviados</div>
+                    <div class="stat-value green" id="stat-enviados">—</div>
+                    <div class="stat-sub">entregados exitosamente</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fallidos</div>
+                    <div class="stat-value red" id="stat-fallidos">—</div>
+                    <div class="stat-sub">con error de envío</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pendientes</div>
+                    <div class="stat-value yellow" id="stat-pendientes">—</div>
+                    <div class="stat-sub">en cola de procesamiento</div>
+                </div>
+            </div>
+            <div class="filters-row">
+                <button class="filter-btn active" id="f-todos" onclick="setFilter('todos')">TODOS</button>
+                <button class="filter-btn f-green" id="f-enviado" onclick="setFilter('enviado')">✓ ENVIADOS</button>
+                <button class="filter-btn f-red" id="f-fallido" onclick="setFilter('fallido')">✕ FALLIDOS</button>
+                <button class="filter-btn f-yellow" id="f-pendiente" onclick="setFilter('pendiente')">⏳ PENDIENTES</button>
+                <div class="filter-search">
+                    <span style="color:var(--text-muted);font-size:13px">⌕</span>
+                    <input id="filterSearch" placeholder="Buscar destinatario, asunto..." oninput="renderList()">
+                </div>
+            </div>
+            <div class="cons-list" id="emailList">
+                <div class="empty-state">
+                    <div class="empty-icon">📧</div>
+                    <div class="empty-text">Cargando...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+    <div class="detail-panel" id="detailPanel">
+        <div class="detail-panel-hdr">
+            <h3 id="dp-title">—</h3>
+            <button class="btn-close" onclick="closeDetail()">✕</button>
+        </div>
+        <div class="detail-body" id="dp-body"></div>
+    </div>
+
+    <script>
+    const WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/correos-ia-data';
+
+    let EMAILS = [];
+    let currentFilter = 'todos';
+    let currentAgencia = 'cr';
+
+    function filteredByAgencia() {
+        return EMAILS.filter(e => {
+            if (!e.agencia) return true;
+            const ag = e.agencia.toLowerCase();
+            if (currentAgencia === 'cr') return ag.includes('cr') || ag.includes('costa');
+            return ag.includes('col') || ag.includes('colombia');
+        });
+    }
+
+    function normalizeStatus(raw) {
+        if (!raw) return 'pendiente';
+        const s = raw.toLowerCase().trim();
+        if (s === 'enviado' || s === 'sent' || s === 'delivered' || s === 'entregado') return 'enviado';
+        if (s === 'fallido' || s === 'failed' || s === 'error' || s === 'bounce' || s === 'bounced') return 'fallido';
+        return 'pendiente';
+    }
+
+    function updateStats() {
+        const list = filteredByAgencia();
+        const enviados = list.filter(e => normalizeStatus(e.estado) === 'enviado').length;
+        const fallidos = list.filter(e => normalizeStatus(e.estado) === 'fallido').length;
+        const pendientes = list.filter(e => normalizeStatus(e.estado) === 'pendiente').length;
+        const safe = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        safe('stat-total', list.length);
+        safe('stat-enviados', enviados);
+        safe('stat-fallidos', fallidos);
+        safe('stat-pendientes', pendientes);
+    }
+
+    async function fetchData() {
+        document.getElementById('emailList').innerHTML = '<div class="empty-state"><div style="width:24px;height:24px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div><div class="empty-text">Cargando...</div></div>';
+        try {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 30000);
+            const res = await fetch(WEBHOOK_URL + '?t=' + Date.now(), {
+                method: 'GET',
+                signal: ctrl.signal
+            });
+            clearTimeout(t);
+            const text = await res.text();
+            if (!text || !text.trim()) throw new Error('Respuesta vacía');
+            const json = JSON.parse(text);
+            if (!json.ok) throw new Error('Error en workflow');
+            EMAILS = json.correos || [];
+            updateStats();
+            document.getElementById('correos-sub').textContent = `Emails procesados · Actualizado: ${new Date().toLocaleTimeString('es-CR')}`;
+            renderList();
+        } catch (err) {
+            document.getElementById('emailList').innerHTML = `<div style="padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red)">✕ ${err.message} <button onclick="fetchData()" style="margin-left:12px;background:var(--accent);border:none;border-radius:4px;padding:6px 12px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer">↻ Reintentar</button></div>`;
+        }
+    }
+
+
+    function setFilter(f) {
+        currentFilter = f;
+        ['todos', 'enviado', 'fallido', 'pendiente'].forEach(id =>
+            document.getElementById('f-' + id).classList.toggle('active', id === f)
+        );
+        renderList();
+    }
+
+    function badgeEstado(estado) {
+        const s = normalizeStatus(estado);
+        if (s === 'enviado')   return '<span class="badge-sm enviado">ENVIADO</span>';
+        if (s === 'fallido')   return '<span class="badge-sm fallido">FALLIDO</span>';
+        return '<span class="badge-sm pendiente">PENDIENTE</span>';
+    }
+
+    function escHtml(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function renderList() {
+        const search = (document.getElementById('filterSearch').value || '').toLowerCase();
+        const agList = filteredByAgencia();
+        const filtered = agList.filter(e => {
+            const status = normalizeStatus(e.estado);
+            if (currentFilter === 'enviado'   && status !== 'enviado')   return false;
+            if (currentFilter === 'fallido'   && status !== 'fallido')   return false;
+            if (currentFilter === 'pendiente' && status !== 'pendiente') return false;
+            if (search &&
+                !e.destinatario.toLowerCase().includes(search) &&
+                !e.asunto.toLowerCase().includes(search) &&
+                !e.casillero.toLowerCase().includes(search) &&
+                !e.nombre.toLowerCase().includes(search)) return false;
+            return true;
+        });
+
+        const list = document.getElementById('emailList');
+        if (!filtered.length) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-icon">📧</div><div class="empty-text">Sin resultados</div></div>';
+            return;
+        }
+
+        list.innerHTML = `<div style="overflow-x:auto"><table class="guias-table" style="width:100%">
+            <thead><tr>
+                <th>FECHA</th><th>DESTINATARIO</th><th>CASILLERO</th>
+                <th>ASUNTO</th><th>TIPO</th><th>ESTADO</th>
+            </tr></thead>
+            <tbody>${filtered.map((e, i) => `<tr onclick="openDetail(${i})" style="cursor:pointer">
+                <td class="td-cob">${escHtml(e.fecha ? String(e.fecha).substring(0, 16) : '—')}</td>
+                <td class="td-cliente">${escHtml(e.destinatario || '—')}</td>
+                <td class="td-guia">${escHtml(e.casillero || '—')}</td>
+                <td style="color:var(--text);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(e.asunto || '—')}</td>
+                <td class="td-cob">${escHtml(e.tipo || '—')}</td>
+                <td>${badgeEstado(e.estado)}</td>
+            </tr>`).join('')}
+            </tbody></table></div>`;
+
+        // Store filtered reference for detail access
+        window._filteredEmails = filtered;
+    }
+
+    function openDetail(idx) {
+        const e = window._filteredEmails?.[idx];
+        if (!e) return;
+        document.getElementById('dp-title').textContent = e.asunto || 'Sin asunto';
+        document.getElementById('dp-body').innerHTML = `
+        <div class="detail-section">
+            <div class="detail-section-title">Información del correo</div>
+            <div class="detail-row"><span class="detail-lbl">Destinatario</span><span class="detail-val mono">${escHtml(e.destinatario)}</span></div>
+            <div class="detail-row"><span class="detail-lbl">Casillero</span><span class="detail-val mono">${escHtml(e.casillero || '—')}</span></div>
+            <div class="detail-row"><span class="detail-lbl">Nombre</span><span class="detail-val">${escHtml(e.nombre || '—')}</span></div>
+            <div class="detail-row"><span class="detail-lbl">Fecha</span><span class="detail-val">${escHtml(e.fecha || '—')}</span></div>
+            <div class="detail-row"><span class="detail-lbl">Estado</span><span class="detail-val">${badgeEstado(e.estado)}</span></div>
+            <div class="detail-row"><span class="detail-lbl">Tipo</span><span class="detail-val">${escHtml(e.tipo || '—')}</span></div>
+            <div class="detail-row"><span class="detail-lbl">Template</span><span class="detail-val mono">${escHtml(e.template || '—')}</span></div>
+            <div class="detail-row"><span class="detail-lbl">Message ID</span><span class="detail-val mono" style="font-size:10px;word-break:break-all">${escHtml(e.message_id || '—')}</span></div>
+            ${e.error_msg ? `<div class="detail-row"><span class="detail-lbl">Error</span><span class="detail-val" style="color:var(--red)">${escHtml(e.error_msg)}</span></div>` : ''}
+            <div class="detail-row"><span class="detail-lbl">Agencia</span><span class="detail-val">${escHtml(e.agencia || '—')}</span></div>
+        </div>
+        ${e.asunto ? `<div class="detail-section">
+            <div class="detail-section-title">Asunto</div>
+            <div style="font-size:14px;color:var(--text);font-weight:500;padding:8px 0">${escHtml(e.asunto)}</div>
+        </div>` : ''}
+        ${e.cuerpo ? `<div class="detail-section">
+            <div class="detail-section-title">Contenido</div>
+            <div class="email-body-preview">${escHtml(e.cuerpo)}</div>
+        </div>` : ''}`;
+        document.getElementById('detailOverlay').classList.add('visible');
+        document.getElementById('detailPanel').classList.add('visible');
+    }
+
+    function closeDetail() {
+        document.getElementById('detailOverlay').classList.remove('visible');
+        document.getElementById('detailPanel').classList.remove('visible');
+    }
+
+    async function ejecutarAgente() {
+        const btn = document.getElementById('btnAgent');
+        btn.disabled = true;
+        btn.textContent = '⏳ Ejecutando...';
+        try {
+            await fetch('https://zenderbox.app.n8n.cloud/webhook/ejecutar-motor-email', { method: 'GET', mode: 'no-cors' });
+            btn.textContent = '✅ Agente ejecutado';
+            btn.style.background = 'var(--green-dim)';
+            btn.style.borderColor = 'rgba(34,197,94,0.35)';
+            btn.style.color = 'var(--green)';
+            setTimeout(fetchData, 3000);
+        } catch (e) {
+            btn.textContent = '❌ Error';
+            btn.style.background = 'var(--red-dim)';
+            btn.style.borderColor = 'rgba(239,68,68,0.35)';
+            btn.style.color = 'var(--red)';
+        }
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '▶ Ejecutar Agente Ahora';
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 5000);
+    }
+
+    // Listen for agency change from sidebar.js
+    window.addEventListener('wms:agencia', (e) => {
+        currentAgencia = e.detail.agencia === 'CR' ? 'cr' : 'col';
+        updateStats();
+        renderList();
+    });
+
+    // Sync initial agency with sidebar
+    const _agInit = (typeof getAgencia === 'function') ? getAgencia() : 'CR';
+    currentAgencia = _agInit === 'CR' ? 'cr' : 'col';
+
+    // Load on init
+    setTimeout(fetchData, 300);
+    </script>
+    <script src="../sidebar.js"></script>
+</body>
+</html>
