@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox · Despachos USA</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg:#040d18;--surface:#081F3A;--surface2:#0d2748;--border:#0f3058;--border2:#1a4575;
+        --accent:#CCD32A;--accent-dim:rgba(204,211,42,0.12);--blue:#009CC9;--blue-dim:rgba(0,156,201,0.12);
+        --green:#22c55e;--green-dim:rgba(34,197,94,0.1);--red:#ef4444;--red-dim:rgba(239,68,68,0.1);
+        --yellow:#f59e0b;--yellow-dim:rgba(245,158,11,0.1);--purple:#a78bfa;
+        --text:#e8f0f8;--text-muted:#5a7a9a;--text-mid:#8aaac8;
+        --mono:"IBM Plex Mono",monospace;--sans:"IBM Plex Sans",sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;}
+    .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;left:0;top:0;bottom:0;z-index:10;overflow-y:auto;}
+    .main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+    .topbar{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;background:var(--surface);position:sticky;top:0;z-index:5;}
+    .topbar-title{font-size:15px;font-weight:600;}
+    .topbar-sub{font-family:var(--mono);font-size:11px;color:var(--text-muted);}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+    .badge-val{font-family:var(--mono);font-size:10px;background:rgba(245,158,11,0.15);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);border-radius:4px;padding:3px 10px;}
+    .btn-preview{background:var(--accent);color:#000;border:none;border-radius:6px;padding:8px 18px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px;}
+    .btn-preview:hover:not(:disabled){filter:brightness(1.1);}
+    .btn-preview:disabled{opacity:0.4;cursor:not-allowed;}
+    .spinner{width:12px;height:12px;border:2px solid rgba(0,0,0,0.2);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .content{flex:1;overflow-y:auto;}
+    .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;gap:12px;}
+    .empty-icon{font-size:48px;opacity:0.3;}
+    .empty-text{font-family:var(--mono);font-size:12px;color:var(--text-muted);}
+    .reporte-wrap{padding:24px 32px 48px;max-width:1200px;}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+    .stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;text-align:center;}
+    .stat.total{border-top:3px solid var(--blue);}
+    .stat.listos{border-top:3px solid var(--green);}
+    .stat.bloqueados{border-top:3px solid var(--yellow);}
+    .stat-num{font-size:40px;font-weight:700;line-height:1;}
+    .stat.total .stat-num{color:var(--blue);}
+    .stat.listos .stat-num{color:var(--green);}
+    .stat.bloqueados .stat-num{color:var(--yellow);}
+    .stat-label{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px;}
+    .alerta{background:var(--yellow-dim);border:1px solid rgba(245,158,11,0.3);border-left:3px solid var(--yellow);padding:12px 16px;border-radius:6px;margin-bottom:20px;font-family:var(--mono);font-size:11px;color:var(--yellow);}
+    .btn-ejecutar{width:100%;padding:14px;border:none;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:not-allowed;margin-bottom:24px;letter-spacing:1px;transition:all 0.2s;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);}
+    .btn-ejecutar.activo{background:var(--green);color:#000;cursor:pointer;border:none;}
+    .btn-ejecutar.activo:hover{filter:brightness(1.1);}
+    .section{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:20px;overflow:hidden;}
+    .section-header{padding:13px 18px;font-family:var(--mono);font-weight:600;font-size:11px;display:flex;align-items:center;gap:8px;letter-spacing:1px;text-transform:uppercase;}
+    .section-header.verde{background:var(--green-dim);color:var(--green);border-bottom:1px solid rgba(34,197,94,0.2);}
+    .section-header.naranja{background:var(--yellow-dim);color:var(--yellow);border-bottom:1px solid rgba(245,158,11,0.2);}
+    .grupo{border-bottom:1px solid var(--border);}
+    .grupo:last-child{border-bottom:none;}
+    .grupo-header{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--surface2);cursor:pointer;user-select:none;transition:background 0.15s;}
+    .grupo-header:hover{background:rgba(13,39,72,0.8);}
+    .grupo-id{font-weight:700;font-size:14px;color:var(--accent);font-family:var(--mono);}
+    .badge{padding:2px 10px;border-radius:10px;font-family:var(--mono);font-size:10px;font-weight:600;}
+    .badge.dg{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+    .badge.normal{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.3);}
+    .badge.bloqueado{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);}
+    .badge.cr{background:rgba(167,139,250,0.1);color:var(--purple);border:1px solid rgba(167,139,250,0.3);}
+    .grupo-info{font-family:var(--mono);font-size:11px;color:var(--text-mid);}
+    .grupo-agencia{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-left:auto;}
+    .grupo-razon{font-family:var(--mono);font-size:10px;color:var(--yellow);font-style:italic;}
+    .toggle-icon{color:var(--text-muted);font-size:10px;transition:transform 0.2s;flex-shrink:0;}
+    .grupo.open .toggle-icon{transform:rotate(180deg);}
+    .grupo-body{display:none;padding:0 18px 14px;}
+    .grupo.open .grupo-body{display:block;}
+    .whr-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+    .whr-table th{background:var(--surface2);color:var(--text-muted);padding:6px 10px;text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1px;}
+    .whr-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);}
+    .whr-table tr:last-child td{border-bottom:none;}
+    .whr-table tr.omitida{background:rgba(239,68,68,0.04);}
+    .whr-code{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);}
+    .pos{font-family:var(--mono);font-size:10px;background:var(--surface2);color:var(--text-mid);padding:2px 7px;border-radius:3px;white-space:nowrap;}
+    .pos.vacia{background:var(--red-dim);color:var(--red);}
+    .estado-ok{color:var(--green);font-weight:600;font-family:var(--mono);font-size:11px;}
+    .estado-err{color:var(--red);font-weight:600;font-family:var(--mono);font-size:11px;}
+    .footer{text-align:center;color:var(--text-muted);font-family:var(--mono);font-size:10px;padding:24px;}
+    .error-box{margin:24px 32px;padding:16px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red);display:flex;align-items:center;gap:12px;}
+    .btn-retry{background:var(--accent);border:none;border-radius:4px;padding:6px 14px;font-family:var(--mono);font-size:11px;font-weight:600;color:#000;cursor:pointer;}
+    .chk-despacho{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+    .btn-ejecutar.activo:disabled{opacity:0.4;cursor:not-allowed;filter:none;}
+    .btn-sel-todo{padding:8px 16px;border:none;border-radius:6px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;margin-bottom:12px;letter-spacing:0.5px;transition:all 0.2s;background:var(--blue);color:#fff;}
+    .btn-sel-todo:hover{filter:brightness(1.15);}
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="wms-sidebar"></div>
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <div class="topbar-title">Despachos USA</div>
+                <div class="topbar-sub" id="topbar-sub">Motor despachos Miami &middot; Colombia</div>
+            </div>
+            <div class="topbar-right">
+                <span class="badge-val">EN VALIDACION</span>
+                <button class="btn-preview" id="btnPreview" onclick="generarVista()">
+                    <div class="spinner" id="spinner"></div>
+                    <span id="btnText">&#9654; Generar Vista Previa</span>
+                </button>
+            </div>
+        </div>
+        <div class="content" id="mainContent">
+            <div class="empty-state">
+                <div class="empty-icon">&#9992;&#65039;</div>
+                <div class="empty-text">Presiona "Generar Vista Previa" para ver los despachos pendientes</div>
+            </div>
+        </div>
+    </div>
+    <script>
+    const WEBHOOK_PREVIEW  = 'https://zenderbox.app.n8n.cloud/webhook/wms-despachos-preview';
+    const WEBHOOK_EJECUTAR = 'https://zenderbox.app.n8n.cloud/webhook/wms-despachos-ejecutar';
+
+    async function generarVista() {
+        const btn = document.getElementById('btnPreview');
+        const sp  = document.getElementById('spinner');
+        const txt = document.getElementById('btnText');
+        const sub = document.getElementById('topbar-sub');
+        btn.disabled = true; sp.style.display = 'block'; txt.textContent = 'Consultando WMS...';
+        try {
+            const res = await fetch(WEBHOOK_PREVIEW + '?t=' + Date.now());
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const json = await res.json();
+            renderReporte(json);
+            sub.textContent = 'Vista previa actualizada: ' + new Date().toLocaleTimeString('es-CR');
+            txt.textContent = 'Actualizar';
+        } catch(err) {
+            document.getElementById('mainContent').innerHTML =
+                '<div class="error-box">&#10005; ' + err.message + ' &mdash; Verifica que el workflow este activo en n8n <button class="btn-retry" onclick="generarVista()">Reintentar</button></div>';
+            txt.textContent = 'Generar Vista Previa';
+            sub.textContent = 'Motor despachos Miami &middot; Colombia';
+        } finally { btn.disabled = false; sp.style.display = 'none'; }
+    }
+
+    function renderReporte(data) {
+        const grupos     = data.grupos || [];
+        const listos     = grupos.filter(g => g.estado === 'LISTO');
+        const bloqueados = grupos.filter(g => g.estado !== 'LISTO');
+        const totalPeso  = listos.reduce((s,g) => s + (g.peso_total||0), 0);
+        const fecha      = data.fecha_consulta || new Date().toLocaleString('es-CR');
+
+        let html = '<div class="reporte-wrap">';
+        html += '<div class="stats">';
+        html += '<div class="stat total"><div class="stat-num">' + grupos.length + '</div><div class="stat-label">Total Grupos</div></div>';
+        html += '<div class="stat listos"><div class="stat-num">' + listos.length + '</div><div class="stat-label">Listos para Despachar</div></div>';
+        html += '<div class="stat bloqueados"><div class="stat-num">' + bloqueados.length + '</div><div class="stat-label">Grupos Bloqueados</div></div>';
+        html += '</div>';
+        html += '<div class="alerta">MODO VISTA PREVIA &mdash; ' + totalPeso.toFixed(2) + ' lb listos &middot; Consulta: ' + fecha + '</div>';
+        html += '<button class="btn-ejecutar activo" id="btn-despachar-sel" disabled onclick="despacharSeleccionados()">&#9654; Despachar Seleccionados (0)</button>';
+        html += '<button class="btn-ejecutar" id="btn-ejecutar" disabled onclick="ejecutarDespacho()">&#9654; Ejecutar Despacho Real &nbsp;&middot;&nbsp; Proximo</button>';
+
+        if (listos.length > 0) {
+            html += '<button class="btn-sel-todo" id="btn-sel-todo" onclick="toggleSeleccionarTodo()">&#9745; Seleccionar Todo</button>';
+            html += '<div class="section"><div class="section-header verde">&#10003; Grupos listos para despachar (' + listos.length + ')</div>';
+            listos.forEach(g => { html += renderGrupo(g); });
+            html += '</div>';
+        }
+        if (bloqueados.length > 0) {
+            html += '<div class="section"><div class="section-header naranja">&#9888; Grupos bloqueados (' + bloqueados.length + ')</div>';
+            bloqueados.forEach(g => { html += renderGrupo(g); });
+            html += '</div>';
+        }
+        html += '<div class="footer">ZenderBox &middot; WMS Motor Despachos USA v1 &middot; Vista Previa</div></div>';
+        document.getElementById('mainContent').innerHTML = html;
+    }
+
+    function renderGrupo(g) {
+        const whrs    = g.whrs || [];
+        const piezas  = whrs.length;
+        const peso    = (g.peso_total||0).toFixed(2);
+        const tipo    = g.tipo || 'NORMAL';
+        const esListo = g.estado === 'LISTO';
+        let badgeCls  = esListo ? (tipo === 'DG' ? 'dg' : 'normal') : (tipo === 'CR' ? 'cr' : 'bloqueado');
+        const razon   = g.razon_bloqueo ? '<span class="grupo-razon">' + g.razon_bloqueo + '</span>' : '';
+        const filas = whrs.map(w => {
+            const posVacia = !w.posicion || w.posicion.trim() === '';
+            const posCls   = posVacia ? 'vacia' : '';
+            const posTxt   = posVacia ? 'VACIA' : w.posicion;
+            const estCls   = w.estado === 'OK' ? 'estado-ok' : 'estado-err';
+            const estTxt   = w.estado === 'OK' ? 'OK' : w.estado;
+            const trCls    = w.estado !== 'OK' ? 'omitida' : '';
+            const comentarioTxt = w.comentario ? w.comentario : '';
+            const comentarioCls = comentarioTxt ? 'style="font-family:var(--mono);font-size:10px;color:var(--yellow)"' : 'style="color:var(--text-muted);font-size:10px"';
+            const comentarioHtml = '<td><span ' + comentarioCls + '>' + (comentarioTxt || '—') + '</span></td>';
+            return '<tr class="' + trCls + '"><td class="whr-code">' + w.whr + '</td><td><span class="pos ' + posCls + '">' + posTxt + '</span></td><td>' + w.peso + ' lb</td><td>' + (w.contenido||'') + '</td>' + comentarioHtml + '<td class="' + estCls + '">' + estTxt + '</td></tr>';
+        }).join('');
+        const chk = esListo ? '<input type="checkbox" class="chk-despacho" id="chk-' + g.casillero_id + '" value="' + g.casillero_id + '" onclick="event.stopPropagation(); actualizarSeleccion()">' : '';
+        return '<div class="grupo open"><div class="grupo-header" onclick="toggleGrupo(this)">' +
+            chk +
+            '<span class="grupo-id">' + g.casillero_id + '</span>' +
+            '<span class="badge ' + badgeCls + '">' + tipo + '</span>' +
+            '<span class="grupo-info">' + piezas + ' pieza' + (piezas!==1?'s':'') + ' &middot; ' + peso + ' lb</span>' +
+            razon +
+            '<span class="grupo-agencia">' + (g.agencia||'') + '</span>' +
+            '<span class="toggle-icon">&#9660;</span></div>' +
+            '<div class="grupo-body"><table class="whr-table">' +
+            '<tr><th>WHR</th><th>Posicion</th><th>Peso</th><th>Contenido</th><th>Comentario</th><th>Estado</th></tr>' +
+            filas + '</table></div></div>';
+    }
+
+    function toggleGrupo(h) { h.parentElement.classList.toggle('open'); }
+
+    function toggleSeleccionarTodo() {
+        const all = document.querySelectorAll('.chk-despacho');
+        const checked = document.querySelectorAll('.chk-despacho:checked');
+        const seleccionar = checked.length < all.length;
+        all.forEach(c => { c.checked = seleccionar; });
+        const btn = document.getElementById('btn-sel-todo');
+        if (btn) btn.innerHTML = seleccionar ? '&#9744; Deseleccionar Todo' : '&#9745; Seleccionar Todo';
+        actualizarSeleccion();
+    }
+
+    function actualizarSeleccion() {
+        const all = document.querySelectorAll('.chk-despacho');
+        const checked = document.querySelectorAll('.chk-despacho:checked');
+        const btn = document.getElementById('btn-despachar-sel');
+        if (btn) {
+            btn.textContent = '\u25B6 Despachar Seleccionados (' + checked.length + ')';
+            btn.disabled = checked.length === 0;
+        }
+        const btnTodo = document.getElementById('btn-sel-todo');
+        if (btnTodo) btnTodo.innerHTML = checked.length === all.length && all.length > 0 ? '&#9744; Deseleccionar Todo' : '&#9745; Seleccionar Todo';
+    }
+
+    async function despacharSeleccionados() {
+        const checked = document.querySelectorAll('.chk-despacho:checked');
+        if (checked.length === 0) return;
+        const ids = Array.from(checked).map(c => c.value);
+        if (!confirm('Despachar ' + ids.length + ' grupo(s) seleccionados?\n\n' + ids.join(', ') + '\n\nEsta accion no se puede deshacer.')) return;
+        const btn = document.getElementById('btn-despachar-sel');
+        btn.disabled = true; btn.textContent = 'Ejecutando...';
+        try {
+            const res = await fetch(WEBHOOK_EJECUTAR, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ casillero_ids: ids })
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            btn.textContent = 'Despacho ejecutado - actualiza la vista previa';
+        } catch(err) {
+            btn.disabled = false; btn.textContent = 'Error - reintentar';
+        }
+    }
+
+    async function ejecutarDespacho() {
+        if (!confirm('Confirmas el despacho real? Esta accion no se puede deshacer.')) return;
+        const btn = document.getElementById('btn-ejecutar');
+        btn.disabled = true; btn.textContent = 'Ejecutando...';
+        try {
+            const res = await fetch(WEBHOOK_EJECUTAR, {method:'POST'});
+            btn.textContent = 'Despacho ejecutado - actualiza la vista previa';
+        } catch(err) {
+            btn.disabled = false; btn.textContent = 'Error - reintentar';
+        }
+    }
+    </script>
+    <script src="../sidebar.js"></script>
+</body>
+</html>
