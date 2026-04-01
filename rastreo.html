@@ -768,14 +768,14 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="cr-badge">🇨🇷 Costa Rica</div>
+    <div class="cr-badge" id="pais-badge">🌎 ZenderBox</div>
   </div>
 </header>
 
 <section class="hero">
   <div class="hero-eyebrow">Rastreo en tiempo real</div>
   <h1>¿Dónde está<br>tu <span class="gradient-text">paquete</span>?</h1>
-  <p class="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega en Costa Rica.</p>
+  <p class="hero-sub" id="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega.</p>
 
   <div class="search-wrap">
     <input
@@ -958,7 +958,7 @@
 </div>
 
 <footer>
-  © 2026 <span>ZenderBox</span> Costa Rica · Todos los derechos reservados
+  © 2026 <span>ZenderBox</span> · <span id="footer-pais">Costa Rica & Colombia</span> · Todos los derechos reservados
 </footer>
 
 <script>
@@ -1015,6 +1015,9 @@
       document.getElementById('res-ciudad').textContent = data.ciudad || '—';
       document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
       document.getElementById('res-conductor').textContent = data.conductor?.trim() || 'Por asignar';
+
+      // Aplicar país dinámicamente desde el webhook
+      aplicarPais(data.pais);
 
       const badge = document.getElementById('res-badge');
       badge.className = `estado-badge ${getEstadoClass(data.estado)}`;
@@ -1086,12 +1089,36 @@
   }
 
   // ── RATING SYSTEM ──
-  const RATING_WEBHOOK = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr-rating';
-  const GOOGLE_REVIEWS_URL = 'TU_LINK_GOOGLE_REVIEWS'; // ← reemplazar
-  const DESCUENTO_CODIGO = 'GRACIAS10'; // ← código de descuento
+  const RATING_WEBHOOK    = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-rating';
+  const DESCUENTO_CODIGO  = 'GRACIAS10';
 
+  // Config por país — se puebla desde la respuesta del webhook
+  const PAISES = {
+    CR: { bandera: '🇨🇷', nombre: 'Costa Rica',  google_reviews_url: null },
+    CO: { bandera: '🇨🇴', nombre: 'Colombia',    google_reviews_url: '#' }, // ← reemplazar con link real de Google Reviews
+    PA: { bandera: '🇵🇦', nombre: 'Panamá',      google_reviews_url: null },
+    EC: { bandera: '🇪🇨', nombre: 'Ecuador',     google_reviews_url: null },
+  };
+
+  let currentPais    = null;   // objeto del país activo
   const ratings = { velocidad: 0, estado: 0, comunicacion: 0, atencion: 0 };
   let ratingGuia = '';
+
+  // Actualiza el badge, hero y footer según el país recibido del webhook
+  function aplicarPais(codigoPais) {
+    const config = PAISES[codigoPais?.toUpperCase()] || null;
+    currentPais  = config;
+    if (!config) return;
+
+    const badge = document.getElementById('pais-badge');
+    if (badge) badge.textContent = `${config.bandera} ${config.nombre}`;
+
+    const heroSub = document.getElementById('hero-sub');
+    if (heroSub) heroSub.textContent = `Ingresa tu número de guía y te mostramos el estado actual de tu entrega en ${config.nombre}.`;
+
+    const footerPais = document.getElementById('footer-pais');
+    if (footerPais) footerPais.textContent = config.nombre;
+  }
 
   function initRating() {
     ratingGuia = document.getElementById('guia-input').value.trim().toUpperCase();
@@ -1192,6 +1219,33 @@
     const thanksDiv = document.getElementById('rating-thanks');
     thanksDiv.style.display = 'block';
 
+    const googleUrl = currentPais?.google_reviews_url || null;
+    const mostrarGoogle = (promedio === 5) && !!googleUrl;
+
+    const descuentoHTML = `
+      <div class="discount-badge">
+        <div>
+          <div class="discount-code">${DESCUENTO_CODIGO}</div>
+          <div class="discount-label">10% de descuento en tu próximo envío</div>
+        </div>
+      </div>`;
+
+    const googleHTML = mostrarGoogle ? `
+      <p class="thanks-msg" style="margin-bottom:16px">
+        ¿Nos regalas un minuto más? Tu reseña en Google ayuda a más familias a encontrarnos. 🙏
+      </p>
+      <a class="btn-google" href="${googleUrl}" target="${googleUrl === '#' ? '_self' : '_blank'}" rel="noopener" ${googleUrl === '#' ? 'onclick="return false"' : ''}>
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Dejar reseña en Google →
+      </a>
+      <p class="btn-google-sub">Se abre en una nueva pestaña · Sin obligación</p>
+    ` : '';
+
     if (promedio === 5) {
       thanksDiv.innerHTML = `
         <div class="thanks-5star">
@@ -1201,27 +1255,9 @@
             Tu calificación de <strong>5 estrellas</strong> nos llena de orgullo.<br>
             Como agradecimiento, aquí tienes tu código de descuento:
           </p>
-          <div class="discount-badge">
-            <div>
-              <div class="discount-code">${DESCUENTO_CODIGO}</div>
-              <div class="discount-label">10% de descuento en tu próximo envío</div>
-            </div>
-          </div>
-          <p class="thanks-msg" style="margin-bottom:16px">
-            ¿Nos regalas una reseña en Google? Solo toma 30 segundos y ayuda a más familias a encontrarnos. 🙏
-          </p>
-          <a class="btn-google" href="${GOOGLE_REVIEWS_URL}" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Dejar reseña en Google →
-          </a>
-          <p class="btn-google-sub">Se abre en una nueva pestaña · Sin obligación</p>
-        </div>
-      `;
+          ${descuentoHTML}
+          ${googleHTML}
+        </div>`;
     } else {
       thanksDiv.innerHTML = `
         <div class="thanks-low">
@@ -1232,16 +1268,9 @@
             ${comentario ? 'Hemos recibido tu comentario y lo revisaremos con atención.' : 'Si tienes algún comentario adicional, escríbenos por WhatsApp.'}<br><br>
             <strong>Tu código de descuento:</strong>
           </p>
-          <div class="discount-badge">
-            <div>
-              <div class="discount-code">${DESCUENTO_CODIGO}</div>
-              <div class="discount-label">10% de descuento en tu próximo envío</div>
-            </div>
-          </div>
-        </div>
-      `;
+          ${descuentoHTML}
+        </div>`;
     }
-  }
 
   // ── FIN RATING SYSTEM ──
 
