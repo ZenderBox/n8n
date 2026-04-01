@@ -629,6 +629,9 @@
       Mostrando <strong id="showing-count">0</strong> de <strong id="total-count">0</strong> resultados
     </div>
     <div class="results-actions">
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="recargarDatos()">
+        <span>🔄</span> Recargar
+      </button>
       <button class="btn btn-secondary btn-icon btn-sm" onclick="exportarExcel()">
         <span>📊</span> Exportar Excel
       </button>
@@ -642,13 +645,13 @@
         <thead>
           <tr>
             <th class="sortable" onclick="sortBy('guia')">Guía <span class="sort-arrow">↕</span></th>
-            <th>Tracking</th>
+            <th>Consolidado</th>
             <th class="sortable" onclick="sortBy('fecha')">Fecha <span class="sort-arrow">↕</span></th>
-            <th>Remitente</th>
-            <th>Destinatario</th>
+            <th>Cliente</th>
+            <th>Ciudad</th>
             <th>Casillero</th>
             <th class="sortable" onclick="sortBy('peso')">Peso <span class="sort-arrow">↕</span></th>
-            <th>Estado</th>
+            <th>Despacho</th>
             <th>Pago</th>
             <th>Acción</th>
           </tr>
@@ -711,17 +714,18 @@
    ══════════════════════════════════════════════════════════ */
 const N8N = 'https://zenderbox.app.n8n.cloud/webhook';
 const EP = {
-  buscar: `${N8N}/buscar-guias`,
-  detalle: `${N8N}/detalle-guia`,
+  consolidadosCR: `${N8N}/cr-consolidados-data`,
 };
 
 /* ══════════════════════════════════════════════════════════
    STATE
    ══════════════════════════════════════════════════════════ */
-let resultados = [];
+let todasLasGuias = [];  // Cache de todas las guías
+let resultados = [];     // Guías filtradas
 let paginaActual = 1;
 const porPagina = 25;
 let ordenActual = { campo: 'fecha', dir: 'desc' };
+let ultimaCarga = null;
 
 /* ══════════════════════════════════════════════════════════
    FILTERS
@@ -786,6 +790,105 @@ function getFilters() {
 /* ══════════════════════════════════════════════════════════
    SEARCH
    ══════════════════════════════════════════════════════════ */
+async function cargarDatos() {
+  // Cargar datos del endpoint (solo CR por ahora)
+  const resp = await fetch(EP.consolidadosCR);
+  const data = await resp.json();
+  
+  if (!data.ok || !data.consolidados) {
+    throw new Error('Respuesta inválida del servidor');
+  }
+  
+  // Aplanar guías de todos los consolidados
+  const guias = [];
+  for (const cons of data.consolidados) {
+    for (const g of cons.guias || []) {
+      guias.push({
+        // Datos de la guía
+        guia: g.guia || '',
+        fecha: g.fecha_guia || cons.fecha || '',
+        nombre: g.nombre || '',
+        casillero: g.casillero || '',
+        telefono: g.tel || '',
+        ciudad: g.ciudad || '',
+        direccion: g.direccion || '',
+        contenido: g.contenido || '',
+        piezas: g.piezas || '',
+        peso: g.peso || '',
+        valor: g.valor || '',
+        pago: g.pago || 'SIN PAGO',
+        sq: g.sq || 'PENDIENTE',
+        sq_system_id: g.sq_system_id || '',
+        // Datos del consolidado
+        consolidado: cons.id || '',
+        estado_consolidado: cons.estado || '',
+        estado_label: cons.estado_label || '',
+        agencia: 'CR',
+      });
+    }
+  }
+  
+  todasLasGuias = guias;
+  ultimaCarga = new Date();
+  return data.resumen;
+}
+
+function filtrarGuias(query, filters) {
+  const q = (query || '').toLowerCase().trim();
+  
+  return todasLasGuias.filter(g => {
+    // Búsqueda universal
+    if (q) {
+      const campos = [
+        g.guia, g.nombre, g.casillero, g.telefono, 
+        g.ciudad, g.direccion, g.contenido, g.consolidado
+      ].map(c => (c || '').toLowerCase());
+      
+      if (!campos.some(c => c.includes(q))) return false;
+    }
+    
+    // Filtro: Estado de pago
+    if (filters.pago) {
+      const pagado = g.pago === 'PAGADO';
+      if (filters.pago === 'pagado' && !pagado) return false;
+      if (filters.pago === 'pendiente' && pagado) return false;
+    }
+    
+    // Filtro: Estado de guía (despacho)
+    if (filters.estado) {
+      const sq = (g.sq || '').toLowerCase();
+      if (filters.estado === 'bodega' && sq !== 'pendiente') return false;
+      if (filters.estado === 'despachado' && sq === 'pendiente') return false;
+      if (filters.estado === 'entregado' && !sq.includes('entreg')) return false;
+    }
+    
+    // Filtro: Rango de peso
+    if (filters.pesoMin) {
+      const peso = parseFloat(g.peso) || 0;
+      if (peso < parseFloat(filters.pesoMin)) return false;
+    }
+    if (filters.pesoMax) {
+      const peso = parseFloat(g.peso) || 0;
+      if (peso > parseFloat(filters.pesoMax)) return false;
+    }
+    
+    // Filtro: Rango de fechas
+    if (filters.fechaDesde && g.fecha) {
+      const fechaGuia = new Date(g.fecha);
+      const desde = new Date(filters.fechaDesde);
+      if (fechaGuia < desde) return false;
+    }
+    if (filters.fechaHasta && g.fecha) {
+      const fechaGuia = new Date(g.fecha);
+      const hasta = new Date(filters.fechaHasta);
+      hasta.setHours(23, 59, 59); // Incluir todo el día
+      if (fechaGuia > hasta) return false;
+    }
+    
+    return true;
+  });
+}
+
 async function buscar() {
   const query = document.getElementById('search-input').value.trim();
   const filters = getFilters();
@@ -800,23 +903,14 @@ async function buscar() {
   document.getElementById('results-header').style.display = 'none';
   
   try {
-    const params = new URLSearchParams();
-    if (query) params.append('q', query);
-    if (filters.agencia) params.append('agencia', filters.agencia);
-    if (filters.estado) params.append('estado', filters.estado);
-    if (filters.pago) params.append('pago', filters.pago);
-    if (filters.transportadora) params.append('transportadora', filters.transportadora);
-    if (filters.fechaDesde) params.append('fechaDesde', filters.fechaDesde);
-    if (filters.fechaHasta) params.append('fechaHasta', filters.fechaHasta);
-    if (filters.pesoMin) params.append('pesoMin', filters.pesoMin);
-    if (filters.pesoMax) params.append('pesoMax', filters.pesoMax);
-    if (filters.soloWhr) params.append('soloWhr', '1');
+    // Cargar datos si no hay cache o es primera vez
+    if (todasLasGuias.length === 0) {
+      const resumen = await cargarDatos();
+      console.log('Datos cargados:', resumen);
+    }
     
-    const url = `${EP.buscar}?${params.toString()}`;
-    const resp = await fetch(url);
-    const data = await resp.json();
-    
-    resultados = Array.isArray(data) ? data : (data.resultados || []);
+    // Filtrar
+    resultados = filtrarGuias(query, filters);
     paginaActual = 1;
     
     document.getElementById('loading').classList.remove('show');
@@ -835,14 +929,15 @@ async function buscar() {
   } catch (err) {
     console.error('Error buscando:', err);
     document.getElementById('loading').classList.remove('show');
-    // Fallback to mock data for development
-    resultados = mockData();
-    paginaActual = 1;
-    renderResultados();
-    document.getElementById('table-wrap').style.display = 'block';
-    document.getElementById('results-header').style.display = 'flex';
-    toast('Modo desarrollo - datos de prueba', 'ok');
+    toast('Error al cargar datos: ' + err.message, 'err');
   }
+}
+
+// Recargar datos desde el servidor
+async function recargarDatos() {
+  todasLasGuias = [];
+  await buscar();
+  toast('Datos actualizados ✓', 'ok');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -856,15 +951,15 @@ function renderResultados() {
   const tbody = document.getElementById('results-body');
   tbody.innerHTML = pagina.map(g => `
     <tr>
-      <td><strong>${esc(g.guia || g.Guia || g.numero_guia || '—')}</strong></td>
-      <td>${esc(g.tracking || g.Tracking || '—')}</td>
-      <td>${formatFecha(g.fecha || g.Fecha || g.fecha_creacion)}</td>
-      <td>${esc(g.remitente || g.Remitente || g.n_remitente || '—')}</td>
-      <td>${esc(g.destinatario || g.Destinatario || g.n_destinatario || '—')}</td>
-      <td>${esc(g.casillero || g.Casillero || '—')}</td>
-      <td>${g.peso || g.Peso || '—'} lb</td>
-      <td>${renderBadgeEstado(g.estado || g.Estado || 'bodega')}</td>
-      <td>${renderBadgePago(g.pago || g.Pago || 'pendiente')}</td>
+      <td><strong>${esc(g.guia)}</strong></td>
+      <td>${esc(g.consolidado)}</td>
+      <td>${formatFecha(g.fecha)}</td>
+      <td>${esc(g.nombre)}</td>
+      <td>${esc(g.ciudad)}</td>
+      <td>${esc(g.casillero)}</td>
+      <td>${g.peso || '—'}</td>
+      <td>${renderBadgeSQ(g.sq)}</td>
+      <td>${renderBadgePago(g.pago)}</td>
       <td><button class="btn-action" onclick='verDetalle(${JSON.stringify(g).replace(/'/g,"&#39;")})'>Ver detalle</button></td>
     </tr>
   `).join('');
@@ -879,6 +974,18 @@ function renderResultados() {
   document.getElementById('total-pages').textContent = totalPaginas;
   document.getElementById('prev-btn').disabled = paginaActual <= 1;
   document.getElementById('next-btn').disabled = paginaActual >= totalPaginas;
+}
+
+function renderBadgeSQ(sq) {
+  const estado = (sq || '').toLowerCase();
+  if (estado === 'pendiente') {
+    return '<span class="badge badge-bodega"><span class="badge-dot"></span>En bodega</span>';
+  } else if (estado.includes('entreg')) {
+    return '<span class="badge badge-entregado"><span class="badge-dot"></span>Entregado</span>';
+  } else if (estado.includes('despach') || estado !== 'pendiente') {
+    return '<span class="badge badge-despachado"><span class="badge-dot"></span>Despachado</span>';
+  }
+  return '<span class="badge badge-bodega"><span class="badge-dot"></span>Pendiente</span>';
 }
 
 function renderBadgeEstado(estado) {
@@ -950,51 +1057,46 @@ function sortBy(campo) {
    DETAIL MODAL
    ══════════════════════════════════════════════════════════ */
 async function verDetalle(guia) {
-  document.getElementById('modal-guia').textContent = guia.guia || guia.Guia || guia.numero_guia || '';
+  document.getElementById('modal-guia').textContent = guia.guia || '';
   
   const body = document.getElementById('modal-body');
   body.innerHTML = `
     <div class="detail-grid">
       <div class="detail-section">
         <div class="detail-section-title">Información General</div>
-        <div class="detail-row"><span class="detail-label">Guía</span><span class="detail-value">${esc(guia.guia || guia.Guia || guia.numero_guia || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">WHR</span><span class="detail-value">${esc(guia.whr || guia.WHR || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Tracking</span><span class="detail-value">${esc(guia.tracking || guia.Tracking || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Fecha</span><span class="detail-value">${formatFecha(guia.fecha || guia.Fecha || guia.fecha_creacion)}</span></div>
-        <div class="detail-row"><span class="detail-label">Agencia</span><span class="detail-value">${esc(guia.agencia || guia.Agencia || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Estado</span><span class="detail-value">${renderBadgeEstado(guia.estado || guia.Estado || 'bodega')}</span></div>
-        <div class="detail-row"><span class="detail-label">Pago</span><span class="detail-value">${renderBadgePago(guia.pago || guia.Pago)}</span></div>
+        <div class="detail-row"><span class="detail-label">Guía</span><span class="detail-value">${esc(guia.guia)}</span></div>
+        <div class="detail-row"><span class="detail-label">Consolidado</span><span class="detail-value">${esc(guia.consolidado)}</span></div>
+        <div class="detail-row"><span class="detail-label">Fecha</span><span class="detail-value">${formatFecha(guia.fecha)}</span></div>
+        <div class="detail-row"><span class="detail-label">Agencia</span><span class="detail-value">${esc(guia.agencia)}</span></div>
+        <div class="detail-row"><span class="detail-label">Estado Consolidado</span><span class="detail-value">${esc(guia.estado_label || guia.estado_consolidado)}</span></div>
       </div>
       
       <div class="detail-section">
-        <div class="detail-section-title">Remitente</div>
-        <div class="detail-row"><span class="detail-label">Nombre</span><span class="detail-value">${esc(guia.remitente || guia.Remitente || guia.n_remitente || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Teléfono</span><span class="detail-value">${esc(guia.tel_remitente || guia.Telefono_Remitente || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Casillero</span><span class="detail-value">${esc(guia.casillero || guia.Casillero || '—')}</span></div>
+        <div class="detail-section-title">Cliente</div>
+        <div class="detail-row"><span class="detail-label">Nombre</span><span class="detail-value">${esc(guia.nombre)}</span></div>
+        <div class="detail-row"><span class="detail-label">Casillero</span><span class="detail-value">${esc(guia.casillero)}</span></div>
+        <div class="detail-row"><span class="detail-label">Teléfono</span><span class="detail-value">${esc(guia.telefono)}</span></div>
       </div>
       
       <div class="detail-section">
-        <div class="detail-section-title">Destinatario</div>
-        <div class="detail-row"><span class="detail-label">Nombre</span><span class="detail-value">${esc(guia.destinatario || guia.Destinatario || guia.n_destinatario || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Teléfono</span><span class="detail-value">${esc(guia.tel_destinatario || guia.Telefono_Destinatario || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Dirección</span><span class="detail-value">${esc(guia.direccion || guia.Direccion || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">Ciudad</span><span class="detail-value">${esc(guia.ciudad || guia.Ciudad || '—')}</span></div>
+        <div class="detail-section-title">Destino</div>
+        <div class="detail-row"><span class="detail-label">Ciudad</span><span class="detail-value">${esc(guia.ciudad)}</span></div>
+        <div class="detail-row"><span class="detail-label">Dirección</span><span class="detail-value">${esc(guia.direccion)}</span></div>
       </div>
       
       <div class="detail-section">
         <div class="detail-section-title">Envío</div>
-        <div class="detail-row"><span class="detail-label">Peso</span><span class="detail-value">${guia.peso || guia.Peso || '—'} lb</span></div>
-        <div class="detail-row"><span class="detail-label">Piezas</span><span class="detail-value">${guia.piezas || guia.Piezas || '—'}</span></div>
-        <div class="detail-row"><span class="detail-label">Valor</span><span class="detail-value">$${guia.valor || guia.Valor || '—'}</span></div>
-        <div class="detail-row"><span class="detail-label">Transportadora</span><span class="detail-value">${esc(guia.transportadora || guia.Transportadora || '—')}</span></div>
-        <div class="detail-row"><span class="detail-label">PO#</span><span class="detail-value">${esc(guia.po || guia.PO || '—')}</span></div>
+        <div class="detail-row"><span class="detail-label">Contenido</span><span class="detail-value">${esc(guia.contenido)}</span></div>
+        <div class="detail-row"><span class="detail-label">Piezas</span><span class="detail-value">${guia.piezas || '—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Peso</span><span class="detail-value">${guia.peso || '—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Valor</span><span class="detail-value">$${guia.valor || '—'}</span></div>
       </div>
       
-      <div class="detail-section detail-full">
-        <div class="detail-section-title">Comentarios</div>
-        <div style="font-size: 13px; color: var(--text); line-height: 1.5;">
-          ${esc(guia.comentarios || guia.Comentarios || 'Sin comentarios') || 'Sin comentarios'}
-        </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Estado</div>
+        <div class="detail-row"><span class="detail-label">Pago</span><span class="detail-value">${renderBadgePago(guia.pago)}</span></div>
+        <div class="detail-row"><span class="detail-label">Despacho</span><span class="detail-value">${renderBadgeSQ(guia.sq)}</span></div>
+        <div class="detail-row"><span class="detail-label">SmartQuick ID</span><span class="detail-value">${esc(guia.sq_system_id) || '—'}</span></div>
       </div>
     </div>
   `;
@@ -1019,25 +1121,24 @@ function exportarExcel() {
   }
   
   // Create CSV content
-  const headers = ['Guía', 'WHR', 'Tracking', 'Fecha', 'Remitente', 'Tel. Remitente', 'Destinatario', 'Tel. Destinatario', 'Casillero', 'Peso', 'Piezas', 'Valor', 'Estado', 'Pago', 'Transportadora', 'Comentarios'];
+  const headers = ['Guía', 'Consolidado', 'Fecha', 'Cliente', 'Casillero', 'Teléfono', 'Ciudad', 'Dirección', 'Contenido', 'Piezas', 'Peso', 'Valor', 'Pago', 'Despacho', 'SmartQuick ID'];
   
   const rows = resultados.map(g => [
-    g.guia || g.Guia || g.numero_guia || '',
-    g.whr || g.WHR || '',
-    g.tracking || g.Tracking || '',
-    g.fecha || g.Fecha || g.fecha_creacion || '',
-    g.remitente || g.Remitente || g.n_remitente || '',
-    g.tel_remitente || g.Telefono_Remitente || '',
-    g.destinatario || g.Destinatario || g.n_destinatario || '',
-    g.tel_destinatario || g.Telefono_Destinatario || '',
-    g.casillero || g.Casillero || '',
-    g.peso || g.Peso || '',
-    g.piezas || g.Piezas || '',
-    g.valor || g.Valor || '',
-    g.estado || g.Estado || '',
-    g.pago || g.Pago || '',
-    g.transportadora || g.Transportadora || '',
-    g.comentarios || g.Comentarios || '',
+    g.guia || '',
+    g.consolidado || '',
+    g.fecha || '',
+    g.nombre || '',
+    g.casillero || '',
+    g.telefono || '',
+    g.ciudad || '',
+    g.direccion || '',
+    g.contenido || '',
+    g.piezas || '',
+    g.peso || '',
+    g.valor || '',
+    g.pago || '',
+    g.sq || '',
+    g.sq_system_id || '',
   ]);
   
   const csvContent = [headers, ...rows]
@@ -1088,35 +1189,6 @@ function toast(msg, type = '') {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MOCK DATA (development)
-   ══════════════════════════════════════════════════════════ */
-function mockData() {
-  const estados = ['bodega', 'despachado', 'transito', 'entregado', 'devuelto'];
-  const pagos = ['pagado', 'pendiente'];
-  const transportadoras = ['TCC', 'Coordinadora', 'Servientrega', 'Correos CR'];
-  
-  return Array.from({ length: 47 }, (_, i) => ({
-    guia: `ZB-${String(10001 + i).padStart(6, '0')}`,
-    whr: `WHR-${1000 + i}`,
-    tracking: `1Z999AA1${String(i).padStart(10, '0')}`,
-    fecha: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-    remitente: ['Juan Acuña', 'María García', 'Carlos López', 'Ana Rodríguez'][i % 4],
-    tel_remitente: '+506 8888 ' + String(1000 + i),
-    destinatario: ['Pedro Mora', 'Laura Jiménez', 'Diego Vargas', 'Sofía Castro'][i % 4],
-    tel_destinatario: '+506 7777 ' + String(1000 + i),
-    casillero: `ZB-${1000 + (i % 100)}`,
-    peso: (Math.random() * 50 + 0.5).toFixed(1),
-    piezas: Math.floor(Math.random() * 5) + 1,
-    valor: (Math.random() * 500 + 10).toFixed(2),
-    estado: estados[i % estados.length],
-    pago: pagos[i % pagos.length],
-    transportadora: transportadoras[i % transportadoras.length],
-    agencia: ['CR', 'CO', 'PA'][i % 3],
-    comentarios: i % 3 === 0 ? 'Frágil - manejar con cuidado' : '',
-  }));
-}
-
-/* ══════════════════════════════════════════════════════════
    INIT
    ══════════════════════════════════════════════════════════ */
 document.getElementById('search-input').addEventListener('keypress', (e) => {
@@ -1133,6 +1205,9 @@ document.getElementById('f-whr').addEventListener('change', contarFiltrosActivos
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') cerrarModal();
 });
+
+// Cargar datos automáticamente al inicio
+buscar();
 </script>
 <script src="../sidebar.js"></script>
 </body>
