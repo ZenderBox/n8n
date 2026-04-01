@@ -356,6 +356,155 @@
   }
   .tpl-select:focus { border-color: var(--cyan); }
 
+  /* ── View Toggle ── */
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 3px;
+  }
+  .view-btn {
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    padding: 6px 14px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .view-btn:hover { color: var(--text); }
+  .view-btn.active {
+    background: var(--cyan);
+    color: var(--navy);
+  }
+
+  /* ── Consolidados View ── */
+  .consolidados-wrap {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .consolidados-list {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+  }
+  .cons-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .cons-item:last-child { border-bottom: none; }
+  .cons-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .cons-header:hover { background: var(--surface2); }
+  .cons-arrow {
+    font-size: 10px;
+    color: var(--text3);
+    transition: transform .2s;
+    width: 16px;
+  }
+  .cons-item.open .cons-arrow { transform: rotate(90deg); }
+  .cons-id {
+    font-family: 'Consolas', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 100px;
+  }
+  .cons-fecha {
+    font-size: 12px;
+    color: var(--text3);
+    min-width: 90px;
+  }
+  .cons-estado {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .cons-estado.bodega { background: var(--cyan-dim); color: var(--cyan); }
+  .cons-estado.miami { background: var(--blue-dim); color: var(--blue); }
+  .cons-estado.transito { background: var(--purple-dim); color: var(--purple); }
+  .cons-estado.aeropuerto { background: var(--amber-dim); color: var(--amber); }
+  .cons-stats {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    justify-content: flex-start;
+    margin-left: 20px;
+  }
+  .cons-stat {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .cons-stat.guias { background: var(--surface2); color: var(--text2); }
+  .cons-stat.pagadas { background: var(--cyan-dim); color: var(--cyan); }
+  .cons-stat.despachadas { background: var(--lime-dim); color: var(--lime); }
+  .cons-stat.sinpago { background: var(--amber-dim); color: var(--amber); }
+  .cons-tracking {
+    display: flex;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--text3);
+    margin-left: auto;
+  }
+  .cons-tracking span { display: flex; align-items: center; gap: 4px; }
+  .cons-tracking .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+  }
+  
+  /* ── Consolidado Body (guías) ── */
+  .cons-body {
+    display: none;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  .cons-item.open .cons-body { display: block; }
+  .cons-guias-header {
+    display: grid;
+    grid-template-columns: 140px 1fr 120px 80px 100px 150px 120px;
+    gap: 12px;
+    padding: 10px 20px;
+    background: var(--surface2);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .cons-guia-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 120px 80px 100px 150px 120px;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    font-size: 12px;
+  }
+  .cons-guia-row:last-child { border-bottom: none; }
+  .cons-guia-row:hover { background: rgba(0,201,177,.05); }
+  .guia-num {
+    font-family: 'Consolas', monospace;
+    font-weight: 600;
+    color: var(--cyan);
+  }
+
   /* ── Action button ── */
   .btn-action {
     background: var(--surface2);
@@ -663,6 +812,14 @@
 
   <!-- Results header -->
   <div class="results-header" id="results-header" style="display:none">
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-vista-guias" onclick="cambiarVista('guias')">
+        📋 Guías
+      </button>
+      <button class="view-btn" id="btn-vista-consolidados" onclick="cambiarVista('consolidados')">
+        📦 Consolidados
+      </button>
+    </div>
     <div class="results-count">
       Mostrando <strong id="showing-count">0</strong> de <strong id="total-count">0</strong> resultados
     </div>
@@ -702,6 +859,13 @@
       <button class="page-btn" id="prev-btn" onclick="cambiarPagina(-1)">← Anterior</button>
       <span class="page-info">Página <strong id="current-page">1</strong> de <strong id="total-pages">1</strong></span>
       <button class="page-btn" id="next-btn" onclick="cambiarPagina(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Vista Consolidados -->
+  <div class="consolidados-wrap" id="consolidados-wrap" style="display:none">
+    <div class="consolidados-list" id="consolidados-list">
+      <!-- Consolidados rendered here -->
     </div>
   </div>
 
@@ -759,11 +923,13 @@ const EP = {
    STATE
    ══════════════════════════════════════════════════════════ */
 let todasLasGuias = [];  // Cache de todas las guías
+let consolidadosData = []; // Datos agrupados por consolidado
 let resultados = [];     // Guías filtradas
 let paginaActual = 1;
 const porPagina = 25;
 let ordenActual = { campo: 'fecha', dir: 'desc' };
 let ultimaCarga = null;
+let vistaActual = 'guias'; // 'guias' o 'consolidados'
 
 // WhatsApp
 let TEMPLATES = [];
@@ -846,6 +1012,13 @@ async function cargarDatos() {
     throw new Error('Respuesta inválida del servidor');
   }
   
+  // Guardar consolidados ordenados por fecha (más reciente primero)
+  consolidadosData = data.consolidados.sort((a, b) => {
+    const fa = a.fecha || '';
+    const fb = b.fecha || '';
+    return fb.localeCompare(fa);
+  });
+  
   // Aplanar guías de todos los consolidados
   const guias = [];
   for (const cons of data.consolidados) {
@@ -879,6 +1052,110 @@ async function cargarDatos() {
   todasLasGuias = guias;
   ultimaCarga = new Date();
   return data.resumen;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW TOGGLE
+   ══════════════════════════════════════════════════════════ */
+function cambiarVista(vista) {
+  vistaActual = vista;
+  
+  // Update buttons
+  document.getElementById('btn-vista-guias').classList.toggle('active', vista === 'guias');
+  document.getElementById('btn-vista-consolidados').classList.toggle('active', vista === 'consolidados');
+  
+  // Show/hide views
+  document.getElementById('table-wrap').style.display = vista === 'guias' ? 'block' : 'none';
+  document.getElementById('consolidados-wrap').style.display = vista === 'consolidados' ? 'block' : 'none';
+  
+  // Render appropriate view
+  if (vista === 'consolidados') {
+    renderConsolidados();
+  }
+  
+  // Update count text
+  if (vista === 'guias') {
+    document.getElementById('showing-count').textContent = Math.min(porPagina, resultados.length);
+    document.getElementById('total-count').textContent = resultados.length;
+  } else {
+    document.getElementById('showing-count').textContent = consolidadosData.length;
+    document.getElementById('total-count').textContent = consolidadosData.length;
+  }
+}
+
+function renderConsolidados() {
+  const container = document.getElementById('consolidados-list');
+  
+  container.innerHTML = consolidadosData.map(cons => {
+    const stats = cons.stats || {};
+    const estadoClass = cons.estado || 'bodega';
+    const estadoLabel = cons.estado_label || 'SIN ESTADO';
+    
+    // Render guías dentro del consolidado
+    const guiasHtml = (cons.guias || []).map(g => {
+      const guiaId = esc(g.guia);
+      const logEntry = waLog[g.guia];
+      const waLogHtml = logEntry 
+        ? `<div class="wa-log" id="walog-${guiaId}">✓ ${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
+        : `<div class="wa-log" id="walog-${guiaId}" style="display:none"></div>`;
+      
+      return `
+        <div class="cons-guia-row">
+          <div class="guia-num">${guiaId}</div>
+          <div>${esc(g.nombre || '—')}</div>
+          <div class="mono">${esc(g.tel || '—')}</div>
+          <div>${renderBadgePago(g.pago)}</div>
+          <div>${renderBadgeSQ(g.sq)}</div>
+          <div>${buildTemplateSelect(g.pago, g.sq_system_id, guiaId)}</div>
+          <div class="wa-cell">
+            <button class="btn-wa" id="wa-${guiaId}" onclick="enviarWA('${esc(g.tel)}', '${guiaId}', this)">💬 Enviar</button>
+            ${waLogHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    return `
+      <div class="cons-item" id="cons-${esc(cons.id)}">
+        <div class="cons-header" onclick="toggleConsolidado('${esc(cons.id)}')">
+          <span class="cons-arrow">▶</span>
+          <span class="cons-id">${esc(cons.id)}</span>
+          <span class="cons-fecha">${formatFecha(cons.fecha)}</span>
+          <span class="cons-estado ${estadoClass}">${esc(estadoLabel)}</span>
+          <div class="cons-stats">
+            <span class="cons-stat guias">📦 ${stats.total || 0} guías</span>
+            <span class="cons-stat pagadas">✓ ${stats.pagadas || 0} pagadas</span>
+            <span class="cons-stat despachadas">🚚 ${stats.despachadas || 0} despachadas</span>
+            ${stats.sinPago > 0 ? `<span class="cons-stat sinpago">⚠ ${stats.sinPago} sin pago</span>` : ''}
+          </div>
+          <div class="cons-tracking">
+            <span><span class="dot" style="background:${cons.miami ? 'var(--cyan)' : 'var(--text3)'}"></span> MIA</span>
+            <span><span class="dot" style="background:${cons.aeropuerto ? 'var(--cyan)' : 'var(--text3)'}"></span> SJO</span>
+            <span><span class="dot" style="background:${cons.bodega ? 'var(--cyan)' : 'var(--text3)'}"></span> BODEGA</span>
+          </div>
+        </div>
+        <div class="cons-body">
+          <div class="cons-guias-header">
+            <div>Guía</div>
+            <div>Cliente</div>
+            <div>Teléfono</div>
+            <div>Pago</div>
+            <div>SmartQuick</div>
+            <div>Template</div>
+            <div>WhatsApp</div>
+          </div>
+          ${guiasHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleConsolidado(consId) {
+  const item = document.getElementById('cons-' + consId);
+  if (item) {
+    item.classList.toggle('open');
+  }
 }
 
 function filtrarGuias(query, filters) {
