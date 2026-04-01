@@ -2,256 +2,1783 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZenderBox · Buscar Guía CR</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale-1.0">
+<title>Buscar Guías — ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0b0c0e;--surface:#13151a;--surface2:#1a1d24;--border:#21252f;--border2:#2d3241;--accent:#f5a623;--accent-dim:rgba(245,166,35,0.1);--blue:#4f8ef7;--blue-dim:rgba(79,142,247,0.1);--green:#22c55e;--green-dim:rgba(34,197,94,0.1);--red:#ef4444;--red-dim:rgba(239,68,68,0.1);--yellow:#f59e0b;--text:#e8eaf0;--text-muted:#5a6070;--text-mid:#9099b0;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;}
-  .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;left:0;top:0;bottom:0;z-index:10;}
-  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
-  .sidebar-logo .zb{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:2px;}
-  .sidebar-logo h2{font-size:15px;font-weight:600;color:var(--text);}
-  .sidebar-logo .country{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px;}
-  .nav-section{padding:16px 12px 8px;}
-  .nav-section-label{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;padding:0 8px;margin-bottom:4px;}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;transition:all 0.15s;margin-bottom:2px;border:1px solid transparent;text-decoration:none;}
-  .nav-item:hover{background:var(--surface2);}
-  .nav-item.active{background:var(--accent-dim);border-color:rgba(245,166,35,0.2);}
-  .nav-icon{font-size:14px;flex-shrink:0;}
-  .nav-label{font-size:13px;font-weight:500;color:var(--text-mid);}
-  .nav-item.active .nav-label{color:var(--accent);}
-  .nav-coming{font-family:var(--mono);font-size:9px;color:var(--text-muted);padding:2px 6px;background:var(--surface2);border-radius:3px;margin-left:auto;}
-  .nav-back{display:flex;align-items:center;gap:8px;padding:12px 20px;font-family:var(--mono);font-size:10px;color:var(--text-muted);border-bottom:1px solid var(--border);text-decoration:none;transition:color .15s;}
-  .nav-back:hover{color:var(--accent);}
-  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
-  .sidebar-footer .version{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
-  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
-  .topbar{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--surface);position:sticky;top:0;z-index:5;}
-  .topbar-title{font-size:15px;font-weight:600;color:var(--text);}
-  .topbar-sub{font-family:var(--mono);font-size:11px;color:var(--text-muted);}
-  .topbar-live{margin-left:auto;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--green);}
-  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-  .content{padding:28px 32px;flex:1;}
-  .search-section{margin-bottom:32px;}
-  .search-label{font-family:var(--mono);font-size:10px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
-  .search-box{display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden;max-width:680px;transition:border-color 0.15s;}
-  .search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,166,35,0.08);}
-  .search-icon{padding:0 16px;font-size:16px;color:var(--text-muted);display:flex;align-items:center;}
-  .search-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--mono);font-size:14px;color:var(--text);padding:14px 0;}
-  .search-input::placeholder{color:var(--text-muted);}
-  .search-btn{padding:0 24px;background:var(--accent);border:none;cursor:pointer;font-family:var(--mono);font-size:12px;font-weight:600;color:#000;letter-spacing:1px;}
-  .search-btn:hover{background:#e09820;}
-  .search-hint{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:8px;}
-  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;gap:12px;}
-  .empty-icon{font-size:40px;opacity:0.3;}
-  .empty-text{font-family:var(--mono);font-size:12px;color:var(--text-muted);}
-  .loading-state{display:none;align-items:center;gap:12px;padding:40px 0;font-family:var(--mono);font-size:12px;color:var(--text-muted);}
-  .loading-state.visible{display:flex;}
-  .loader{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .not-found{display:none;align-items:center;gap:12px;padding:24px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--red);max-width:680px;}
-  .not-found.visible{display:flex;}
-  .result-card{display:none;max-width:900px;}
-  .result-card.visible{display:block;}
-  .result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;}
-  .result-guia{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);}
-  .result-meta{font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-top:4px;}
-  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0;}
-  .status-pill.despachado{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
-  .status-pill.bodega{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(79,142,247,0.25);}
-  .status-pill.transito{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(245,166,35,0.25);}
-  .status-pill.pendiente{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border2);}
-  .sections-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-  .section-card.full{grid-column:1/-1;}
-  .section-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
-  .section-icon{font-size:13px;}
-  .section-title{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;}
-  .section-body{padding:16px;}
-  .field-row{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
-  .field-row:last-child{border-bottom:none;}
-  .field-label{font-family:var(--mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;min-width:120px;flex-shrink:0;}
-  .field-value{font-size:13px;color:var(--text);font-weight:500;}
-  .field-value.mono{font-family:var(--mono);font-size:12px;}
-  .field-value.green{color:var(--green);}
-  .field-value.yellow{color:var(--yellow);}
-  .field-value.blue{color:var(--blue);}
-  .tl-item{display:flex;gap:12px;padding:10px 0;}
-  .tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:28px;}
-  .tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);background:var(--surface2);flex-shrink:0;}
-  .tl-dot.done{background:var(--green);border-color:var(--green);}
-  .tl-dot.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px rgba(245,166,35,0.4);}
-  .tl-line{flex:1;width:2px;background:var(--border2);margin:2px 0;}
-  .tl-line.done{background:rgba(34,197,94,0.4);}
-  .tl-title{font-size:13px;font-weight:500;color:var(--text);}
-  .tl-title.muted{color:var(--text-muted);}
-  .tl-date{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px;}
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --surface2:  #1e2630;
+    --border:    #2a3441;
+    --border2:   #3d4f61;
+    --cyan:      #00c9b1;
+    --cyan-dim:  rgba(0,201,177,.12);
+    --cyan-glow: rgba(0,201,177,.25);
+    --lime:      #CCD32A;
+    --lime-dim:  rgba(204,211,42,.12);
+    --amber:     #f59e0b;
+    --amber-dim: rgba(245,158,11,.12);
+    --red:       #ef4444;
+    --red-dim:   rgba(239,68,68,.12);
+    --blue:      #3b82f6;
+    --blue-dim:  rgba(59,130,246,.12);
+    --purple:    #a855f7;
+    --purple-dim:rgba(168,85,247,.12);
+    --text:      #e2e8f0;
+    --text2:     #8b9cb0;
+    --text3:     #4f6070;
+    --r:         8px;
+    --r-lg:      12px;
+    --shadow:    0 4px 24px rgba(0,0,0,.4);
+    --navy:      #081F3A;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+  input, select, textarea, button { font-family: inherit; }
+
+  /* ── Top bar ── */
+  .topbar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 24px;
+    margin-left: 220px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-logo {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: .3px;
+  }
+  .topbar-logo span { color: var(--cyan); }
+  .topbar-sep { flex: 1; }
+  .topbar-stats {
+    display: flex; gap: 20px; font-size: 12px; color: var(--text2);
+  }
+  .topbar-stats strong { color: var(--text); font-weight: 600; }
+
+  /* ── Main container ── */
+  .main {
+    max-width: 1400px; margin: 0 auto;
+    margin-left: 220px;
+    padding: 24px;
+  }
+
+  /* ── Search hero ── */
+  .search-hero {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .search-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--cyan); letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .search-title::before {
+    content: ''; width: 8px; height: 8px;
+    background: var(--cyan); border-radius: 50%;
+    box-shadow: 0 0 12px var(--cyan);
+  }
+  .search-row {
+    display: flex; gap: 12px;
+  }
+  .search-input-wrap {
+    flex: 1; position: relative;
+  }
+  .search-ico {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    font-size: 18px; color: var(--text3);
+  }
+  .search-input {
+    width: 100%;
+    background: var(--bg);
+    border: 2px solid var(--border2);
+    border-radius: var(--r);
+    color: var(--text);
+    padding: 14px 16px 14px 48px;
+    font-size: 15px;
+    outline: none;
+    transition: all .2s;
+  }
+  .search-input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px var(--cyan-dim);
+  }
+  .search-input::placeholder { color: var(--text3); }
+  .btn {
+    border: none; border-radius: var(--r);
+    padding: 14px 28px; font-size: 14px;
+    cursor: pointer; transition: all .2s;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 600;
+  }
+  .btn-primary {
+    background: var(--cyan);
+    color: var(--navy);
+    box-shadow: 0 0 20px var(--cyan-glow);
+  }
+  .btn-primary:hover {
+    background: #00e6cc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 24px var(--cyan-glow);
+  }
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+  }
+  .btn-secondary:hover {
+    border-color: var(--text2);
+    color: var(--text);
+  }
+  .btn-icon {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .search-hint {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .search-hint span { 
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+
+  /* ── Filters panel ── */
+  .filters-toggle {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    color: var(--text2);
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: all .2s;
+  }
+  .filters-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+  .filters-toggle.active { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+  .filters-toggle .arrow { transition: transform .2s; }
+  .filters-toggle.active .arrow { transform: rotate(180deg); }
+  .filters-count {
+    background: var(--cyan);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+
+  .filters-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+  .filters-panel.open { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .filter-group {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .filter-group label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .filter-group input,
+  .filter-group select {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .filter-group input:focus,
+  .filter-group select:focus { border-color: var(--cyan); }
+  .filter-row {
+    display: flex; gap: 8px;
+  }
+  .filter-row input { flex: 1; }
+  .filter-check {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 8px;
+  }
+  .filter-check input { width: 16px; height: 16px; accent-color: var(--cyan); }
+  .filter-check label { font-size: 12px; color: var(--text2); text-transform: none; cursor: pointer; }
+  .filter-actions {
+    grid-column: 1 / -1;
+    display: flex; gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  /* ── Results header ── */
+  .results-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .results-count {
+    font-size: 13px; color: var(--text2);
+  }
+  .results-count strong { color: var(--text); font-weight: 600; }
+  .results-actions {
+    margin-left: auto;
+    display: flex; gap: 10px;
+  }
+
+  /* ── Results table ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead {
+    background: var(--surface2);
+    position: sticky; top: 0;
+  }
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--cyan); }
+  th .sort-arrow { margin-left: 4px; opacity: 0.4; }
+  th.sorted .sort-arrow { opacity: 1; color: var(--cyan); }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tr:hover td { background: var(--cyan-dim); }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── Status badges ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .badge-bodega { background: var(--blue-dim); color: var(--blue); }
+  .badge-bodega .badge-dot { background: var(--blue); }
+  .badge-despachado { background: var(--amber-dim); color: var(--amber); }
+  .badge-despachado .badge-dot { background: var(--amber); }
+  .badge-transito { background: var(--purple-dim); color: var(--purple); }
+  .badge-transito .badge-dot { background: var(--purple); }
+  .badge-entregado { background: var(--cyan-dim); color: var(--cyan); }
+  .badge-entregado .badge-dot { background: var(--cyan); }
+  .badge-devuelto { background: var(--red-dim); color: var(--red); }
+  .badge-devuelto .badge-dot { background: var(--red); }
+
+  .badge-pagado { background: var(--cyan-dim); color: var(--cyan); }
+  .badge-pendiente { background: var(--amber-dim); color: var(--amber); }
+
+  /* ── WhatsApp ── */
+  .mono { font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; }
+  .wa-cell { display: flex; flex-direction: column; gap: 4px; }
+  .btn-wa {
+    background: #25D366;
+    color: #fff;
+    border: none;
+    border-radius: var(--r);
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-wa:hover { background: #20bd5a; transform: translateY(-1px); }
+  .btn-wa:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .wa-log {
+    font-size: 10px;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .tpl-select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    padding: 6px 8px;
+    font-size: 11px;
+    max-width: 150px;
+    outline: none;
+    cursor: pointer;
+  }
+  .tpl-select:focus { border-color: var(--cyan); }
+
+  /* ── View Toggle ── */
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 3px;
+  }
+  .view-btn {
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    padding: 6px 14px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .view-btn:hover { color: var(--text); }
+  .view-btn.active {
+    background: var(--cyan);
+    color: var(--navy);
+  }
+
+  /* ── Consolidados View ── */
+  .consolidados-wrap {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .consolidados-list {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+  }
+  .cons-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .cons-item:last-child { border-bottom: none; }
+  .cons-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .cons-header:hover { background: var(--surface2); }
+  .cons-arrow {
+    font-size: 10px;
+    color: var(--text3);
+    transition: transform .2s;
+    width: 16px;
+  }
+  .cons-item.open .cons-arrow { transform: rotate(90deg); }
+  .cons-id {
+    font-family: 'Consolas', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 100px;
+  }
+  .cons-fecha {
+    font-size: 12px;
+    color: var(--text3);
+    min-width: 90px;
+  }
+  .cons-estado {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .cons-estado.bodega { background: var(--cyan-dim); color: var(--cyan); }
+  .cons-estado.miami { background: var(--blue-dim); color: var(--blue); }
+  .cons-estado.transito { background: var(--purple-dim); color: var(--purple); }
+  .cons-estado.aeropuerto { background: var(--amber-dim); color: var(--amber); }
+  .cons-stats {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    justify-content: flex-start;
+    margin-left: 20px;
+  }
+  .cons-stat {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .cons-stat.guias { background: var(--surface2); color: var(--text2); }
+  .cons-stat.pagadas { background: var(--cyan-dim); color: var(--cyan); }
+  .cons-stat.despachadas { background: var(--lime-dim); color: var(--lime); }
+  .cons-stat.sinpago { background: var(--amber-dim); color: var(--amber); }
+  .cons-tracking {
+    display: flex;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--text3);
+    margin-left: auto;
+  }
+  .cons-tracking span { display: flex; align-items: center; gap: 4px; }
+  .cons-tracking .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+  }
+  
+  /* ── Consolidado Body (guías) ── */
+  .cons-body {
+    display: none;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  .cons-item.open .cons-body { display: block; }
+  .cons-guias-header {
+    display: grid;
+    grid-template-columns: 140px 1fr 120px 80px 100px 150px 120px;
+    gap: 12px;
+    padding: 10px 20px;
+    background: var(--surface2);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .cons-guia-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 120px 80px 100px 150px 120px;
+    gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    font-size: 12px;
+  }
+  .cons-guia-row:last-child { border-bottom: none; }
+  .cons-guia-row:hover { background: rgba(0,201,177,.05); }
+  .guia-num {
+    font-family: 'Consolas', monospace;
+    font-weight: 600;
+    color: var(--cyan);
+  }
+
+  /* ── Action button ── */
+  .btn-action {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 6px 12px;
+    border-radius: var(--r);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-action:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: var(--cyan-dim);
+  }
+
+  /* ── Pagination ── */
+  .pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .page-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 8px 14px;
+    border-radius: var(--r);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .page-btn.active { background: var(--cyan); color: var(--navy); border-color: var(--cyan); }
+  .page-info { font-size: 12px; color: var(--text3); margin: 0 12px; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-title { font-size: 16px; color: var(--text); margin-bottom: 8px; }
+  .empty-text { font-size: 13px; color: var(--text3); }
+
+  /* ── Loading ── */
+  .loading {
+    display: none;
+    padding: 40px;
+    text-align: center;
+  }
+  .loading.show { display: block; }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text2); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(13,17,23,.85);
+    z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    width: 90%; max-width: 700px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-shadow: 0 16px 64px rgba(0,0,0,.5);
+    transform: translateY(20px);
+    transition: transform .25s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 24px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .modal-close {
+    margin-left: auto;
+    background: none; border: none;
+    color: var(--text3);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color .2s;
+  }
+  .modal-close:hover { color: var(--red); }
+  .modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .detail-section {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px;
+  }
+  .detail-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .detail-section-title::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--cyan); border-radius: 50%;
+  }
+  .detail-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { color: var(--text3); }
+  .detail-value { color: var(--text); font-weight: 500; text-align: right; }
+  .detail-full {
+    grid-column: 1 / -1;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r-lg);
+    padding: 12px 24px;
+    font-size: 13px;
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    z-index: 999;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s, bottom .25s;
+  }
+  .toast.show { opacity: 1; bottom: 32px; }
+  .toast.ok { border-color: var(--cyan); color: var(--cyan); }
+  .toast.err { border-color: var(--red); color: var(--red); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .topbar { margin-left: 0; }
+    .main { margin-left: 0; padding: 16px; }
+    .search-hero { padding: 20px; }
+    .search-row { flex-direction: column; }
+    .filters-panel.open { grid-template-columns: 1fr 1fr; }
+    .results-header { flex-direction: column; align-items: stretch; }
+    .results-actions { margin-left: 0; justify-content: stretch; }
+    .results-actions .btn { flex: 1; justify-content: center; }
+  }
+  @media (max-width: 480px) {
+    .filters-panel.open { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
-<div class="sidebar" id="wms-sidebar"></div>
-    <div class="main">
-  <div class="topbar">
-    <div><div class="topbar-title">Buscar Guía</div><div class="topbar-sub">Consulta el estado completo de una guía</div></div>
-    <div class="topbar-live"><div class="live-dot"></div>CONECTADO</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-logo"><span>ZB</span> — Buscar Guías</div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-stats">
+    <span>Última búsqueda: <strong id="last-search">—</strong></span>
   </div>
-  <div class="content">
-    <div class="search-section">
-      <div class="search-label">Consultar guía</div>
-      <div class="search-box">
-        <div class="search-icon">⌕</div>
-        <input class="search-input" id="searchInput" placeholder="Número de guía, teléfono o código casillero..." onkeydown="if(event.key==='Enter') buscar()">
-        <button class="search-btn" onclick="buscar()">BUSCAR</button>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Search hero -->
+  <div class="search-hero">
+    <div class="search-title">Buscador Universal</div>
+    <div class="search-row">
+      <div class="search-input-wrap">
+        <span class="search-ico">⌕</span>
+        <input type="text" class="search-input" id="search-input" 
+          placeholder="Buscar por guía, tracking, nombre, teléfono, casillero, PO#..."
+          autocomplete="off">
       </div>
-      <div class="search-hint">Ejemplos: CLY0208110457 · 85519309 · CR-2093849</div>
+      <button class="btn btn-primary btn-icon" onclick="buscar()">
+        <span>Buscar</span>
+      </button>
     </div>
-    <div class="loading-state" id="loadingState"><div class="loader"></div><span>Consultando hojas...</span></div>
-    <div class="not-found" id="notFound"><span>✕</span><span id="notFoundMsg">Guía no encontrada.</span></div>
-    <div class="empty-state" id="emptyState"><div class="empty-icon">📋</div><div class="empty-text">Ingresa una guía para comenzar</div></div>
-    <div class="result-card" id="resultCard">
-      <div class="result-header">
-        <div><div class="result-guia" id="r-guia">—</div><div class="result-meta" id="r-meta">—</div></div>
-        <div class="status-pill pendiente" id="r-status-pill">— ESTADO —</div>
+    <div class="search-hint">
+      Busca en: <span>Guía</span> <span>WHR</span> <span>Tracking</span> <span>Remitente</span> 
+      <span>Destinatario</span> <span>Teléfono</span> <span>Casillero</span> <span>PO#</span> <span>Comentarios</span>
+    </div>
+  </div>
+
+  <!-- Filters toggle -->
+  <button class="filters-toggle" id="filters-toggle" onclick="toggleFilters()">
+    <span class="arrow">▼</span>
+    <span>Filtros avanzados</span>
+    <span class="filters-count" id="filters-count" style="display:none">0</span>
+  </button>
+
+  <!-- Filters panel -->
+  <div class="filters-panel" id="filters-panel">
+    <div class="filter-group">
+      <label>Agencia</label>
+      <select id="f-agencia">
+        <option value="">— Todas —</option>
+        <option value="CR">Costa Rica</option>
+        <option value="CO">Colombia</option>
+        <option value="PA">Panamá</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Estado Guía</label>
+      <select id="f-estado">
+        <option value="">— Todos —</option>
+        <option value="bodega">En bodega</option>
+        <option value="despachado">Despachado</option>
+        <option value="transito">En tránsito</option>
+        <option value="entregado">Entregado</option>
+        <option value="devuelto">Devuelto</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Estado Pago</label>
+      <select id="f-pago">
+        <option value="">— Todos —</option>
+        <option value="pagado">Pagado</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Transportadora</label>
+      <select id="f-transportadora">
+        <option value="">— Todas —</option>
+        <option value="TCC">TCC</option>
+        <option value="Coordinadora">Coordinadora</option>
+        <option value="Servientrega">Servientrega</option>
+        <option value="Envia">Envía</option>
+        <option value="Interrapidisimo">Interrapidísimo</option>
+        <option value="Correos CR">Correos CR</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Fecha desde</label>
+      <input type="date" id="f-fecha-desde">
+    </div>
+
+    <div class="filter-group">
+      <label>Fecha hasta</label>
+      <input type="date" id="f-fecha-hasta">
+    </div>
+
+    <div class="filter-group">
+      <label>Rango de peso (lb)</label>
+      <div class="filter-row">
+        <input type="number" id="f-peso-min" placeholder="Mín" step="0.1">
+        <input type="number" id="f-peso-max" placeholder="Máx" step="0.1">
       </div>
-      <div class="sections-grid">
-        <div class="section-card">
-          <div class="section-hdr"><span class="section-icon">👤</span><span class="section-title">Cliente</span></div>
-          <div class="section-body">
-            <div class="field-row"><span class="field-label">Nombre</span><span class="field-value" id="r-nombre">—</span></div>
-            <div class="field-row"><span class="field-label">Teléfono</span><span class="field-value mono" id="r-telefono">—</span></div>
-            <div class="field-row"><span class="field-label">Casillero</span><span class="field-value mono blue" id="r-casillero">—</span></div>
-            <div class="field-row"><span class="field-label">Dirección</span><span class="field-value" id="r-direccion">—</span></div>
-            <div class="field-row"><span class="field-label">Ciudad</span><span class="field-value" id="r-ciudad">—</span></div>
-            <div class="field-row"><span class="field-label">Actualizado</span><span class="field-value" id="r-actualizado">—</span></div>
-          </div>
-        </div>
-        <div class="section-card">
-          <div class="section-hdr"><span class="section-icon">💳</span><span class="section-title">Pago</span></div>
-          <div class="section-body">
-            <div class="field-row"><span class="field-label">Estado</span><span class="field-value" id="r-pago-estado">—</span></div>
-            <div class="field-row"><span class="field-label">Fuente</span><span class="field-value" id="r-pago-fuente">—</span></div>
-            <div class="field-row"><span class="field-label">Fecha</span><span class="field-value mono" id="r-pago-fecha">—</span></div>
-            <div class="field-row"><span class="field-label">Valor</span><span class="field-value" id="r-pago-valor">—</span></div>
-            <div class="field-row"><span class="field-label">Piezas</span><span class="field-value" id="r-piezas">—</span></div>
-            <div class="field-row"><span class="field-label">Peso</span><span class="field-value" id="r-peso">—</span></div>
-          </div>
-        </div>
-        <div class="section-card">
-          <div class="section-hdr"><span class="section-icon">✈️</span><span class="section-title">Consolidado · Vuelo</span></div>
-          <div class="section-body">
-            <div class="field-row"><span class="field-label">Consolidado</span><span class="field-value mono" id="r-consolidado">—</span></div>
-            <div class="field-row"><span class="field-label">Estado vuelo</span><span class="field-value yellow" id="r-vuelo-estado">—</span></div>
-            <div class="field-row"><span class="field-label">Ciudad</span><span class="field-value" id="r-ciudad2">—</span></div>
-            <div class="field-row"><span class="field-label">Contenido</span><span class="field-value" id="r-contenido">—</span></div>
-          </div>
-        </div>
-        <div class="section-card">
-          <div class="section-hdr"><span class="section-icon">🚚</span><span class="section-title">SmartQuick</span></div>
-          <div class="section-body">
-            <div class="field-row"><span class="field-label">ID</span><span class="field-value mono" id="r-sq-id">—</span></div>
-            <div class="field-row"><span class="field-label">Estado</span><span class="field-value" id="r-sq-estado">—</span></div>
-          </div>
-        </div>
-        <div class="section-card full">
-          <div class="section-hdr"><span class="section-icon">📍</span><span class="section-title">Timeline</span></div>
-          <div class="section-body"><div id="timeline"></div></div>
-        </div>
+    </div>
+
+    <div class="filter-group">
+      <label>&nbsp;</label>
+      <div class="filter-check">
+        <input type="checkbox" id="f-whr">
+        <label for="f-whr">Solo WHR (recibos bodega)</label>
       </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn btn-secondary btn-sm" onclick="limpiarFiltros()">Limpiar filtros</button>
+      <button class="btn btn-primary btn-sm" onclick="buscar()">Aplicar filtros</button>
+    </div>
+  </div>
+
+  <!-- Results header -->
+  <div class="results-header" id="results-header" style="display:none">
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-vista-agencia" onclick="cambiarVista('agencia')">
+        🏢 Agencia
+      </button>
+      <button class="view-btn" id="btn-vista-guias" onclick="cambiarVista('guias')">
+        📋 Guías
+      </button>
+      <button class="view-btn" id="btn-vista-consolidados" onclick="cambiarVista('consolidados')">
+        📦 Consolidados
+      </button>
+    </div>
+    <div class="results-count">
+      Mostrando <strong id="showing-count">0</strong> de <strong id="total-count">0</strong> resultados
+    </div>
+    <div class="results-actions">
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="recargarDatos()">
+        <span>🔄</span> Recargar
+      </button>
+      <button class="btn btn-secondary btn-icon btn-sm" onclick="exportarExcel()">
+        <span>📊</span> Exportar Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Vista Agencia (default) -->
+  <div class="table-wrap" id="agencia-wrap" style="display:none">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortBy('guia')">Guía <span class="sort-arrow">↕</span></th>
+            <th>Cliente</th>
+            <th>Casillero</th>
+            <th>Teléfono</th>
+            <th>Piezas</th>
+            <th>Estado</th>
+            <th>Ubicación</th>
+            <th>Actualizado</th>
+          </tr>
+        </thead>
+        <tbody id="agencia-body">
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination-agencia">
+      <button class="page-btn" id="prev-btn-agencia" onclick="cambiarPaginaAgencia(-1)">← Anterior</button>
+      <span class="page-info">Página <strong id="current-page-agencia">1</strong> de <strong id="total-pages-agencia">1</strong></span>
+      <button class="page-btn" id="next-btn-agencia" onclick="cambiarPaginaAgencia(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Results table (Vista Guías) -->
+  <div class="table-wrap" id="table-wrap" style="display:none">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortBy('guia')">Guía <span class="sort-arrow">↕</span></th>
+            <th class="sortable" onclick="sortBy('fecha')">Fecha <span class="sort-arrow">↕</span></th>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Pago</th>
+            <th>SmartQuick</th>
+            <th>Template</th>
+            <th>WhatsApp</th>
+          </tr>
+        </thead>
+        <tbody id="results-body">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination">
+      <button class="page-btn" id="prev-btn" onclick="cambiarPagina(-1)">← Anterior</button>
+      <span class="page-info">Página <strong id="current-page">1</strong> de <strong id="total-pages">1</strong></span>
+      <button class="page-btn" id="next-btn" onclick="cambiarPagina(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Vista Consolidados -->
+  <div class="consolidados-wrap" id="consolidados-wrap" style="display:none">
+    <div class="consolidados-list" id="consolidados-list">
+      <!-- Consolidados rendered here -->
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Buscando guías...</div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">📦</div>
+    <div class="empty-title">Busca una guía</div>
+    <div class="empty-text">Escribe en el buscador o usa los filtros avanzados para encontrar guías</div>
+  </div>
+
+  <!-- No results -->
+  <div class="empty-state" id="no-results" style="display:none">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">Sin resultados</div>
+    <div class="empty-text">No se encontraron guías con esos criterios. Intenta con otros filtros.</div>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span style="font-size:20px">📋</span>
+      <span class="modal-title">Detalle de Guía <span id="modal-guia"></span></span>
+      <button class="modal-close" onclick="cerrarModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Content loaded dynamically -->
     </div>
   </div>
 </div>
-<script>
-const WEBHOOK_URL = 'https://hub.zenderbox.com/webhook/cr-consolidados-data';
-let _cache = null;
 
-async function loadData() {
-  if (_cache) return _cache;
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 30000);
-  const res = await fetch(WEBHOOK_URL + '?t=' + Date.now(), { method:'GET', signal:ctrl.signal });
-  clearTimeout(t);
-  const text = await res.text();
-  if (!text||!text.trim()) throw new Error('Respuesta vacía');
-  const json = JSON.parse(text);
-  if (!json.ok) throw new Error('Error en workflow');
-  _cache = json;
-  return json;
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   CONFIG
+   ══════════════════════════════════════════════════════════ */
+const N8N = 'https://hub.zenderbox.com/webhook';
+const EP = {
+  consolidadosCR: `${N8N}/cr-consolidados-data`,
+  templatesCR: `${N8N}/cr-templates-twilio`,
+  enviarWACR: `${N8N}/cr-enviar-whatsapp`,
+};
+
+/* ══════════════════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════════════════ */
+let todasLasGuias = [];  // Cache de todas las guías
+let consolidadosData = []; // Datos agrupados por consolidado
+let resultados = [];     // Guías filtradas
+let paginaActual = 1;
+const porPagina = 25;
+let ordenActual = { campo: 'fecha', dir: 'desc' };
+let ultimaCarga = null;
+let vistaActual = 'agencia'; // 'agencia', 'guias' o 'consolidados'
+
+// WhatsApp
+let TEMPLATES = [];
+let waLog = JSON.parse(localStorage.getItem('wms_waLog') || '{}');
+let waOk = 0, waErr = 0;
+
+// Keywords para seleccionar template por defecto
+const KW_PAGO = ['pago', 'pendiente', 'cobro', 'deuda'];
+const KW_RASTREO = ['rastreo', 'encomienda', 'paquete', 'tracking', 'link'];
+
+/* ══════════════════════════════════════════════════════════
+   FILTERS
+   ══════════════════════════════════════════════════════════ */
+function toggleFilters() {
+  const panel = document.getElementById('filters-panel');
+  const toggle = document.getElementById('filters-toggle');
+  panel.classList.toggle('open');
+  toggle.classList.toggle('active');
 }
 
-function nQ(s){ return String(s||'').trim().toUpperCase(); }
-function hide(id){ document.getElementById(id)?.classList.remove('visible'); }
-function show(id){ document.getElementById(id)?.classList.add('visible'); }
-function set(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
+function contarFiltrosActivos() {
+  let count = 0;
+  if (document.getElementById('f-agencia').value) count++;
+  if (document.getElementById('f-estado').value) count++;
+  if (document.getElementById('f-pago').value) count++;
+  if (document.getElementById('f-transportadora').value) count++;
+  if (document.getElementById('f-fecha-desde').value) count++;
+  if (document.getElementById('f-fecha-hasta').value) count++;
+  if (document.getElementById('f-peso-min').value) count++;
+  if (document.getElementById('f-peso-max').value) count++;
+  if (document.getElementById('f-whr').checked) count++;
+  
+  const badge = document.getElementById('filters-count');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+  }
+  return count;
+}
 
-async function buscar() {
-  const q = nQ(document.getElementById('searchInput').value);
-  if (!q) return;
-  hide('emptyState'); hide('resultCard'); hide('notFound'); show('loadingState');
-  try {
-    const json = await loadData();
-    hide('loadingState');
-    let found = null;
-    for (const cons of (json.consolidados||[])) {
-      for (const g of (cons.guias||[])) {
-        if (nQ(g.guia)===q || nQ(g.tel)===q || nQ(g.casillero)===q) {
-          found = {...g, consolidado:cons.id, cons_estado:cons.estado_label};
-          break;
-        }
-      }
-      if (found) break;
+function limpiarFiltros() {
+  document.getElementById('f-agencia').value = '';
+  document.getElementById('f-estado').value = '';
+  document.getElementById('f-pago').value = '';
+  document.getElementById('f-transportadora').value = '';
+  document.getElementById('f-fecha-desde').value = '';
+  document.getElementById('f-fecha-hasta').value = '';
+  document.getElementById('f-peso-min').value = '';
+  document.getElementById('f-peso-max').value = '';
+  document.getElementById('f-whr').checked = false;
+  contarFiltrosActivos();
+  toast('Filtros limpiados');
+}
+
+function getFilters() {
+  return {
+    agencia: document.getElementById('f-agencia').value,
+    estado: document.getElementById('f-estado').value,
+    pago: document.getElementById('f-pago').value,
+    transportadora: document.getElementById('f-transportadora').value,
+    fechaDesde: document.getElementById('f-fecha-desde').value,
+    fechaHasta: document.getElementById('f-fecha-hasta').value,
+    pesoMin: document.getElementById('f-peso-min').value,
+    pesoMax: document.getElementById('f-peso-max').value,
+    soloWhr: document.getElementById('f-whr').checked,
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEARCH
+   ══════════════════════════════════════════════════════════ */
+async function cargarDatos() {
+  // Cargar datos del endpoint (solo CR por ahora)
+  const resp = await fetch(EP.consolidadosCR);
+  const data = await resp.json();
+  
+  if (!data.ok || !data.consolidados) {
+    throw new Error('Respuesta inválida del servidor');
+  }
+  
+  // Guardar consolidados ordenados por fecha (más reciente primero)
+  consolidadosData = data.consolidados.sort((a, b) => {
+    const fa = a.fecha || '';
+    const fb = b.fecha || '';
+    return fb.localeCompare(fa);
+  });
+  
+  // Aplanar guías de todos los consolidados
+  const guias = [];
+  for (const cons of data.consolidados) {
+    for (const g of cons.guias || []) {
+      guias.push({
+        // Datos de la guía
+        guia: g.guia || '',
+        fecha: g.fecha_guia || '',
+        fecha_consolidado: cons.fecha || '',  // Fecha del consolidado (YYYY-MM-DD)
+        nombre: g.nombre || '',
+        casillero: g.casillero || '',
+        telefono: g.tel || '',
+        ciudad: g.ciudad || '',
+        direccion: g.direccion || '',
+        contenido: g.contenido || '',
+        piezas: g.piezas || '',
+        peso: g.peso || '',
+        valor: g.valor || '',
+        pago: g.pago || 'SIN PAGO',
+        sq: g.sq || 'PENDIENTE',
+        sq_system_id: g.sq_system_id || '',
+        actualizado: g.actualizado || '',  // De hoja CASILLERO
+        ubicacion: g.ubicacion || '',      // De hoja CASILLERO
+        // Datos del consolidado
+        consolidado: cons.id || '',
+        estado_consolidado: cons.estado || '',
+        estado_label: cons.estado_label || '',
+        agencia: 'CR',
+      });
     }
-    if (!found) { document.getElementById('notFoundMsg').textContent=`"${q}" — No encontrado.`; show('notFound'); return; }
-    renderResult(found); show('resultCard');
-  } catch(err) {
-    hide('loadingState');
-    document.getElementById('notFoundMsg').textContent=`Error: ${err.message}`; show('notFound');
+  }
+  
+  todasLasGuias = guias;
+  ultimaCarga = new Date();
+  return data.resumen;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEW TOGGLE
+   ══════════════════════════════════════════════════════════ */
+function cambiarVista(vista) {
+  vistaActual = vista;
+  
+  // Update buttons
+  document.getElementById('btn-vista-agencia').classList.toggle('active', vista === 'agencia');
+  document.getElementById('btn-vista-guias').classList.toggle('active', vista === 'guias');
+  document.getElementById('btn-vista-consolidados').classList.toggle('active', vista === 'consolidados');
+  
+  // Show/hide views
+  document.getElementById('agencia-wrap').style.display = vista === 'agencia' ? 'block' : 'none';
+  document.getElementById('table-wrap').style.display = vista === 'guias' ? 'block' : 'none';
+  document.getElementById('consolidados-wrap').style.display = vista === 'consolidados' ? 'block' : 'none';
+  
+  // Render appropriate view
+  if (vista === 'agencia') {
+    renderAgencia();
+  } else if (vista === 'consolidados') {
+    renderConsolidados();
+  }
+  
+  // Update count text
+  if (vista === 'consolidados') {
+    document.getElementById('showing-count').textContent = consolidadosData.length;
+    document.getElementById('total-count').textContent = consolidadosData.length;
+  } else {
+    document.getElementById('showing-count').textContent = Math.min(porPagina, resultados.length);
+    document.getElementById('total-count').textContent = resultados.length;
   }
 }
 
-function renderResult(d) {
-  set('r-guia', d.guia||'—');
-  set('r-meta', `Consolidado ${d.consolidado||'—'} · ${d.cons_estado||''} · ${new Date().toLocaleTimeString('es-CR')}`);
-  const pill = document.getElementById('r-status-pill');
-  const sq = nQ(d.sq||'');
-  if (sq==='FINALIZADO'){pill.className='status-pill despachado';pill.textContent='✓ FINALIZADO';}
-  else if (sq==='ACEPTADO'){pill.className='status-pill despachado';pill.textContent='🚚 ACEPTADO';}
-  else if (sq&&sq!=='PENDIENTE'){pill.className='status-pill bodega';pill.textContent='🚚 '+d.sq;}
-  else if (nQ(d.cons_estado).includes('BODEGA')){pill.className='status-pill bodega';pill.textContent='📦 '+(d.cons_estado||'BODEGA');}
-  else if (nQ(d.cons_estado).includes('TRANSIT')||nQ(d.cons_estado).includes('AEROLINEA')){pill.className='status-pill transito';pill.textContent='✈️ '+(d.cons_estado||'EN TRÁNSITO');}
-  else{pill.className='status-pill pendiente';pill.textContent='⏳ PENDIENTE';}
-  set('r-nombre',d.nombre||'—'); set('r-telefono',d.tel||'—'); set('r-casillero',d.casillero||'—');
-  set('r-direccion',d.direccion||'—'); set('r-ciudad',d.ciudad||'—'); set('r-actualizado',d.actualizado||'—');
-  const pe=document.getElementById('r-pago-estado');
-  pe.className='field-value '+(d.pago==='PAGADO'?'green':'yellow');
-  set('r-pago-estado',d.pago||'—'); set('r-pago-fuente',d.sq_fuente||'—');
-  set('r-pago-fecha',d.sq_fecha||'—'); set('r-pago-valor',d.valor||'—');
-  set('r-piezas',d.piezas||'—'); set('r-peso',d.peso?d.peso+' kg':'—');
-  set('r-consolidado',d.consolidado||'—'); set('r-vuelo-estado',d.cons_estado||'—');
-  set('r-ciudad2',d.ciudad||'—'); set('r-contenido',d.contenido||'—');
-  set('r-sq-id',d.sq_system_id||'—'); set('r-sq-estado',d.sq||'—');
-  const cs=nQ(d.cons_estado||'');
-  const tl=[
-    {l:'Paquete recibido en Miami',d:'—',done:true},
-    {l:'Pago confirmado',d:d.sq_fecha||'—',done:d.pago==='PAGADO'},
-    {l:'Vuelo Miami → San José',d:'—',done:cs.includes('AEROLINEA')||cs.includes('AEROPUERTO')||cs.includes('BODEGA')},
-    {l:'Llegada aeropuerto SJO',d:'—',done:cs.includes('AEROPUERTO')||cs.includes('BODEGA')},
-    {l:'Entrada bodega destino',d:'—',done:cs.includes('BODEGA DESTINO')},
-    {l:'Despachado a SmartQuick',d:d.sq_fecha||'—',done:!!d.sq_system_id,active:sq==='NO ASIGNADO'},
-    {l:'Aceptado por courier',d:'—',done:sq==='ACEPTADO'||sq==='FINALIZADO',active:sq==='ACEPTADO'},
-    {l:'Entregado',d:'—',done:sq==='FINALIZADO',active:sq==='FINALIZADO'},
-  ];
-  document.getElementById('timeline').innerHTML=tl.map((item,i)=>{
-    const isLast=i===tl.length-1;
-    const dc=item.done?'done':item.active?'active':'';
-    const tc=(!item.done&&!item.active)?'muted':'';
-    const lc=item.done?'done':'';
-    return `<div class="tl-item"><div class="tl-left"><div class="tl-dot ${dc}"></div>${!isLast?`<div class="tl-line ${lc}"></div>`:''}</div><div><div class="tl-title ${tc}">${item.l}</div><div class="tl-date">${item.d}</div></div></div>`;
+/* ══════════════════════════════════════════════════════════
+   RENDER AGENCIA
+   ══════════════════════════════════════════════════════════ */
+let paginaAgencia = 1;
+
+function renderAgencia() {
+  const inicio = (paginaAgencia - 1) * porPagina;
+  const fin = inicio + porPagina;
+  const pagina = resultados.slice(inicio, fin);
+  
+  const tbody = document.getElementById('agencia-body');
+  tbody.innerHTML = pagina.map(g => `
+    <tr>
+      <td><strong>${esc(g.guia)}</strong></td>
+      <td>${esc(g.nombre)}</td>
+      <td class="mono">${esc(g.casillero)}</td>
+      <td class="mono">${esc(g.telefono)}</td>
+      <td>${g.piezas || '—'}</td>
+      <td>${renderBadgeEstadoCons(g.estado_label || g.estado_consolidado)}</td>
+      <td>${esc(g.ubicacion) || '—'}</td>
+      <td>${esc(g.actualizado) || '—'}</td>
+    </tr>
+  `).join('');
+  
+  // Update pagination
+  const totalPaginas = Math.ceil(resultados.length / porPagina);
+  document.getElementById('current-page-agencia').textContent = paginaAgencia;
+  document.getElementById('total-pages-agencia').textContent = totalPaginas;
+  document.getElementById('prev-btn-agencia').disabled = paginaAgencia <= 1;
+  document.getElementById('next-btn-agencia').disabled = paginaAgencia >= totalPaginas;
+}
+
+function cambiarPaginaAgencia(delta) {
+  const totalPaginas = Math.ceil(resultados.length / porPagina);
+  const nueva = paginaAgencia + delta;
+  if (nueva >= 1 && nueva <= totalPaginas) {
+    paginaAgencia = nueva;
+    renderAgencia();
+    document.querySelector('#agencia-wrap .table-scroll').scrollTop = 0;
+  }
+}
+
+function renderBadgeEstadoCons(estado) {
+  const e = (estado || '').toUpperCase();
+  if (e.includes('MIAMI') || e.includes('MIA')) {
+    return `<span class="badge badge-bodega"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  } else if (e.includes('TRANSITO') || e.includes('AEROLINEA')) {
+    return `<span class="badge badge-transito"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  } else if (e.includes('AEROPUERTO')) {
+    return `<span class="badge badge-despachado"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  } else if (e.includes('BODEGA DESTINO') || e.includes('DESTINO')) {
+    return `<span class="badge badge-entregado"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  }
+  return `<span class="badge badge-bodega"><span class="badge-dot"></span>${esc(estado) || 'SIN ESTADO'}</span>`;
+}
+
+function renderConsolidados() {
+  const container = document.getElementById('consolidados-list');
+  
+  container.innerHTML = consolidadosData.map(cons => {
+    const stats = cons.stats || {};
+    const estadoClass = cons.estado || 'bodega';
+    const estadoLabel = cons.estado_label || 'SIN ESTADO';
+    
+    // Render guías dentro del consolidado
+    const guiasHtml = (cons.guias || []).map(g => {
+      const guiaId = esc(g.guia);
+      const logEntry = waLog[g.guia];
+      const waLogHtml = logEntry 
+        ? `<div class="wa-log" id="walog-${guiaId}">✓ ${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
+        : `<div class="wa-log" id="walog-${guiaId}" style="display:none"></div>`;
+      
+      return `
+        <div class="cons-guia-row">
+          <div class="guia-num">${guiaId}</div>
+          <div>${esc(g.nombre || '—')}</div>
+          <div class="mono">${esc(g.tel || '—')}</div>
+          <div>${renderBadgePago(g.pago)}</div>
+          <div>${renderBadgeSQ(g.sq)}</div>
+          <div>${buildTemplateSelect(g.pago, g.sq_system_id, guiaId)}</div>
+          <div class="wa-cell">
+            <button class="btn-wa" id="wa-${guiaId}" onclick="enviarWA('${esc(g.tel)}', '${guiaId}', this)">💬 Enviar</button>
+            ${waLogHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    return `
+      <div class="cons-item" id="cons-${esc(cons.id)}">
+        <div class="cons-header" onclick="toggleConsolidado('${esc(cons.id)}')">
+          <span class="cons-arrow">▶</span>
+          <span class="cons-id">${esc(cons.id)}</span>
+          <span class="cons-fecha">${formatFecha(cons.fecha)}</span>
+          <span class="cons-estado ${estadoClass}">${esc(estadoLabel)}</span>
+          <div class="cons-stats">
+            <span class="cons-stat guias">📦 ${stats.total || 0} guías</span>
+            <span class="cons-stat pagadas">✓ ${stats.pagadas || 0} pagadas</span>
+            <span class="cons-stat despachadas">🚚 ${stats.despachadas || 0} despachadas</span>
+            ${stats.sinPago > 0 ? `<span class="cons-stat sinpago">⚠ ${stats.sinPago} sin pago</span>` : ''}
+          </div>
+          <div class="cons-tracking">
+            <span><span class="dot" style="background:${cons.miami ? 'var(--cyan)' : 'var(--text3)'}"></span> MIA</span>
+            <span><span class="dot" style="background:${cons.aeropuerto ? 'var(--cyan)' : 'var(--text3)'}"></span> SJO</span>
+            <span><span class="dot" style="background:${cons.bodega ? 'var(--cyan)' : 'var(--text3)'}"></span> BODEGA</span>
+          </div>
+        </div>
+        <div class="cons-body">
+          <div class="cons-guias-header">
+            <div>Guía</div>
+            <div>Cliente</div>
+            <div>Teléfono</div>
+            <div>Pago</div>
+            <div>SmartQuick</div>
+            <div>Template</div>
+            <div>WhatsApp</div>
+          </div>
+          ${guiasHtml}
+        </div>
+      </div>
+    `;
   }).join('');
 }
+
+function toggleConsolidado(consId) {
+  const item = document.getElementById('cons-' + consId);
+  if (item) {
+    item.classList.toggle('open');
+  }
+}
+
+function filtrarGuias(query, filters) {
+  const q = (query || '').toLowerCase().trim();
+  
+  return todasLasGuias.filter(g => {
+    // Búsqueda universal
+    if (q) {
+      const campos = [
+        g.guia, g.nombre, g.casillero, g.telefono, 
+        g.ciudad, g.direccion, g.contenido, g.consolidado
+      ].map(c => (c || '').toLowerCase());
+      
+      if (!campos.some(c => c.includes(q))) return false;
+    }
+    
+    // Filtro: Estado de pago
+    if (filters.pago) {
+      const pagado = g.pago === 'PAGADO';
+      if (filters.pago === 'pagado' && !pagado) return false;
+      if (filters.pago === 'pendiente' && pagado) return false;
+    }
+    
+    // Filtro: Estado de guía (despacho)
+    if (filters.estado) {
+      const sq = (g.sq || '').toLowerCase();
+      if (filters.estado === 'bodega' && sq !== 'pendiente') return false;
+      if (filters.estado === 'despachado' && sq === 'pendiente') return false;
+      if (filters.estado === 'entregado' && !sq.includes('entreg')) return false;
+    }
+    
+    // Filtro: Rango de peso
+    if (filters.pesoMin) {
+      const peso = parseFloat(g.peso) || 0;
+      if (peso < parseFloat(filters.pesoMin)) return false;
+    }
+    if (filters.pesoMax) {
+      const peso = parseFloat(g.peso) || 0;
+      if (peso > parseFloat(filters.pesoMax)) return false;
+    }
+    
+    // Filtro: Rango de fechas
+    if (filters.fechaDesde && g.fecha) {
+      const fechaGuia = new Date(g.fecha);
+      const desde = new Date(filters.fechaDesde);
+      if (fechaGuia < desde) return false;
+    }
+    if (filters.fechaHasta && g.fecha) {
+      const fechaGuia = new Date(g.fecha);
+      const hasta = new Date(filters.fechaHasta);
+      hasta.setHours(23, 59, 59); // Incluir todo el día
+      if (fechaGuia > hasta) return false;
+    }
+    
+    return true;
+  });
+}
+
+async function buscar() {
+  const query = document.getElementById('search-input').value.trim();
+  const filters = getFilters();
+  
+  contarFiltrosActivos();
+  
+  // Show loading, hide all views
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('no-results').style.display = 'none';
+  document.getElementById('agencia-wrap').style.display = 'none';
+  document.getElementById('table-wrap').style.display = 'none';
+  document.getElementById('consolidados-wrap').style.display = 'none';
+  document.getElementById('results-header').style.display = 'none';
+  
+  try {
+    // Cargar datos si no hay cache o es primera vez
+    if (todasLasGuias.length === 0) {
+      const resumen = await cargarDatos();
+      console.log('Datos cargados:', resumen);
+    }
+    
+    // Filtrar
+    resultados = filtrarGuias(query, filters);
+    paginaActual = 1;
+    paginaAgencia = 1;
+    
+    document.getElementById('loading').classList.remove('show');
+    
+    if (resultados.length === 0) {
+      document.getElementById('no-results').style.display = 'block';
+    } else {
+      // Renderizar según la vista activa
+      if (vistaActual === 'agencia') {
+        renderAgencia();
+        document.getElementById('agencia-wrap').style.display = 'block';
+      } else if (vistaActual === 'guias') {
+        renderResultados();
+        document.getElementById('table-wrap').style.display = 'block';
+      } else if (vistaActual === 'consolidados') {
+        renderConsolidados();
+        document.getElementById('consolidados-wrap').style.display = 'block';
+      }
+      document.getElementById('results-header').style.display = 'flex';
+      
+      // Update counts
+      if (vistaActual === 'consolidados') {
+        document.getElementById('showing-count').textContent = consolidadosData.length;
+        document.getElementById('total-count').textContent = consolidadosData.length;
+      } else {
+        document.getElementById('showing-count').textContent = Math.min(porPagina, resultados.length);
+        document.getElementById('total-count').textContent = resultados.length;
+      }
+    }
+    
+    // Update last search
+    document.getElementById('last-search').textContent = query || 'Filtros aplicados';
+    
+  } catch (err) {
+    console.error('Error buscando:', err);
+    document.getElementById('loading').classList.remove('show');
+    toast('Error al cargar datos: ' + err.message, 'err');
+  }
+}
+
+// Recargar datos desde el servidor
+async function recargarDatos() {
+  todasLasGuias = [];
+  await buscar();
+  toast('Datos actualizados ✓', 'ok');
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER
+   ══════════════════════════════════════════════════════════ */
+function renderResultados() {
+  const inicio = (paginaActual - 1) * porPagina;
+  const fin = inicio + porPagina;
+  const pagina = resultados.slice(inicio, fin);
+  
+  const tbody = document.getElementById('results-body');
+  tbody.innerHTML = pagina.map(g => {
+    const guiaId = esc(g.guia);
+    const logEntry = waLog[g.guia];
+    const waLogHtml = logEntry 
+      ? `<div class="wa-log" id="walog-${guiaId}">✓ ${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
+      : `<div class="wa-log" id="walog-${guiaId}" style="display:none"></div>`;
+    
+    return `
+    <tr>
+      <td><strong>${guiaId}</strong></td>
+      <td>${formatFecha(g.fecha_consolidado || g.fecha)}</td>
+      <td>${esc(g.nombre)}</td>
+      <td class="mono">${esc(g.telefono)}</td>
+      <td>${renderBadgePago(g.pago)}</td>
+      <td>${renderBadgeSQ(g.sq)}</td>
+      <td>${buildTemplateSelect(g.pago, g.sq_system_id, guiaId)}</td>
+      <td>
+        <div class="wa-cell">
+          <button class="btn-wa" id="wa-${guiaId}" onclick="enviarWA('${esc(g.telefono)}', '${guiaId}', this)">
+            💬 Enviar
+          </button>
+          ${waLogHtml}
+        </div>
+      </td>
+    </tr>
+  `}).join('');
+  
+  // Update counts
+  document.getElementById('showing-count').textContent = pagina.length;
+  document.getElementById('total-count').textContent = resultados.length;
+  
+  // Update pagination
+  const totalPaginas = Math.ceil(resultados.length / porPagina);
+  document.getElementById('current-page').textContent = paginaActual;
+  document.getElementById('total-pages').textContent = totalPaginas;
+  document.getElementById('prev-btn').disabled = paginaActual <= 1;
+  document.getElementById('next-btn').disabled = paginaActual >= totalPaginas;
+}
+
+function renderBadgeSQ(sq) {
+  const estado = (sq || '').toUpperCase();
+  if (estado === 'PENDIENTE' || estado === '') {
+    return '<span class="badge badge-bodega"><span class="badge-dot"></span>Pendiente</span>';
+  } else if (estado.includes('ENTREG') || estado === 'FINALIZADO') {
+    return '<span class="badge badge-entregado"><span class="badge-dot"></span>Entregado</span>';
+  } else if (estado.includes('ACEPTADO')) {
+    return '<span class="badge badge-transito"><span class="badge-dot"></span>Aceptado</span>';
+  } else if (estado.includes('NO ASIGNADO') || estado.includes('DESPACH')) {
+    return '<span class="badge badge-despachado"><span class="badge-dot"></span>Despachado</span>';
+  }
+  return `<span class="badge badge-bodega"><span class="badge-dot"></span>${esc(estado) || 'Pendiente'}</span>`;
+}
+
+function renderBadgeEstado(estado) {
+  const estados = {
+    bodega: { label: 'En bodega', class: 'bodega' },
+    despachado: { label: 'Despachado', class: 'despachado' },
+    transito: { label: 'En tránsito', class: 'transito' },
+    entregado: { label: 'Entregado', class: 'entregado' },
+    devuelto: { label: 'Devuelto', class: 'devuelto' },
+  };
+  const e = estados[estado?.toLowerCase()] || estados.bodega;
+  return `<span class="badge badge-${e.class}"><span class="badge-dot"></span>${e.label}</span>`;
+}
+
+function renderBadgePago(pago) {
+  const pagado = pago?.toLowerCase() === 'pagado' || pago?.toLowerCase() === 'si' || pago === true;
+  return pagado 
+    ? '<span class="badge badge-pagado">Pagado</span>'
+    : '<span class="badge badge-pendiente">Pendiente</span>';
+}
+
+/* ══════════════════════════════════════════════════════════
+   PAGINATION & SORT
+   ══════════════════════════════════════════════════════════ */
+function cambiarPagina(delta) {
+  const totalPaginas = Math.ceil(resultados.length / porPagina);
+  const nueva = paginaActual + delta;
+  if (nueva >= 1 && nueva <= totalPaginas) {
+    paginaActual = nueva;
+    renderResultados();
+    document.querySelector('.table-scroll').scrollTop = 0;
+  }
+}
+
+function sortBy(campo) {
+  if (ordenActual.campo === campo) {
+    ordenActual.dir = ordenActual.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    ordenActual.campo = campo;
+    ordenActual.dir = 'asc';
+  }
+  
+  resultados.sort((a, b) => {
+    let va = a[campo] || a[campo.charAt(0).toUpperCase() + campo.slice(1)] || '';
+    let vb = b[campo] || b[campo.charAt(0).toUpperCase() + campo.slice(1)] || '';
+    
+    if (campo === 'peso') {
+      va = parseFloat(va) || 0;
+      vb = parseFloat(vb) || 0;
+    } else if (campo === 'fecha') {
+      va = new Date(va).getTime() || 0;
+      vb = new Date(vb).getTime() || 0;
+    }
+    
+    if (va < vb) return ordenActual.dir === 'asc' ? -1 : 1;
+    if (va > vb) return ordenActual.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  paginaActual = 1;
+  renderResultados();
+  
+  // Update sort indicators
+  document.querySelectorAll('th.sortable').forEach(th => th.classList.remove('sorted'));
+  event.target.closest('th').classList.add('sorted');
+}
+
+/* ══════════════════════════════════════════════════════════
+   DETAIL MODAL
+   ══════════════════════════════════════════════════════════ */
+async function verDetalle(guia) {
+  document.getElementById('modal-guia').textContent = guia.guia || '';
+  
+  const body = document.getElementById('modal-body');
+  body.innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-section">
+        <div class="detail-section-title">Información General</div>
+        <div class="detail-row"><span class="detail-label">Guía</span><span class="detail-value">${esc(guia.guia)}</span></div>
+        <div class="detail-row"><span class="detail-label">Consolidado</span><span class="detail-value">${esc(guia.consolidado)}</span></div>
+        <div class="detail-row"><span class="detail-label">Fecha</span><span class="detail-value">${formatFecha(guia.fecha)}</span></div>
+        <div class="detail-row"><span class="detail-label">Agencia</span><span class="detail-value">${esc(guia.agencia)}</span></div>
+        <div class="detail-row"><span class="detail-label">Estado Consolidado</span><span class="detail-value">${esc(guia.estado_label || guia.estado_consolidado)}</span></div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-section-title">Cliente</div>
+        <div class="detail-row"><span class="detail-label">Nombre</span><span class="detail-value">${esc(guia.nombre)}</span></div>
+        <div class="detail-row"><span class="detail-label">Casillero</span><span class="detail-value">${esc(guia.casillero)}</span></div>
+        <div class="detail-row"><span class="detail-label">Teléfono</span><span class="detail-value">${esc(guia.telefono)}</span></div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-section-title">Destino</div>
+        <div class="detail-row"><span class="detail-label">Ciudad</span><span class="detail-value">${esc(guia.ciudad)}</span></div>
+        <div class="detail-row"><span class="detail-label">Dirección</span><span class="detail-value">${esc(guia.direccion)}</span></div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-section-title">Envío</div>
+        <div class="detail-row"><span class="detail-label">Contenido</span><span class="detail-value">${esc(guia.contenido)}</span></div>
+        <div class="detail-row"><span class="detail-label">Piezas</span><span class="detail-value">${guia.piezas || '—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Peso</span><span class="detail-value">${guia.peso || '—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Valor</span><span class="detail-value">$${guia.valor || '—'}</span></div>
+      </div>
+      
+      <div class="detail-section">
+        <div class="detail-section-title">Estado</div>
+        <div class="detail-row"><span class="detail-label">Pago</span><span class="detail-value">${renderBadgePago(guia.pago)}</span></div>
+        <div class="detail-row"><span class="detail-label">Despacho</span><span class="detail-value">${renderBadgeSQ(guia.sq)}</span></div>
+        <div class="detail-row"><span class="detail-label">SmartQuick ID</span><span class="detail-value">${esc(guia.sq_system_id) || '—'}</span></div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ══════════════════════════════════════════════════════════
+   EXPORT
+   ══════════════════════════════════════════════════════════ */
+function exportarExcel() {
+  if (resultados.length === 0) {
+    toast('No hay resultados para exportar', 'err');
+    return;
+  }
+  
+  // Create CSV content
+  const headers = ['Guía', 'Consolidado', 'Fecha', 'Cliente', 'Casillero', 'Teléfono', 'Ciudad', 'Dirección', 'Contenido', 'Piezas', 'Peso', 'Valor', 'Pago', 'Despacho', 'SmartQuick ID'];
+  
+  const rows = resultados.map(g => [
+    g.guia || '',
+    g.consolidado || '',
+    g.fecha || '',
+    g.nombre || '',
+    g.casillero || '',
+    g.telefono || '',
+    g.ciudad || '',
+    g.direccion || '',
+    g.contenido || '',
+    g.piezas || '',
+    g.peso || '',
+    g.valor || '',
+    g.pago || '',
+    g.sq || '',
+    g.sq_system_id || '',
+  ]);
+  
+  const csvContent = [headers, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  
+  // Add BOM for Excel UTF-8 compatibility
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+  
+  // Download
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  const fecha = new Date().toISOString().split('T')[0];
+  link.href = url;
+  link.download = `guias_${fecha}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  toast(`Exportados ${resultados.length} registros ✓`, 'ok');
+}
+
+/* ══════════════════════════════════════════════════════════
+   WHATSAPP
+   ══════════════════════════════════════════════════════════ */
+async function cargarTemplates() {
+  try {
+    const res = await fetch(EP.templatesCR + '?t=' + Date.now());
+    const json = await res.json();
+    TEMPLATES = json.templates || [];
+    console.log('Templates cargados:', TEMPLATES.length);
+  } catch(e) {
+    console.error('Error cargando templates:', e);
+    TEMPLATES = [];
+  }
+}
+
+function getDefaultSid(pago, sqId) {
+  const nl = (t) => (t.nombre || '').toLowerCase();
+  // Si tiene SmartQuick ID, usar template de rastreo
+  if (sqId) {
+    const t = TEMPLATES.find(t => KW_RASTREO.some(k => nl(t).includes(k)));
+    if (t) return t.sid;
+  }
+  // Si no ha pagado, usar template de pago
+  if (pago === 'SIN PAGO') {
+    const t = TEMPLATES.find(t => KW_PAGO.some(k => nl(t).includes(k)));
+    if (t) return t.sid;
+  }
+  return TEMPLATES[0]?.sid || '';
+}
+
+function buildTemplateSelect(pago, sqId, guia) {
+  if (!TEMPLATES.length) {
+    return '<span style="color:var(--text3);font-size:10px">Cargando...</span>';
+  }
+  const defaultSid = getDefaultSid(pago, sqId);
+  const options = TEMPLATES.map(t =>
+    `<option value="${t.sid}" ${t.sid === defaultSid ? 'selected' : ''}>${esc(t.nombre)}</option>`
+  ).join('');
+  return `<select class="tpl-select" id="tpl-${guia}">${options}</select>`;
+}
+
+async function enviarWA(tel, guia, btn) {
+  const sel = document.getElementById('tpl-' + guia);
+  const sid = sel ? sel.value : '';
+  if (!sid) { 
+    toast('Selecciona un template primero', 'err'); 
+    return; 
+  }
+  if (!tel) {
+    toast('No hay teléfono para esta guía', 'err');
+    return;
+  }
+  
+  const opt = sel?.options[sel.selectedIndex];
+  const nombre = opt?.text || sid;
+  
+  btn.disabled = true;
+  btn.innerHTML = '⏳';
+  
+  try {
+    const url = `${EP.enviarWACR}?tel=${encodeURIComponent(tel)}&guia=${encodeURIComponent(guia)}&sid=${encodeURIComponent(sid)}&nombre=${encodeURIComponent(nombre)}`;
+    const res = await fetch(url);
+    const json = await res.json().catch(() => ({}));
+    
+    if (json.ok === false || !res.ok) {
+      throw new Error(json.message || 'Error al enviar');
+    }
+    
+    // Éxito
+    const hora = new Date().toLocaleTimeString('es-CR', { 
+      timeZone: 'America/Costa_Rica', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    
+    waLog[guia] = { nombre, hora };
+    localStorage.setItem('wms_waLog', JSON.stringify(waLog));
+    
+    btn.innerHTML = '✅ Enviado';
+    btn.style.background = 'var(--cyan-dim)';
+    btn.style.color = 'var(--cyan)';
+    
+    const logBadge = document.getElementById('walog-' + guia);
+    if (logBadge) {
+      logBadge.innerHTML = '✓ ' + esc(nombre) + ' · ' + hora;
+      logBadge.style.display = 'block';
+    }
+    
+    waOk++;
+    toast(`WhatsApp enviado a ${tel} ✓`, 'ok');
+    
+  } catch(e) {
+    console.error('Error enviando WA:', e);
+    btn.innerHTML = '❌ Error';
+    btn.style.background = 'var(--red-dim)';
+    btn.style.color = 'var(--red)';
+    btn.disabled = false;
+    waErr++;
+    toast('Error: ' + e.message, 'err');
+    
+    setTimeout(() => {
+      btn.innerHTML = '💬 Enviar';
+      btn.style.background = '#25D366';
+      btn.style.color = '#fff';
+    }, 3000);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   UTILS
+   ══════════════════════════════════════════════════════════ */
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatFecha(fecha) {
+  if (!fecha) return '—';
+  try {
+    // Si ya viene en formato YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [y, m, d] = fecha.split('-');
+      const meses = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      return `${parseInt(d)} ${meses[parseInt(m)]} ${y}`;
+    }
+    const d = new Date(fecha);
+    if (isNaN(d.getTime())) return fecha;
+    return d.toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch {
+    return fecha;
+  }
+}
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════ */
+document.getElementById('search-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') buscar();
+});
+
+// Listen for filter changes
+['f-agencia', 'f-estado', 'f-pago', 'f-transportadora', 'f-fecha-desde', 'f-fecha-hasta', 'f-peso-min', 'f-peso-max'].forEach(id => {
+  document.getElementById(id).addEventListener('change', contarFiltrosActivos);
+});
+document.getElementById('f-whr').addEventListener('change', contarFiltrosActivos);
+
+// Close modal on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') cerrarModal();
+});
+
+// Cargar templates y datos al inicio
+async function init() {
+  await cargarTemplates();
+  await buscar();
+}
+init();
 </script>
-    <script src="sidebar.js"></script>
+<script src="sidebar.js"></script>
 </body>
 </html>
