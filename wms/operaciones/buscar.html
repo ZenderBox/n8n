@@ -813,7 +813,10 @@
   <!-- Results header -->
   <div class="results-header" id="results-header" style="display:none">
     <div class="view-toggle">
-      <button class="view-btn active" id="btn-vista-guias" onclick="cambiarVista('guias')">
+      <button class="view-btn active" id="btn-vista-agencia" onclick="cambiarVista('agencia')">
+        🏢 Agencia
+      </button>
+      <button class="view-btn" id="btn-vista-guias" onclick="cambiarVista('guias')">
         📋 Guías
       </button>
       <button class="view-btn" id="btn-vista-consolidados" onclick="cambiarVista('consolidados')">
@@ -833,7 +836,34 @@
     </div>
   </div>
 
-  <!-- Results table -->
+  <!-- Vista Agencia (default) -->
+  <div class="table-wrap" id="agencia-wrap" style="display:none">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortBy('guia')">Guía <span class="sort-arrow">↕</span></th>
+            <th>Cliente</th>
+            <th>Casillero</th>
+            <th>Teléfono</th>
+            <th>Piezas</th>
+            <th>Estado</th>
+            <th>Ubicación</th>
+            <th>Actualizado</th>
+          </tr>
+        </thead>
+        <tbody id="agencia-body">
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination-agencia">
+      <button class="page-btn" id="prev-btn-agencia" onclick="cambiarPaginaAgencia(-1)">← Anterior</button>
+      <span class="page-info">Página <strong id="current-page-agencia">1</strong> de <strong id="total-pages-agencia">1</strong></span>
+      <button class="page-btn" id="next-btn-agencia" onclick="cambiarPaginaAgencia(1)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- Results table (Vista Guías) -->
   <div class="table-wrap" id="table-wrap" style="display:none">
     <div class="table-scroll">
       <table>
@@ -929,7 +959,7 @@ let paginaActual = 1;
 const porPagina = 25;
 let ordenActual = { campo: 'fecha', dir: 'desc' };
 let ultimaCarga = null;
-let vistaActual = 'guias'; // 'guias' o 'consolidados'
+let vistaActual = 'agencia'; // 'agencia', 'guias' o 'consolidados'
 
 // WhatsApp
 let TEMPLATES = [];
@@ -1040,6 +1070,8 @@ async function cargarDatos() {
         pago: g.pago || 'SIN PAGO',
         sq: g.sq || 'PENDIENTE',
         sq_system_id: g.sq_system_id || '',
+        actualizado: g.actualizado || '',  // De hoja CASILLERO
+        ubicacion: g.ubicacion || '',      // De hoja CASILLERO
         // Datos del consolidado
         consolidado: cons.id || '',
         estado_consolidado: cons.estado || '',
@@ -1061,26 +1093,86 @@ function cambiarVista(vista) {
   vistaActual = vista;
   
   // Update buttons
+  document.getElementById('btn-vista-agencia').classList.toggle('active', vista === 'agencia');
   document.getElementById('btn-vista-guias').classList.toggle('active', vista === 'guias');
   document.getElementById('btn-vista-consolidados').classList.toggle('active', vista === 'consolidados');
   
   // Show/hide views
+  document.getElementById('agencia-wrap').style.display = vista === 'agencia' ? 'block' : 'none';
   document.getElementById('table-wrap').style.display = vista === 'guias' ? 'block' : 'none';
   document.getElementById('consolidados-wrap').style.display = vista === 'consolidados' ? 'block' : 'none';
   
   // Render appropriate view
-  if (vista === 'consolidados') {
+  if (vista === 'agencia') {
+    renderAgencia();
+  } else if (vista === 'consolidados') {
     renderConsolidados();
   }
   
   // Update count text
-  if (vista === 'guias') {
-    document.getElementById('showing-count').textContent = Math.min(porPagina, resultados.length);
-    document.getElementById('total-count').textContent = resultados.length;
-  } else {
+  if (vista === 'consolidados') {
     document.getElementById('showing-count').textContent = consolidadosData.length;
     document.getElementById('total-count').textContent = consolidadosData.length;
+  } else {
+    document.getElementById('showing-count').textContent = Math.min(porPagina, resultados.length);
+    document.getElementById('total-count').textContent = resultados.length;
   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER AGENCIA
+   ══════════════════════════════════════════════════════════ */
+let paginaAgencia = 1;
+
+function renderAgencia() {
+  const inicio = (paginaAgencia - 1) * porPagina;
+  const fin = inicio + porPagina;
+  const pagina = resultados.slice(inicio, fin);
+  
+  const tbody = document.getElementById('agencia-body');
+  tbody.innerHTML = pagina.map(g => `
+    <tr>
+      <td><strong>${esc(g.guia)}</strong></td>
+      <td>${esc(g.nombre)}</td>
+      <td class="mono">${esc(g.casillero)}</td>
+      <td class="mono">${esc(g.telefono)}</td>
+      <td>${g.piezas || '—'}</td>
+      <td>${renderBadgeEstadoCons(g.estado_label || g.estado_consolidado)}</td>
+      <td>${esc(g.ubicacion) || '—'}</td>
+      <td>${esc(g.actualizado) || '—'}</td>
+    </tr>
+  `).join('');
+  
+  // Update pagination
+  const totalPaginas = Math.ceil(resultados.length / porPagina);
+  document.getElementById('current-page-agencia').textContent = paginaAgencia;
+  document.getElementById('total-pages-agencia').textContent = totalPaginas;
+  document.getElementById('prev-btn-agencia').disabled = paginaAgencia <= 1;
+  document.getElementById('next-btn-agencia').disabled = paginaAgencia >= totalPaginas;
+}
+
+function cambiarPaginaAgencia(delta) {
+  const totalPaginas = Math.ceil(resultados.length / porPagina);
+  const nueva = paginaAgencia + delta;
+  if (nueva >= 1 && nueva <= totalPaginas) {
+    paginaAgencia = nueva;
+    renderAgencia();
+    document.querySelector('#agencia-wrap .table-scroll').scrollTop = 0;
+  }
+}
+
+function renderBadgeEstadoCons(estado) {
+  const e = (estado || '').toUpperCase();
+  if (e.includes('MIAMI') || e.includes('MIA')) {
+    return `<span class="badge badge-bodega"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  } else if (e.includes('TRANSITO') || e.includes('AEROLINEA')) {
+    return `<span class="badge badge-transito"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  } else if (e.includes('AEROPUERTO')) {
+    return `<span class="badge badge-despachado"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  } else if (e.includes('BODEGA DESTINO') || e.includes('DESTINO')) {
+    return `<span class="badge badge-entregado"><span class="badge-dot"></span>${esc(estado)}</span>`;
+  }
+  return `<span class="badge badge-bodega"><span class="badge-dot"></span>${esc(estado) || 'SIN ESTADO'}</span>`;
 }
 
 function renderConsolidados() {
@@ -1220,11 +1312,13 @@ async function buscar() {
   
   contarFiltrosActivos();
   
-  // Show loading
+  // Show loading, hide all views
   document.getElementById('loading').classList.add('show');
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('no-results').style.display = 'none';
+  document.getElementById('agencia-wrap').style.display = 'none';
   document.getElementById('table-wrap').style.display = 'none';
+  document.getElementById('consolidados-wrap').style.display = 'none';
   document.getElementById('results-header').style.display = 'none';
   
   try {
@@ -1237,15 +1331,34 @@ async function buscar() {
     // Filtrar
     resultados = filtrarGuias(query, filters);
     paginaActual = 1;
+    paginaAgencia = 1;
     
     document.getElementById('loading').classList.remove('show');
     
     if (resultados.length === 0) {
       document.getElementById('no-results').style.display = 'block';
     } else {
-      renderResultados();
-      document.getElementById('table-wrap').style.display = 'block';
+      // Renderizar según la vista activa
+      if (vistaActual === 'agencia') {
+        renderAgencia();
+        document.getElementById('agencia-wrap').style.display = 'block';
+      } else if (vistaActual === 'guias') {
+        renderResultados();
+        document.getElementById('table-wrap').style.display = 'block';
+      } else if (vistaActual === 'consolidados') {
+        renderConsolidados();
+        document.getElementById('consolidados-wrap').style.display = 'block';
+      }
       document.getElementById('results-header').style.display = 'flex';
+      
+      // Update counts
+      if (vistaActual === 'consolidados') {
+        document.getElementById('showing-count').textContent = consolidadosData.length;
+        document.getElementById('total-count').textContent = consolidadosData.length;
+      } else {
+        document.getElementById('showing-count').textContent = Math.min(porPagina, resultados.length);
+        document.getElementById('total-count').textContent = resultados.length;
+      }
     }
     
     // Update last search
