@@ -318,6 +318,44 @@
   .badge-pagado { background: var(--cyan-dim); color: var(--cyan); }
   .badge-pendiente { background: var(--amber-dim); color: var(--amber); }
 
+  /* ── WhatsApp ── */
+  .mono { font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; }
+  .wa-cell { display: flex; flex-direction: column; gap: 4px; }
+  .btn-wa {
+    background: #25D366;
+    color: #fff;
+    border: none;
+    border-radius: var(--r);
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-wa:hover { background: #20bd5a; transform: translateY(-1px); }
+  .btn-wa:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .wa-log {
+    font-size: 10px;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .tpl-select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    padding: 6px 8px;
+    font-size: 11px;
+    max-width: 150px;
+    outline: none;
+    cursor: pointer;
+  }
+  .tpl-select:focus { border-color: var(--cyan); }
+
   /* ── Action button ── */
   .btn-action {
     background: var(--surface2);
@@ -645,15 +683,13 @@
         <thead>
           <tr>
             <th class="sortable" onclick="sortBy('guia')">Guía <span class="sort-arrow">↕</span></th>
-            <th>Consolidado</th>
             <th class="sortable" onclick="sortBy('fecha')">Fecha <span class="sort-arrow">↕</span></th>
             <th>Cliente</th>
-            <th>Ciudad</th>
-            <th>Casillero</th>
-            <th class="sortable" onclick="sortBy('peso')">Peso <span class="sort-arrow">↕</span></th>
-            <th>Despacho</th>
+            <th>Teléfono</th>
             <th>Pago</th>
-            <th>Acción</th>
+            <th>SmartQuick</th>
+            <th>Template</th>
+            <th>WhatsApp</th>
           </tr>
         </thead>
         <tbody id="results-body">
@@ -715,6 +751,8 @@
 const N8N = 'https://zenderbox.app.n8n.cloud/webhook';
 const EP = {
   consolidadosCR: `${N8N}/cr-consolidados-data`,
+  templatesCR: `${N8N}/cr-templates-twilio`,
+  enviarWACR: `${N8N}/cr-enviar-whatsapp`,
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -726,6 +764,15 @@ let paginaActual = 1;
 const porPagina = 25;
 let ordenActual = { campo: 'fecha', dir: 'desc' };
 let ultimaCarga = null;
+
+// WhatsApp
+let TEMPLATES = [];
+let waLog = JSON.parse(localStorage.getItem('wms_waLog') || '{}');
+let waOk = 0, waErr = 0;
+
+// Keywords para seleccionar template por defecto
+const KW_PAGO = ['pago', 'pendiente', 'cobro', 'deuda'];
+const KW_RASTREO = ['rastreo', 'encomienda', 'paquete', 'tracking', 'link'];
 
 /* ══════════════════════════════════════════════════════════
    FILTERS
@@ -806,7 +853,8 @@ async function cargarDatos() {
       guias.push({
         // Datos de la guía
         guia: g.guia || '',
-        fecha: g.fecha_guia || cons.fecha || '',
+        fecha: g.fecha_guia || '',
+        fecha_consolidado: cons.fecha || '',  // Fecha del consolidado (YYYY-MM-DD)
         nombre: g.nombre || '',
         casillero: g.casillero || '',
         telefono: g.tel || '',
@@ -949,20 +997,32 @@ function renderResultados() {
   const pagina = resultados.slice(inicio, fin);
   
   const tbody = document.getElementById('results-body');
-  tbody.innerHTML = pagina.map(g => `
+  tbody.innerHTML = pagina.map(g => {
+    const guiaId = esc(g.guia);
+    const logEntry = waLog[g.guia];
+    const waLogHtml = logEntry 
+      ? `<div class="wa-log" id="walog-${guiaId}">✓ ${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
+      : `<div class="wa-log" id="walog-${guiaId}" style="display:none"></div>`;
+    
+    return `
     <tr>
-      <td><strong>${esc(g.guia)}</strong></td>
-      <td>${esc(g.consolidado)}</td>
-      <td>${formatFecha(g.fecha)}</td>
+      <td><strong>${guiaId}</strong></td>
+      <td>${formatFecha(g.fecha_consolidado || g.fecha)}</td>
       <td>${esc(g.nombre)}</td>
-      <td>${esc(g.ciudad)}</td>
-      <td>${esc(g.casillero)}</td>
-      <td>${g.peso || '—'}</td>
-      <td>${renderBadgeSQ(g.sq)}</td>
+      <td class="mono">${esc(g.telefono)}</td>
       <td>${renderBadgePago(g.pago)}</td>
-      <td><button class="btn-action" onclick='verDetalle(${JSON.stringify(g).replace(/'/g,"&#39;")})'>Ver detalle</button></td>
+      <td>${renderBadgeSQ(g.sq)}</td>
+      <td>${buildTemplateSelect(g.pago, g.sq_system_id, guiaId)}</td>
+      <td>
+        <div class="wa-cell">
+          <button class="btn-wa" id="wa-${guiaId}" onclick="enviarWA('${esc(g.telefono)}', '${guiaId}', this)">
+            💬 Enviar
+          </button>
+          ${waLogHtml}
+        </div>
+      </td>
     </tr>
-  `).join('');
+  `}).join('');
   
   // Update counts
   document.getElementById('showing-count').textContent = pagina.length;
@@ -977,15 +1037,17 @@ function renderResultados() {
 }
 
 function renderBadgeSQ(sq) {
-  const estado = (sq || '').toLowerCase();
-  if (estado === 'pendiente') {
-    return '<span class="badge badge-bodega"><span class="badge-dot"></span>En bodega</span>';
-  } else if (estado.includes('entreg')) {
+  const estado = (sq || '').toUpperCase();
+  if (estado === 'PENDIENTE' || estado === '') {
+    return '<span class="badge badge-bodega"><span class="badge-dot"></span>Pendiente</span>';
+  } else if (estado.includes('ENTREG') || estado === 'FINALIZADO') {
     return '<span class="badge badge-entregado"><span class="badge-dot"></span>Entregado</span>';
-  } else if (estado.includes('despach') || estado !== 'pendiente') {
+  } else if (estado.includes('ACEPTADO')) {
+    return '<span class="badge badge-transito"><span class="badge-dot"></span>Aceptado</span>';
+  } else if (estado.includes('NO ASIGNADO') || estado.includes('DESPACH')) {
     return '<span class="badge badge-despachado"><span class="badge-dot"></span>Despachado</span>';
   }
-  return '<span class="badge badge-bodega"><span class="badge-dot"></span>Pendiente</span>';
+  return `<span class="badge badge-bodega"><span class="badge-dot"></span>${esc(estado) || 'Pendiente'}</span>`;
 }
 
 function renderBadgeEstado(estado) {
@@ -1164,6 +1226,114 @@ function exportarExcel() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   WHATSAPP
+   ══════════════════════════════════════════════════════════ */
+async function cargarTemplates() {
+  try {
+    const res = await fetch(EP.templatesCR + '?t=' + Date.now());
+    const json = await res.json();
+    TEMPLATES = json.templates || [];
+    console.log('Templates cargados:', TEMPLATES.length);
+  } catch(e) {
+    console.error('Error cargando templates:', e);
+    TEMPLATES = [];
+  }
+}
+
+function getDefaultSid(pago, sqId) {
+  const nl = (t) => (t.nombre || '').toLowerCase();
+  // Si tiene SmartQuick ID, usar template de rastreo
+  if (sqId) {
+    const t = TEMPLATES.find(t => KW_RASTREO.some(k => nl(t).includes(k)));
+    if (t) return t.sid;
+  }
+  // Si no ha pagado, usar template de pago
+  if (pago === 'SIN PAGO') {
+    const t = TEMPLATES.find(t => KW_PAGO.some(k => nl(t).includes(k)));
+    if (t) return t.sid;
+  }
+  return TEMPLATES[0]?.sid || '';
+}
+
+function buildTemplateSelect(pago, sqId, guia) {
+  if (!TEMPLATES.length) {
+    return '<span style="color:var(--text3);font-size:10px">Cargando...</span>';
+  }
+  const defaultSid = getDefaultSid(pago, sqId);
+  const options = TEMPLATES.map(t =>
+    `<option value="${t.sid}" ${t.sid === defaultSid ? 'selected' : ''}>${esc(t.nombre)}</option>`
+  ).join('');
+  return `<select class="tpl-select" id="tpl-${guia}">${options}</select>`;
+}
+
+async function enviarWA(tel, guia, btn) {
+  const sel = document.getElementById('tpl-' + guia);
+  const sid = sel ? sel.value : '';
+  if (!sid) { 
+    toast('Selecciona un template primero', 'err'); 
+    return; 
+  }
+  if (!tel) {
+    toast('No hay teléfono para esta guía', 'err');
+    return;
+  }
+  
+  const opt = sel?.options[sel.selectedIndex];
+  const nombre = opt?.text || sid;
+  
+  btn.disabled = true;
+  btn.innerHTML = '⏳';
+  
+  try {
+    const url = `${EP.enviarWACR}?tel=${encodeURIComponent(tel)}&guia=${encodeURIComponent(guia)}&sid=${encodeURIComponent(sid)}&nombre=${encodeURIComponent(nombre)}`;
+    const res = await fetch(url);
+    const json = await res.json().catch(() => ({}));
+    
+    if (json.ok === false || !res.ok) {
+      throw new Error(json.message || 'Error al enviar');
+    }
+    
+    // Éxito
+    const hora = new Date().toLocaleTimeString('es-CR', { 
+      timeZone: 'America/Costa_Rica', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    
+    waLog[guia] = { nombre, hora };
+    localStorage.setItem('wms_waLog', JSON.stringify(waLog));
+    
+    btn.innerHTML = '✅ Enviado';
+    btn.style.background = 'var(--cyan-dim)';
+    btn.style.color = 'var(--cyan)';
+    
+    const logBadge = document.getElementById('walog-' + guia);
+    if (logBadge) {
+      logBadge.innerHTML = '✓ ' + esc(nombre) + ' · ' + hora;
+      logBadge.style.display = 'block';
+    }
+    
+    waOk++;
+    toast(`WhatsApp enviado a ${tel} ✓`, 'ok');
+    
+  } catch(e) {
+    console.error('Error enviando WA:', e);
+    btn.innerHTML = '❌ Error';
+    btn.style.background = 'var(--red-dim)';
+    btn.style.color = 'var(--red)';
+    btn.disabled = false;
+    waErr++;
+    toast('Error: ' + e.message, 'err');
+    
+    setTimeout(() => {
+      btn.innerHTML = '💬 Enviar';
+      btn.style.background = '#25D366';
+      btn.style.color = '#fff';
+    }, 3000);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    UTILS
    ══════════════════════════════════════════════════════════ */
 function esc(s) {
@@ -1174,7 +1344,14 @@ function esc(s) {
 function formatFecha(fecha) {
   if (!fecha) return '—';
   try {
+    // Si ya viene en formato YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [y, m, d] = fecha.split('-');
+      const meses = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      return `${parseInt(d)} ${meses[parseInt(m)]} ${y}`;
+    }
     const d = new Date(fecha);
+    if (isNaN(d.getTime())) return fecha;
     return d.toLocaleDateString('es-CR', { day: '2-digit', month: 'short', year: 'numeric' });
   } catch {
     return fecha;
@@ -1206,8 +1383,12 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') cerrarModal();
 });
 
-// Cargar datos automáticamente al inicio
-buscar();
+// Cargar templates y datos al inicio
+async function init() {
+  await cargarTemplates();
+  await buscar();
+}
+init();
 </script>
 <script src="../sidebar.js"></script>
 </body>
