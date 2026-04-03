@@ -64,7 +64,11 @@
       text-decoration: none;
     }
 
-    .logo-mark { width: 42px; height: 42px; }
+    /* SVG logo mark inline */
+    .logo-mark {
+      width: 42px;
+      height: 42px;
+    }
 
     .logo-text {
       font-family: 'Exo 2', sans-serif;
@@ -346,6 +350,7 @@
       border-top: 1px solid rgba(0,156,201,0.1);
     }
 
+    .info-item {}
     .info-label {
       font-size: 10px;
       font-weight: 600;
@@ -462,297 +467,13 @@
       #buscar-btn  { padding: 16px; }
       .card-body   { padding: 20px; }
     }
-
-    /* ── RATING CARD ── */
-    .rating-card {
-      background: rgba(12,40,71,0.7);
-      border: 1px solid rgba(204,211,42,0.2);
-      border-radius: 20px;
-      overflow: hidden;
-      margin-bottom: 16px;
-      backdrop-filter: blur(8px);
-      position: relative;
-    }
-
-    .rating-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(204,211,42,0.06) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .rating-top-bar {
-      height: 3px;
-      background: linear-gradient(90deg, #CCD32A 0%, #009CC9 100%);
-    }
-
-    .rating-body { padding: 28px 32px; position: relative; }
-
-    .rating-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(204,211,42,0.08);
-      border: 1px solid rgba(204,211,42,0.2);
-      color: var(--zb-lime);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 5px 14px;
-      border-radius: 100px;
-      margin-bottom: 16px;
-    }
-
-    .rating-title {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      letter-spacing: -0.5px;
-    }
-
-    .rating-sub {
-      color: var(--zb-muted);
-      font-size: 13px;
-      margin-bottom: 28px;
-      line-height: 1.5;
-    }
-
-    .rating-sub strong { color: var(--zb-lime); font-weight: 600; }
-
-    /* Categorías */
-    .rating-cats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .rating-cat {
-      background: rgba(8,31,58,0.6);
-      border: 1px solid rgba(0,156,201,0.12);
-      border-radius: 14px;
-      padding: 16px;
-      transition: border-color 0.2s;
-    }
-
-    .rating-cat.rated { border-color: rgba(204,211,42,0.3); }
-
-    .rating-cat-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--zb-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-    }
-
-    .rating-cat-label span { margin-right: 6px; }
-
-    .stars-row {
-      display: flex;
-      gap: 4px;
-    }
-
-    .star {
-      font-size: 24px;
-      cursor: pointer;
-      transition: transform 0.15s, filter 0.15s;
-      filter: grayscale(1) brightness(0.5);
-      user-select: none;
-      line-height: 1;
-    }
-
-    .star:hover, .star.active {
-      filter: grayscale(0) brightness(1);
-      transform: scale(1.2);
-    }
-
-    .star.active { animation: starPop 0.2s ease; }
-
-    @keyframes starPop {
-      0%   { transform: scale(1); }
-      50%  { transform: scale(1.4); }
-      100% { transform: scale(1.2); }
-    }
-
-    /* Promedio visual */
-    .rating-overall {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: rgba(8,31,58,0.6);
-      border: 1px solid rgba(0,156,201,0.15);
-      border-radius: 14px;
-      padding: 18px 20px;
-      margin-bottom: 20px;
-    }
-
-    .overall-stars { display: flex; gap: 3px; }
-    .overall-star  { font-size: 28px; filter: grayscale(1) brightness(0.4); transition: filter 0.3s; }
-    .overall-star.lit { filter: grayscale(0) brightness(1.1); }
-
-    .overall-text { flex: 1; }
-    .overall-num {
-      font-family: 'Exo 2', sans-serif;
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--zb-lime);
-      line-height: 1;
-    }
-    .overall-label { font-size: 12px; color: var(--zb-muted); margin-top: 2px; }
-
-    /* Comentarios */
-    #rating-comment-wrap {
-      display: none;
-      animation: fadeUp 0.3s ease both;
-      margin-bottom: 20px;
-    }
-
-    #rating-comment-wrap label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--zb-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-
-    #rating-comment {
-      width: 100%;
-      background: rgba(8,31,58,0.6);
-      border: 1px solid rgba(0,156,201,0.2);
-      border-radius: 12px;
-      padding: 14px 18px;
-      color: var(--zb-white);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      resize: vertical;
-      min-height: 90px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    #rating-comment:focus { border-color: var(--zb-cyan); }
-    #rating-comment::placeholder { color: #3a6080; }
-
-    /* Botón enviar */
-    #rating-submit {
-      width: 100%;
-      padding: 16px;
-      background: var(--zb-grad);
-      border: none;
-      border-radius: 12px;
-      color: var(--zb-navy);
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-      letter-spacing: 0.3px;
-    }
-
-    #rating-submit:hover  { opacity: 0.9; }
-    #rating-submit:active { transform: scale(0.99); }
-    #rating-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    /* Estado post-envío */
-    #rating-thanks { display: none; animation: fadeUp 0.4s ease both; }
-
-    .thanks-5star, .thanks-low {
-      border-radius: 16px;
-      padding: 28px;
-      text-align: center;
-    }
-
-    .thanks-5star {
-      background: linear-gradient(135deg, rgba(204,211,42,0.08) 0%, rgba(0,156,201,0.08) 100%);
-      border: 1px solid rgba(204,211,42,0.25);
-    }
-
-    .thanks-low {
-      background: rgba(0,156,201,0.06);
-      border: 1px solid rgba(0,156,201,0.15);
-    }
-
-    .thanks-emoji { font-size: 48px; margin-bottom: 12px; }
-
-    .thanks-title {
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 800;
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-
-    .thanks-msg {
-      color: var(--zb-muted);
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-
-    .thanks-msg strong { color: var(--zb-lime); }
-
-    .discount-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(204,211,42,0.1);
-      border: 1px dashed rgba(204,211,42,0.4);
-      border-radius: 12px;
-      padding: 14px 20px;
-      margin-bottom: 24px;
-      width: 100%;
-      justify-content: center;
-    }
-
-    .discount-code {
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 800;
-      font-size: 20px;
-      color: var(--zb-lime);
-      letter-spacing: 3px;
-    }
-
-    .discount-label { font-size: 12px; color: var(--zb-muted); margin-top: 2px; }
-
-    .btn-google {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 16px;
-      background: #fff;
-      border: none;
-      border-radius: 12px;
-      color: #1a1a1a;
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    .btn-google:hover  { opacity: 0.92; transform: scale(1.01); }
-    .btn-google svg    { width: 20px; height: 20px; flex-shrink: 0; }
-    .btn-google-sub    { font-size: 11px; color: #888; font-weight: 400; margin-top: 8px; }
-
-    @media (max-width: 600px) {
-      .rating-body  { padding: 20px; }
-      .rating-cats  { grid-template-columns: 1fr 1fr; }
-      .overall-num  { font-size: 26px; }
-    }
   </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
+    <!-- ZenderBox logo SVG inline (isotipo Z) -->
     <svg class="logo-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="zbgrad" x1="0" y1="0" x2="42" y2="42" gradientUnits="userSpaceOnUse">
@@ -768,14 +489,14 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="cr-badge" id="pais-badge">🌎 ZenderBox</div>
+    <div class="cr-badge">🇨🇷 Costa Rica</div>
   </div>
 </header>
 
 <section class="hero">
   <div class="hero-eyebrow">Rastreo en tiempo real</div>
   <h1>¿Dónde está<br>tu <span class="gradient-text">paquete</span>?</h1>
-  <p class="hero-sub" id="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega.</p>
+  <p class="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega en Costa Rica.</p>
 
   <div class="search-wrap">
     <input
@@ -865,100 +586,10 @@
     <div class="photos-grid" id="photos-grid"></div>
   </div>
 
-  <!-- RATING CARD -->
-  <div class="rating-card" id="rating-card">
-    <div class="rating-top-bar"></div>
-    <div class="rating-body">
-
-      <!-- Formulario -->
-      <div id="rating-form-wrap">
-        <div class="rating-eyebrow">⭐ Tu opinión importa</div>
-        <div class="rating-title">¿Cómo fue tu experiencia?</div>
-        <p class="rating-sub">
-          Tarda menos de 30 segundos y nos ayuda a mejorar.<br>
-          <strong>Los clientes que califican reciben un descuento en su próximo envío.</strong>
-        </p>
-
-        <!-- Categorías -->
-        <div class="rating-cats">
-          <div class="rating-cat" id="cat-velocidad">
-            <div class="rating-cat-label"><span>🚀</span> Velocidad</div>
-            <div class="stars-row" data-cat="velocidad">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-          <div class="rating-cat" id="cat-estado">
-            <div class="rating-cat-label"><span>📦</span> Estado del paquete</div>
-            <div class="stars-row" data-cat="estado">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-          <div class="rating-cat" id="cat-comunicacion">
-            <div class="rating-cat-label"><span>📱</span> Comunicación</div>
-            <div class="stars-row" data-cat="comunicacion">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-          <div class="rating-cat" id="cat-atencion">
-            <div class="rating-cat-label"><span>🤝</span> Atención al cliente</div>
-            <div class="stars-row" data-cat="atencion">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Promedio general -->
-        <div class="rating-overall" id="rating-overall" style="display:none">
-          <div class="overall-stars">
-            <span class="overall-star" data-pos="1">⭐</span>
-            <span class="overall-star" data-pos="2">⭐</span>
-            <span class="overall-star" data-pos="3">⭐</span>
-            <span class="overall-star" data-pos="4">⭐</span>
-            <span class="overall-star" data-pos="5">⭐</span>
-          </div>
-          <div class="overall-text">
-            <div class="overall-num" id="overall-num">—</div>
-            <div class="overall-label">Promedio de tu calificación</div>
-          </div>
-        </div>
-
-        <!-- Comentario -->
-        <div id="rating-comment-wrap">
-          <label for="rating-comment">¿Algo que quieras contarnos? (opcional)</label>
-          <textarea id="rating-comment" placeholder="Cuéntanos tu experiencia, sugerencias o lo que podemos mejorar…"></textarea>
-        </div>
-
-        <button id="rating-submit" onclick="enviarCalificacion()" disabled>
-          Enviar calificación →
-        </button>
-      </div>
-
-      <!-- Post-envío -->
-      <div id="rating-thanks"></div>
-
-    </div>
-  </div>
-
 </div>
 
 <footer>
-  © 2026 <span>ZenderBox</span> · <span id="footer-pais">Costa Rica & Colombia</span> · Todos los derechos reservados
+  © 2026 <span>ZenderBox</span> Costa Rica · Todos los derechos reservados
 </footer>
 
 <script>
@@ -1004,18 +635,9 @@
 
       document.getElementById('loading').style.display = 'none';
 
-      if (!data || data.error) {
-        if (data?.error === 'Guia no encontrada') {
-          showError('Tu paquete está en tránsito y aún no ha sido asignado para entrega local. Intenta más tarde o escríbenos por WhatsApp.');
-        } else {
-          showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
-        }
+      if (!data || data.error || !data.estado) {
+        showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
         return;
-      }
-
-      // Si tiene error de estado vacío igual mostramos lo que tengamos
-      if (!data.estado) {
-        data.estado = 'En proceso';
       }
 
       document.getElementById('res-guia').textContent = guia;
@@ -1024,9 +646,6 @@
       document.getElementById('res-ciudad').textContent = data.ciudad || '—';
       document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
       document.getElementById('res-conductor').textContent = data.conductor?.trim() || 'Por asignar';
-
-      // Aplicar país dinámicamente desde el webhook
-      aplicarPais(data.pais);
 
       const badge = document.getElementById('res-badge');
       badge.className = `estado-badge ${getEstadoClass(data.estado)}`;
@@ -1082,7 +701,6 @@
       }
 
       document.getElementById('resultado').style.display = 'block';
-      initRating();
 
     } catch(e) {
       document.getElementById('loading').style.display = 'none';
@@ -1097,197 +715,7 @@
     document.getElementById('error-box').style.display = 'block';
   }
 
-  // ── RATING SYSTEM ──
-  const RATING_WEBHOOK    = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-rating';
-  const DESCUENTO_CODIGO  = 'GRACIAS10';
-
-  // Config por país — se puebla desde la respuesta del webhook
-  const PAISES = {
-    CR: { bandera: '🇨🇷', nombre: 'Costa Rica',  google_reviews_url: null },
-    CO: { bandera: '🇨🇴', nombre: 'Colombia',    google_reviews_url: '#' }, // ← reemplazar con link real de Google Reviews
-    PA: { bandera: '🇵🇦', nombre: 'Panamá',      google_reviews_url: null },
-    EC: { bandera: '🇪🇨', nombre: 'Ecuador',     google_reviews_url: null },
-  };
-
-  let currentPais    = null;   // objeto del país activo
-  const ratings = { velocidad: 0, estado: 0, comunicacion: 0, atencion: 0 };
-  let ratingGuia = '';
-
-  // Actualiza el badge, hero y footer según el país recibido del webhook
-  function aplicarPais(codigoPais) {
-    const config = PAISES[codigoPais?.toUpperCase()] || null;
-    currentPais  = config;
-    if (!config) return;
-
-    const badge = document.getElementById('pais-badge');
-    if (badge) badge.textContent = `${config.bandera} ${config.nombre}`;
-
-    const heroSub = document.getElementById('hero-sub');
-    if (heroSub) heroSub.textContent = `Ingresa tu número de guía y te mostramos el estado actual de tu entrega en ${config.nombre}.`;
-
-    const footerPais = document.getElementById('footer-pais');
-    if (footerPais) footerPais.textContent = config.nombre;
-  }
-
-  function initRating() {
-    ratingGuia = document.getElementById('guia-input').value.trim().toUpperCase();
-    // reset
-    Object.keys(ratings).forEach(k => ratings[k] = 0);
-    document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.rating-cat').forEach(c => c.classList.remove('rated'));
-    document.getElementById('rating-overall').style.display = 'none';
-    document.getElementById('rating-comment-wrap').style.display = 'none';
-    document.getElementById('rating-comment').value = '';
-    document.getElementById('rating-submit').disabled = true;
-    document.getElementById('rating-form-wrap').style.display = 'block';
-    document.getElementById('rating-thanks').style.display = 'none';
-    document.getElementById('rating-thanks').innerHTML = '';
-  }
-
-  // Eventos de estrellas
-  document.querySelectorAll('.stars-row').forEach(row => {
-    const cat = row.dataset.cat;
-    const stars = row.querySelectorAll('.star');
-
-    stars.forEach(star => {
-      star.addEventListener('mouseenter', () => {
-        const val = parseInt(star.dataset.val);
-        stars.forEach(s => {
-          s.classList.toggle('active', parseInt(s.dataset.val) <= val);
-        });
-      });
-
-      star.addEventListener('mouseleave', () => {
-        stars.forEach(s => {
-          s.classList.toggle('active', parseInt(s.dataset.val) <= ratings[cat]);
-        });
-      });
-
-      star.addEventListener('click', () => {
-        const val = parseInt(star.dataset.val);
-        ratings[cat] = val;
-        stars.forEach(s => {
-          s.classList.toggle('active', parseInt(s.dataset.val) <= val);
-        });
-        document.getElementById(`cat-${cat}`).classList.add('rated');
-        actualizarPromedio();
-      });
-    });
-  });
-
-  function actualizarPromedio() {
-    const vals = Object.values(ratings).filter(v => v > 0);
-    if (vals.length === 0) return;
-
-    const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
-    const rounded = Math.round(avg * 10) / 10;
-
-    document.getElementById('rating-overall').style.display = 'flex';
-    document.getElementById('overall-num').textContent = rounded.toFixed(1) + ' / 5.0';
-
-    document.querySelectorAll('.overall-star').forEach(s => {
-      s.classList.toggle('lit', parseInt(s.dataset.pos) <= Math.round(avg));
-    });
-
-    // Mostrar comentario si hay al menos 1 categoría calificada
-    document.getElementById('rating-comment-wrap').style.display = 'block';
-
-    // Habilitar envío si al menos 1 categoría calificada
-    document.getElementById('rating-submit').disabled = false;
-  }
-
-  async function enviarCalificacion() {
-    const vals = Object.values(ratings).filter(v => v > 0);
-    if (vals.length === 0) return;
-
-    const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
-    const promedio = Math.round(avg * 10) / 10;
-    const comentario = document.getElementById('rating-comment').value.trim();
-
-    document.getElementById('rating-submit').disabled = true;
-    document.getElementById('rating-submit').textContent = 'Enviando…';
-
-    try {
-      await fetch(RATING_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guia: ratingGuia,
-          ratings,
-          promedio,
-          comentario,
-          fecha: new Date().toISOString()
-        })
-      });
-    } catch(e) {
-      // Fallo silencioso — mostrar gracias igual
-    }
-
-    // Mostrar pantalla de gracias
-    document.getElementById('rating-form-wrap').style.display = 'none';
-    const thanksDiv = document.getElementById('rating-thanks');
-    thanksDiv.style.display = 'block';
-
-    const googleUrl = currentPais?.google_reviews_url || null;
-    const mostrarGoogle = (promedio === 5) && !!googleUrl && googleUrl !== '#' === false ? (googleUrl === '#' ? false : true) : false;
-    const esCincoEstrellas = promedio === 5;
-    const tieneGoogle = !!googleUrl && googleUrl !== null;
-
-    if (esCincoEstrellas && tieneGoogle) {
-      // 5 estrellas + país con Google Reviews → incentivo completo
-      thanksDiv.innerHTML = `
-        <div class="thanks-5star">
-          <div class="thanks-emoji">🎉</div>
-          <div class="thanks-title">¡Muchas gracias!</div>
-          <p class="thanks-msg">
-            Tu calificación de <strong>5 estrellas</strong> nos llena de orgullo.<br>
-            Déjanos una reseña en Google y te regalamos <strong>$2 en tu próximo envío</strong>. 🙏
-          </p>
-          <a class="btn-google" href="${googleUrl}" target="${googleUrl === '#' ? '_self' : '_blank'}" rel="noopener" ${googleUrl === '#' ? 'onclick="return false"' : ''} onclick="revelarDescuento(event)">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Dejar reseña en Google →
-          </a>
-          <p class="btn-google-sub">Se abre en una nueva pestaña · Sin obligación</p>
-          <div class="discount-badge" id="descuento-reveal" style="display:none; margin-top:16px">
-            <div>
-              <div class="discount-code">${DESCUENTO_CODIGO}</div>
-              <div class="discount-label">$2 de descuento en tu próximo envío · Mencionalo al contactarnos</div>
-            </div>
-          </div>
-        </div>`;
-    } else {
-      // CR, o CO con menos de 5 estrellas → solo gracias
-      thanksDiv.innerHTML = `
-        <div class="thanks-low">
-          <div class="thanks-emoji">🙏</div>
-          <div class="thanks-title">¡Gracias por tu calificación!</div>
-          <p class="thanks-msg">
-            Tu opinión nos ayuda a mejorar el servicio.<br>
-            ${comentario ? 'Hemos recibido tu comentario y lo revisaremos con atención.' : 'Si tienes algún comentario, escríbenos por WhatsApp.'}
-          </p>
-        </div>`;
-    }
-  }
-
-  // ── FIN RATING SYSTEM ──
-
-  function revelarDescuento(e) {
-    // Abre Google en nueva pestaña y revela el código de descuento
-    setTimeout(() => {
-      const el = document.getElementById('descuento-reveal');
-      if (el) {
-        el.style.display = 'flex';
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 400);
-  }
-
-
+  // Auto-buscar si viene ?guia= en la URL
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const guia = params.get('guia');
