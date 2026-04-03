@@ -1004,9 +1004,18 @@
 
       document.getElementById('loading').style.display = 'none';
 
-      if (!data || data.error || !data.estado) {
-        showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
+      if (!data || data.error) {
+        if (data?.error === 'Guia no encontrada') {
+          showError('Tu paquete está en tránsito y aún no ha sido asignado para entrega local. Intenta más tarde o escríbenos por WhatsApp.');
+        } else {
+          showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
+        }
         return;
+      }
+
+      // Si tiene error de estado vacío igual mostramos lo que tengamos
+      if (!data.estado) {
+        data.estado = 'En proceso';
       }
 
       document.getElementById('res-guia').textContent = guia;
