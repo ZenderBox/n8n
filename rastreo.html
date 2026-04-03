@@ -749,7 +749,7 @@
     }
 
     /* ── TRACKING EXTERNO ── */
-    #resultado-tracking, #resultado-bodega, #resultado-notice {
+    #resultado-tracking, #resultado-bodega, #resultado-notice, #resultado-wms {
       display: none;
       position: relative;
       z-index: 1;
@@ -804,8 +804,26 @@
     .delivery-note { background: rgba(243,156,18,0.08); border: 1px solid rgba(243,156,18,0.2); border-radius: 12px; padding: 14px 20px; margin-top: 16px; font-size: 13px; color: #f39c12; line-height: 1.6; }
 
     @media (max-width: 600px) {
-      #resultado-tracking, #resultado-bodega, #resultado-notice { padding: 0 16px 60px; }
+      #resultado-tracking, #resultado-bodega, #resultado-notice, #resultado-wms { padding: 0 16px 60px; }
     }
+
+    /* ── WMS STEPPER ── */
+    .wms-stepper { display: flex; align-items: flex-start; justify-content: space-between; position: relative; padding: 0 8px; margin: 24px 0; }
+    .wms-stepper::before { content: ''; position: absolute; top: 18px; left: 28px; right: 28px; height: 2px; background: rgba(0,156,201,0.15); z-index: 0; }
+    .wms-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; flex: 1; max-width: 90px; }
+    .wms-step-circle { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,156,201,0.2); background: var(--zb-navy); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; transition: all 0.3s; }
+    .wms-step.done .wms-step-circle { border-color: var(--zb-cyan); background: rgba(0,156,201,0.15); }
+    .wms-step.active .wms-step-circle { border-color: var(--zb-lime); background: rgba(204,211,42,0.15); box-shadow: 0 0 0 4px rgba(204,211,42,0.15); animation: pulseBorder 2s infinite; }
+    @keyframes pulseBorder { 0%,100% { box-shadow: 0 0 0 4px rgba(204,211,42,0.15); } 50% { box-shadow: 0 0 0 8px rgba(204,211,42,0.05); } }
+    .wms-step-label { font-size: 9px; font-weight: 600; color: var(--zb-muted); text-transform: uppercase; letter-spacing: 0.5px; text-align: center; line-height: 1.3; }
+    .wms-step.done .wms-step-label { color: var(--zb-cyan); }
+    .wms-step.active .wms-step-label { color: var(--zb-lime); }
+    .wms-info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .wms-info-box { background: rgba(8,31,58,0.6); border: 1px solid rgba(0,156,201,0.12); border-radius: 14px; padding: 16px; }
+    .wms-info-box-title { font-size: 10px; font-weight: 600; color: var(--zb-muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+    .wms-resolved { background: rgba(204,211,42,0.06); border: 1px solid rgba(204,211,42,0.15); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 12px; color: var(--zb-muted); }
+    .wms-resolved strong { color: var(--zb-lime); }
+    @media (max-width: 600px) { .wms-stepper { flex-wrap: wrap; gap: 8px; justify-content: center; } .wms-stepper::before { display: none; } .wms-step { flex: 0 0 auto; width: 60px; } .wms-info-row { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -1109,13 +1127,78 @@
   </div>
 </div>
 
+
+<!-- WMS RESULT -->
+<div id="resultado-wms">
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Número de guía</div>
+          <div class="guia-value" id="wms-guia">—</div>
+        </div>
+        <div class="estado-badge s-default" id="wms-badge">
+          <div class="estado-dot pulse"></div>
+          <span id="wms-status">—</span>
+        </div>
+      </div>
+      <div id="wms-resolved-wrap" class="wms-resolved" style="display:none"></div>
+      <div class="wms-info-row">
+        <div class="wms-info-box">
+          <div class="wms-info-box-title">📤 Origen</div>
+          <div class="info-value" id="wms-origen-ciudad">—</div>
+          <div style="font-size:12px;color:var(--zb-muted);margin-top:4px" id="wms-remitente"></div>
+        </div>
+        <div class="wms-info-box">
+          <div class="wms-info-box-title">📥 Destino</div>
+          <div class="info-value accent" id="wms-destino-ciudad">—</div>
+          <div style="font-size:12px;color:var(--zb-muted);margin-top:4px" id="wms-destinatario"></div>
+        </div>
+      </div>
+      <div class="wms-stepper" id="wms-stepper">
+        <div class="wms-step" id="ws-aerolinea">
+          <div class="wms-step-circle">✈️</div>
+          <div class="wms-step-label">Aerolínea</div>
+        </div>
+        <div class="wms-step" id="ws-aeropuerto">
+          <div class="wms-step-circle">🛬</div>
+          <div class="wms-step-label">Aeropuerto</div>
+        </div>
+        <div class="wms-step" id="ws-bodega">
+          <div class="wms-step-circle">📦</div>
+          <div class="wms-step-label">Bodega destino</div>
+        </div>
+        <div class="wms-step" id="ws-reparto">
+          <div class="wms-step-circle">🚚</div>
+          <div class="wms-step-label">En reparto</div>
+        </div>
+        <div class="wms-step" id="ws-entregado">
+          <div class="wms-step-circle">✅</div>
+          <div class="wms-step-label">Entregado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="zb-card" id="wms-events-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📍</div>
+      <div><div class="map-title">Progreso del envío</div><div class="map-sub" id="wms-events-count"></div></div>
+    </div>
+    <div class="tk-events" id="wms-events-list"></div>
+  </div>
+
+</div>
+
 <footer>
   © 2026 <span>ZenderBox</span> · <span id="footer-pais">Costa Rica & Colombia</span> · Todos los derechos reservados
 </footer>
 
 <script>
-  const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
-  const N8N_TRACKING_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-tracking';
+  const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-wms';
+  const RATING_WEBHOOK = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-rating';
+  const DESCUENTO_CODIGO = 'GRACIAS10';
 
   let mapInstance = null;
 
@@ -1130,236 +1213,225 @@
     if (e.includes('asig') || e.includes('preparar')) return 's-asignado';
     if (e.includes('ruta') || e.includes('llegado') || e.includes('acept') || e.includes('camino')) return 's-en-ruta';
     if (e.includes('finaliz') || e.includes('entregad')) return 's-entregado';
+    if (e.includes('bodega') || e.includes('aerol') || e.includes('aerop') || e.includes('miami') || e.includes('vuelo')) return 's-en-ruta';
     return 's-default';
   }
 
   function formatFecha(fecha) {
     if (!fecha) return '—';
     try {
-      return new Date(fecha).toLocaleDateString('es-CR', {
-        day: '2-digit', month: 'long', year: 'numeric'
-      });
+      return new Date(fecha).toLocaleDateString('es-CR', { day: '2-digit', month: 'long', year: 'numeric' });
     } catch { return fecha; }
   }
 
+  // ═══ BÚSQUEDA UNIFICADA — UN SOLO WEBHOOK ═══
   async function buscarGuia() {
-    const guia = document.getElementById('guia-input').value.trim().toUpperCase();
+    const guia = document.getElementById('guia-input').value.trim();
     if (!guia) return;
 
-    document.getElementById('resultado').style.display = 'none';
-    document.getElementById('resultado-tracking').style.display = 'none';
-    document.getElementById('resultado-bodega').style.display = 'none';
-    document.getElementById('resultado-notice').style.display = 'none';
-    document.getElementById('error-box').style.display = 'none';
+    ['resultado','resultado-wms','resultado-tracking','resultado-bodega','resultado-notice','error-box'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.querySelectorAll('.delivery-note').forEach(el => el.remove());
     document.getElementById('loading').style.display = 'block';
     document.getElementById('buscar-btn').disabled = true;
 
-    // ── PASO 1: SmartQuick + Consolidados (rastreo-cr) ──
     try {
-      const res = await fetch(`${N8N_WEBHOOK_URL}?guia=${encodeURIComponent(guia)}`);
+      const res = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(guia)}`);
       const data = await res.json();
-
-      if (data && !data.error && data.estado) {
-        document.getElementById('loading').style.display = 'none';
-        mostrarResultadoInterno(guia, data);
-        document.getElementById('buscar-btn').disabled = false;
-        return;
-      }
-    } catch(e) { /* SmartQuick falló → seguir */ }
-
-    // ── PASO 2: CubiQ + 17track (rastreo-tracking) ──
-    try {
-      const tkRes = await fetch(`${N8N_TRACKING_URL}?tracking=${encodeURIComponent(guia)}`);
-      const tkData = await tkRes.json();
-
       document.getElementById('loading').style.display = 'none';
 
-      if (tkData && !tkData.error) {
-        switch (tkData.source) {
-          case 'cubiq':
-            mostrarResultadoBodega(guia, tkData);
+      if (data.error) {
+        showError(data.message || 'No encontramos información para ese número.');
+      } else {
+        switch (data.source) {
+          case 'wms':
+            mostrarResultadoWMS(data);
             break;
           case 'api':
-            if (tkData.events && tkData.events.length > 0) {
-              mostrarResultadoTracking(guia, tkData);
+            if (data.events && data.events.length > 0) {
+              mostrarResultadoTracking(data.q, data);
             } else {
-              mostrarNotice('📦', 'Tracking registrado', tkData.message || 'Intenta de nuevo en unos minutos.', tkData.carrier_name, tkData.carrier_url);
+              mostrarNotice('📦', 'Tracking registrado', data.message || 'Intenta de nuevo en unos minutos.', data.carrier_name, data.carrier_url);
             }
             break;
           case 'usps_link':
-            mostrarNotice('📬', 'Tu paquete aún no llega a nuestra bodega', tkData.message, 'USPS', tkData.carrier_url);
+            mostrarNotice('📬', 'Tu paquete aún no llega a nuestra bodega', data.message, 'USPS', data.carrier_url);
             break;
           case 'api_pending':
-            mostrarNotice('⏳', 'Tracking registrado', tkData.message || 'Intenta de nuevo en 2-3 minutos.', tkData.carrier_name, tkData.carrier_url);
+            mostrarNotice('⏳', 'Tracking registrado', data.message || 'Intenta de nuevo en 2-3 minutos.', data.carrier_name, data.carrier_url);
             break;
           default:
-            showError('No encontramos información para ese número. Verifica e intenta de nuevo.');
+            showError('No encontramos información para ese número.');
         }
-      } else {
-        showError(tkData?.message || 'No encontramos información para ese número. Verifica e intenta de nuevo.');
       }
     } catch(e) {
       document.getElementById('loading').style.display = 'none';
-      showError('No encontramos información para ese número. Verifica e intenta de nuevo.');
+      showError('Error al conectar con el servidor. Intenta de nuevo.');
     }
-
     document.getElementById('buscar-btn').disabled = false;
   }
 
-  // ── MOSTRAR RESULTADO INTERNO (SmartQuick/Consolidados) ──
-  function mostrarResultadoInterno(guia, data) {
-      if (!data.estado) data.estado = 'En proceso';
+  // ═══ RESULTADO WMS ═══
+  function mostrarResultadoWMS(data) {
+    document.getElementById('wms-guia').textContent = data.guia || data.q;
+    document.getElementById('wms-status').textContent = data.ultimo_status || 'En proceso';
 
-      document.getElementById('res-guia').textContent = guia;
-      document.getElementById('res-estado').textContent = data.estado || '—';
-      document.getElementById('res-direccion').textContent = data.direccion || '—';
-      document.getElementById('res-ciudad').textContent = data.ciudad || '—';
-      document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
-      document.getElementById('res-conductor').textContent = data.conductor?.trim() || 'Por asignar';
+    const badge = document.getElementById('wms-badge');
+    badge.className = `estado-badge ${getEstadoClass(data.ultimo_status)}`;
 
-      aplicarPais(data.pais);
+    // Resolved tracking → guia
+    const resolvedWrap = document.getElementById('wms-resolved-wrap');
+    if (data.guia_resuelta && data.q.toUpperCase() !== data.guia) {
+      resolvedWrap.innerHTML = `Tracking <strong>${data.q}</strong> → Guía <strong>${data.guia}</strong>`;
+      resolvedWrap.style.display = 'block';
+    } else {
+      resolvedWrap.style.display = 'none';
+    }
 
-      const badge = document.getElementById('res-badge');
-      badge.className = `estado-badge ${getEstadoClass(data.estado)}`;
+    // Origin / Destination
+    document.getElementById('wms-origen-ciudad').textContent = data.origen?.ciudad || 'Miami';
+    document.getElementById('wms-remitente').textContent = data.origen?.remitente || '';
+    document.getElementById('wms-destino-ciudad').textContent = data.destino?.ciudad || '—';
+    document.getElementById('wms-destinatario').textContent = data.destino?.destinatario || '';
 
-      // Mapa
-      if (data.latitude && data.longitude) {
-        document.getElementById('no-map').style.display = 'none';
-        document.getElementById('map').style.display = 'block';
+    // Apply country
+    aplicarPais(data.pais);
 
-        if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+    // Stepper
+    const stepIds = ['ws-aerolinea','ws-aeropuerto','ws-bodega','ws-reparto','ws-entregado'];
+    const stepStages = data.stepper || [];
+    let lastCompleted = -1;
 
-        mapInstance = L.map('map').setView([data.latitude, data.longitude], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap'
-        }).addTo(mapInstance);
-
-        const icon = L.divIcon({
-          html: `<div style="
-            width:22px;height:22px;
-            background:linear-gradient(135deg,#009CC9,#CCD32A);
-            border-radius:50%;
-            border:3px solid #081F3A;
-            box-shadow:0 0 0 3px rgba(0,156,201,0.4)
-          "></div>`,
-          iconSize: [22,22], iconAnchor: [11,11], className: ''
-        });
-
-        L.marker([data.latitude, data.longitude], { icon })
-          .addTo(mapInstance)
-          .bindPopup(`<b>${guia}</b><br>${data.direccion || ''}`)
-          .openPopup();
-      } else {
-        document.getElementById('no-map').style.display = 'flex';
-        document.getElementById('map').style.display = 'none';
+    stepIds.forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.classList.remove('done', 'active');
+      if (stepStages[i] && stepStages[i].completed) {
+        el.classList.add('done');
+        lastCompleted = i;
       }
+    });
+    // Mark the next step as active
+    if (lastCompleted >= 0 && lastCompleted < stepIds.length - 1) {
+      document.getElementById(stepIds[lastCompleted + 1]).classList.add('active');
+    } else if (lastCompleted === -1 && stepStages.length > 0) {
+      document.getElementById(stepIds[0]).classList.add('active');
+    }
 
-      // Fotos
-      const fotosCard = document.getElementById('fotos-card');
-      const fotosGrid = document.getElementById('photos-grid');
-      fotosGrid.innerHTML = '';
+    // Events
+    const eventsCard = document.getElementById('wms-events-card');
+    const eventsList = document.getElementById('wms-events-list');
+    eventsList.innerHTML = '';
 
-      if (data.fotos && data.fotos.length > 0) {
-        fotosCard.style.display = 'block';
-        data.fotos.forEach(url => {
-          const img = document.createElement('img');
-          img.src = url;
-          img.alt = 'Evidencia de entrega';
-          img.onclick = () => window.open(url, '_blank');
-          fotosGrid.appendChild(img);
-        });
-      } else {
-        fotosCard.style.display = 'none';
-      }
+    if (data.events && data.events.length > 0) {
+      document.getElementById('wms-events-count').textContent = `${data.events.length} evento${data.events.length !== 1 ? 's' : ''}`;
+      data.events.forEach(evt => {
+        const item = document.createElement('div');
+        item.className = 'tk-event';
+        item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${traducirEvento(evt.descripcion)}</div><div class="tk-event-meta"><span>📅 ${evt.fecha || ''}</span></div></div>`;
+        eventsList.appendChild(item);
+      });
+      eventsCard.style.display = 'block';
+    } else {
+      eventsCard.style.display = 'none';
+    }
 
-      document.getElementById('resultado').style.display = 'block';
-
-      const estadoLower = (data.estado || '').toLowerCase();
-      const estaEntregado = estadoLower.includes('finaliz') || estadoLower.includes('entregad');
-      document.getElementById('rating-card').style.display = estaEntregado ? 'block' : 'none';
-      if (estaEntregado) initRating();
+    document.getElementById('resultado-wms').style.display = 'block';
   }
 
-  // ── TRADUCIR EVENTOS DE CARRIERS A ESPAÑOL ──
+  // ═══ TRADUCIR EVENTOS ═══
   function traducirEvento(desc) {
     if (!desc) return '—';
     const d = desc.trim();
-    
-    // Mapa de traducciones (busca parcial, orden importa)
     const traducciones = [
-      // Estados finales
       [/delivered.*door/i, '✅ Entregado en puerta'],
       [/delivered.*yard/i, '✅ Entregado en patio/entrada'],
       [/delivered.*mailbox/i, '✅ Entregado en buzón'],
-      [/delivered.*reception/i, '✅ Entregado en recepción'],
-      [/delivered.*neighbor/i, '✅ Entregado a vecino'],
       [/delivered.*agent/i, '✅ Entregado a agente'],
       [/delivered.*left with individual/i, '✅ Entregado a persona en la dirección'],
-      [/delivered.*parcel locker/i, '✅ Entregado en casillero'],
       [/^delivered$/i, '✅ Entregado'],
       [/delivered/i, '✅ Entregado'],
-
-      // En reparto
       [/out for delivery/i, '🚚 En camino a tu dirección'],
-      [/with delivery courier/i, '🚚 Con el mensajero para entrega'],
-
-      // En tránsito
-      [/in transit to next facility/i, '✈️ En tránsito a siguiente centro'],
       [/in transit/i, '✈️ En tránsito'],
       [/departed.*facility/i, '📤 Salió del centro de distribución'],
       [/departed.*hub/i, '📤 Salió del centro regional'],
       [/departed.*station/i, '📤 Salió de la estación'],
-      [/departed.*origin/i, '📤 Salió del origen'],
       [/arrived.*facility/i, '📥 Llegó al centro de distribución'],
       [/arrived.*hub/i, '📥 Llegó al centro regional'],
       [/arrived.*station/i, '📥 Llegó a la estación'],
-      [/arrived.*destination/i, '📥 Llegó al destino'],
       [/arrived.*post office/i, '📥 Llegó a la oficina postal'],
       [/processing.*facility/i, '⚙️ Procesando en centro de distribución'],
-      [/processed.*facility/i, '⚙️ Procesado en centro de distribución'],
-
-      // Aduanas
       [/customs clearance/i, '🛃 En proceso de aduanas'],
-      [/cleared customs/i, '🛃 Liberado de aduanas'],
-      [/held.*customs/i, '🛃 Retenido en aduanas'],
-
-      // Recogida
       [/picked up/i, '📦 Paquete recogido por el carrier'],
-      [/package received/i, '📦 Paquete recibido por el carrier'],
       [/usps in possession/i, '📦 USPS tiene el paquete'],
-      [/accepted.*post office/i, '📦 Aceptado en oficina postal'],
-      [/acceptance/i, '📦 Paquete aceptado'],
-
-      // Etiqueta / Info
       [/shipping label created/i, '📋 Etiqueta de envío creada'],
-      [/label created/i, '📋 Etiqueta creada'],
       [/shipper created.*label/i, '📋 El remitente creó la etiqueta'],
-      [/pre.?shipment/i, '📋 Pre-envío — etiqueta creada'],
       [/shipment information.*sent/i, '📋 Información enviada al carrier'],
-      [/electronic.*notification/i, '📋 Notificación electrónica recibida'],
       [/info received/i, '📋 Información recibida por el carrier'],
-
-      // Problemas
       [/delivery attempt/i, '⚠️ Intento de entrega fallido'],
-      [/no.*access/i, '⚠️ No se pudo acceder a la dirección'],
       [/return.*sender/i, '↩️ Devuelto al remitente'],
-      [/held.*at/i, '⏸️ Retenido temporalmente'],
-      [/address.*issue/i, '⚠️ Problema con la dirección'],
-
-      // Disponible para recoger
       [/available.*pick.?up/i, '🏬 Disponible para recoger'],
-      [/ready.*pick.?up/i, '🏬 Listo para recoger'],
+      // WMS Spanish events (pass through with emoji)
+      [/entrada bodega miami/i, '📦 Entrada Bodega Miami'],
+      [/consolidado casillero/i, '📦 Consolidado en Casillero'],
+      [/entregad.*aerolinea/i, '✈️ Entregado a la Aerolínea'],
+      [/llegada.*aeropuerto/i, '🛬 Llegada al Aeropuerto de Destino'],
+      [/entrada bodega destino/i, '📦 Llegó a Bodega ZenderBox'],
+      [/en reparto/i, '🚚 En Reparto'],
+      [/^entregado$/i, '✅ Entregado'],
+      [/ingreso desde cubiq/i, '📦 Ingresado a Bodega Miami'],
+      [/editar guias/i, '📋 En proceso de preparación'],
     ];
-
     for (const [regex, traduccion] of traducciones) {
       if (regex.test(d)) return traduccion;
     }
-
-    // Si no hay traducción, devolver original
     return d;
   }
 
-  // ── MOSTRAR RESULTADO BODEGA (CubiQ) ──
+  // ═══ RESULTADO TRACKING (17track) ═══
+  function mostrarResultadoTracking(number, data) {
+    document.getElementById('tk-number').textContent = number;
+    const statusMap = { 'InTransit': ['En tránsito','tk-intransit'], 'Delivered': ['Entregado en dirección ZB','tk-delivered'], 'OutForDelivery': ['En camino a entrega','tk-intransit'], 'InfoReceived': ['Info recibida','tk-other'], 'Exception': ['Excepción','tk-other'], 'NotFound': ['No encontrado','tk-other'] };
+    const [txt, cls] = statusMap[data.status] || [data.status_text || data.status, 'tk-other'];
+    document.getElementById('tk-badge').className = `tk-badge ${cls}`;
+    document.getElementById('tk-status-text').textContent = txt;
+    document.getElementById('tk-carrier-icon').textContent = '📦';
+    document.getElementById('tk-carrier-name').textContent = data.carrier_name || 'Carrier';
+    document.getElementById('tk-carrier-service').textContent = data.service_type || '';
+    document.getElementById('tk-origin').textContent = data.origin_country || '—';
+    document.getElementById('tk-dest').textContent = data.dest_country || '—';
+    document.getElementById('tk-days').textContent = data.days_in_transit != null ? `${data.days_in_transit} días` : '—';
+    document.getElementById('tk-eta').textContent = data.eta ? formatFecha(data.eta) : '—';
+    document.getElementById('tk-delivery-note').innerHTML = data.delivery_note ? `<div class="delivery-note">⚠️ ${data.delivery_note}</div>` : '';
+
+    // Last event
+    const lastEvtEl = document.getElementById('tk-last-event');
+    if (data.events && data.events.length > 0) {
+      const last = data.events[0];
+      const ld = last.time ? new Date(last.time) : null;
+      const ldate = ld ? ld.toLocaleDateString('es', {day:'2-digit',month:'long',year:'numeric'}) : '';
+      const ltime = ld ? ld.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
+      document.getElementById('tk-last-event-desc').textContent = traducirEvento(last.description);
+      document.getElementById('tk-last-event-meta').textContent = [ldate, ltime, last.location].filter(Boolean).join(' · ');
+      lastEvtEl.style.display = 'block';
+    } else { lastEvtEl.style.display = 'none'; }
+
+    const container = document.getElementById('tk-events-list');
+    container.innerHTML = '';
+    document.getElementById('tk-events-count').textContent = `${data.events.length} evento${data.events.length !== 1 ? 's' : ''}`;
+    data.events.forEach(evt => {
+      const d2 = evt.time ? new Date(evt.time) : null;
+      const date = d2 ? d2.toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric'}) : '';
+      const time = d2 ? d2.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
+      const item = document.createElement('div');
+      item.className = 'tk-event';
+      item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${traducirEvento(evt.description)}</div><div class="tk-event-meta">${date ? `<span>📅 ${date}</span>` : ''}${time ? `<span>🕐 ${time}</span>` : ''}${evt.location ? `<span>📍 ${evt.location}</span>` : ''}</div></div>`;
+      container.appendChild(item);
+    });
+    document.getElementById('resultado-tracking').style.display = 'block';
+  }
+
+  // ═══ RESULTADO BODEGA (CubiQ) ═══
   function mostrarResultadoBodega(number, data) {
     document.getElementById('bk-number').textContent = number;
     document.getElementById('bk-date').textContent = data.cubiq?.measure_date ? `Procesado: ${formatFecha(data.cubiq.measure_date)}` : '';
@@ -1372,75 +1444,20 @@
     document.getElementById('bk-dims').textContent = (l && w && h) ? `${l} × ${w} × ${h} cm` : '—';
     document.getElementById('bk-dest').textContent = data.cubiq?.dest_name || data.cubiq?.dest_code || '—';
     const photoWrap = document.getElementById('bk-photo-wrap');
-    if (data.cubiq?.external_pic) {
-      document.getElementById('bk-photo').src = data.cubiq.external_pic;
-      photoWrap.style.display = 'block';
-    } else if (data.cubiq?.img_main) {
-      document.getElementById('bk-photo').src = data.cubiq.img_main;
-      photoWrap.style.display = 'block';
-    } else { photoWrap.style.display = 'none'; }
+    if (data.cubiq?.external_pic) { document.getElementById('bk-photo').src = data.cubiq.external_pic; photoWrap.style.display = 'block'; }
+    else if (data.cubiq?.img_main) { document.getElementById('bk-photo').src = data.cubiq.img_main; photoWrap.style.display = 'block'; }
+    else { photoWrap.style.display = 'none'; }
     document.getElementById('resultado-bodega').style.display = 'block';
   }
 
-  // ── MOSTRAR RESULTADO TRACKING (17track) ──
-  function mostrarResultadoTracking(number, data) {
-    document.getElementById('tk-number').textContent = number;
-    const statusMap = { 'InTransit': ['En tránsito','tk-intransit'], 'Delivered': ['Entregado en dirección ZB','tk-delivered'], 'OutForDelivery': ['En camino a entrega','tk-intransit'], 'InfoReceived': ['Info recibida','tk-other'], 'Exception': ['Excepción','tk-other'], 'Expired': ['Expirado','tk-other'], 'AvailableForPickup': ['Listo para recoger','tk-other'], 'DeliveryFailure': ['Fallo en entrega','tk-other'], 'NotFound': ['No encontrado','tk-other'] };
-    const [txt, cls] = statusMap[data.status] || [data.status_text || data.status, 'tk-other'];
-    const tkBadge = document.getElementById('tk-badge');
-    tkBadge.className = `tk-badge ${cls}`;
-    document.getElementById('tk-status-text').textContent = txt;
-    document.getElementById('tk-carrier-icon').textContent = '📦';
-    document.getElementById('tk-carrier-name').textContent = data.carrier_name || 'Carrier';
-    document.getElementById('tk-carrier-service').textContent = data.service_type || '';
-    document.getElementById('tk-origin').textContent = data.origin_country || '—';
-    document.getElementById('tk-dest').textContent = data.dest_country || '—';
-    document.getElementById('tk-days').textContent = data.days_in_transit != null ? `${data.days_in_transit} días` : '—';
-    document.getElementById('tk-eta').textContent = data.eta ? formatFecha(data.eta) : '—';
-    // Last event prominent display
-    const lastEvtEl = document.getElementById('tk-last-event');
-    if (data.events && data.events.length > 0) {
-      const last = data.events[0];
-      const ld = last.time ? new Date(last.time) : null;
-      const ldate = ld ? ld.toLocaleDateString('es', {day:'2-digit',month:'long',year:'numeric'}) : '';
-      const ltime = ld ? ld.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
-      document.getElementById('tk-last-event-desc').textContent = traducirEvento(last.description);
-      document.getElementById('tk-last-event-meta').textContent = [ldate, ltime, last.location].filter(Boolean).join(' · ');
-      lastEvtEl.style.display = 'block';
-    } else {
-      lastEvtEl.style.display = 'none';
-    }
-
-    // Delivery note
-    const noteEl = document.getElementById('tk-delivery-note');
-    noteEl.innerHTML = data.delivery_note ? `<div class="delivery-note">⚠️ ${data.delivery_note}</div>` : '';
-    // Events
-    const container = document.getElementById('tk-events-list');
-    container.innerHTML = '';
-    document.getElementById('tk-events-count').textContent = `${data.events.length} evento${data.events.length !== 1 ? 's' : ''}`;
-    data.events.forEach(evt => {
-      const d = evt.time ? new Date(evt.time) : null;
-      const date = d ? d.toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric'}) : '';
-      const time = d ? d.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
-      const item = document.createElement('div');
-      item.className = 'tk-event';
-      item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${traducirEvento(evt.description)}</div><div class="tk-event-meta">${date ? `<span>📅 ${date}</span>` : ''}${time ? `<span>🕐 ${time}</span>` : ''}${evt.location ? `<span>📍 ${evt.location}</span>` : ''}</div></div>`;
-      container.appendChild(item);
-    });
-    document.getElementById('resultado-tracking').style.display = 'block';
-  }
-
-  // ── MOSTRAR NOTICE (USPS / Pendiente) ──
+  // ═══ NOTICE ═══
   function mostrarNotice(icon, title, message, carrierName, carrierUrl) {
     document.getElementById('nc-icon').textContent = icon;
     document.getElementById('nc-title').textContent = title;
     document.getElementById('nc-msg').textContent = message;
     const linkBtn = document.getElementById('nc-link');
-    if (carrierUrl) {
-      document.getElementById('nc-carrier-name').textContent = carrierName || 'carrier';
-      linkBtn.href = carrierUrl;
-      linkBtn.style.display = 'inline-flex';
-    } else { linkBtn.style.display = 'none'; }
+    if (carrierUrl) { document.getElementById('nc-carrier-name').textContent = carrierName || 'carrier'; linkBtn.href = carrierUrl; linkBtn.style.display = 'inline-flex'; }
+    else { linkBtn.style.display = 'none'; }
     document.getElementById('resultado-notice').style.display = 'block';
   }
 
@@ -1449,41 +1466,28 @@
     document.getElementById('error-box').style.display = 'block';
   }
 
-  // ── RATING SYSTEM ──
-  const RATING_WEBHOOK    = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-rating';
-  const DESCUENTO_CODIGO  = 'GRACIAS10';
-
-  // Config por país — se puebla desde la respuesta del webhook
+  // ═══ RATING ═══
   const PAISES = {
-    CR: { bandera: '🇨🇷', nombre: 'Costa Rica',  google_reviews_url: null },
-    CO: { bandera: '🇨🇴', nombre: 'Colombia',    google_reviews_url: '#' }, // ← reemplazar con link real de Google Reviews
-    PA: { bandera: '🇵🇦', nombre: 'Panamá',      google_reviews_url: null },
-    EC: { bandera: '🇪🇨', nombre: 'Ecuador',     google_reviews_url: null },
+    CR: { bandera: '🇨🇷', nombre: 'Costa Rica', google_reviews_url: null },
+    CO: { bandera: '🇨🇴', nombre: 'Colombia', google_reviews_url: '#' },
+    PA: { bandera: '🇵🇦', nombre: 'Panamá', google_reviews_url: null },
   };
-
-  let currentPais    = null;   // objeto del país activo
+  let currentPais = null;
   const ratings = { velocidad: 0, estado: 0, comunicacion: 0, atencion: 0 };
   let ratingGuia = '';
 
-  // Actualiza el badge, hero y footer según el país recibido del webhook
   function aplicarPais(codigoPais) {
     const config = PAISES[codigoPais?.toUpperCase()] || null;
-    currentPais  = config;
+    currentPais = config;
     if (!config) return;
-
     const badge = document.getElementById('pais-badge');
     if (badge) badge.textContent = `${config.bandera} ${config.nombre}`;
-
-    const heroSub = document.getElementById('hero-sub');
-    if (heroSub) heroSub.textContent = `Ingresa tu número de guía y te mostramos el estado actual de tu entrega en ${config.nombre}.`;
-
     const footerPais = document.getElementById('footer-pais');
     if (footerPais) footerPais.textContent = config.nombre;
   }
 
   function initRating() {
     ratingGuia = document.getElementById('guia-input').value.trim().toUpperCase();
-    // reset
     Object.keys(ratings).forEach(k => ratings[k] = 0);
     document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.rating-cat').forEach(c => c.classList.remove('rated'));
@@ -1496,158 +1500,47 @@
     document.getElementById('rating-thanks').innerHTML = '';
   }
 
-  // Eventos de estrellas
   document.querySelectorAll('.stars-row').forEach(row => {
     const cat = row.dataset.cat;
     const stars = row.querySelectorAll('.star');
-
     stars.forEach(star => {
-      star.addEventListener('mouseenter', () => {
-        const val = parseInt(star.dataset.val);
-        stars.forEach(s => {
-          s.classList.toggle('active', parseInt(s.dataset.val) <= val);
-        });
-      });
-
-      star.addEventListener('mouseleave', () => {
-        stars.forEach(s => {
-          s.classList.toggle('active', parseInt(s.dataset.val) <= ratings[cat]);
-        });
-      });
-
-      star.addEventListener('click', () => {
-        const val = parseInt(star.dataset.val);
-        ratings[cat] = val;
-        stars.forEach(s => {
-          s.classList.toggle('active', parseInt(s.dataset.val) <= val);
-        });
-        document.getElementById(`cat-${cat}`).classList.add('rated');
-        actualizarPromedio();
-      });
+      star.addEventListener('mouseenter', () => { const val = parseInt(star.dataset.val); stars.forEach(s => { s.classList.toggle('active', parseInt(s.dataset.val) <= val); }); });
+      star.addEventListener('mouseleave', () => { stars.forEach(s => { s.classList.toggle('active', parseInt(s.dataset.val) <= ratings[cat]); }); });
+      star.addEventListener('click', () => { const val = parseInt(star.dataset.val); ratings[cat] = val; stars.forEach(s => { s.classList.toggle('active', parseInt(s.dataset.val) <= val); }); document.getElementById(`cat-${cat}`).classList.add('rated'); actualizarPromedio(); });
     });
   });
 
   function actualizarPromedio() {
     const vals = Object.values(ratings).filter(v => v > 0);
     if (vals.length === 0) return;
-
     const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
     const rounded = Math.round(avg * 10) / 10;
-
     document.getElementById('rating-overall').style.display = 'flex';
     document.getElementById('overall-num').textContent = rounded.toFixed(1) + ' / 5.0';
-
-    document.querySelectorAll('.overall-star').forEach(s => {
-      s.classList.toggle('lit', parseInt(s.dataset.pos) <= Math.round(avg));
-    });
-
-    // Mostrar comentario si hay al menos 1 categoría calificada
+    document.querySelectorAll('.overall-star').forEach(s => { s.classList.toggle('lit', parseInt(s.dataset.pos) <= Math.round(avg)); });
     document.getElementById('rating-comment-wrap').style.display = 'block';
-
-    // Habilitar envío si al menos 1 categoría calificada
     document.getElementById('rating-submit').disabled = false;
   }
 
   async function enviarCalificacion() {
     const vals = Object.values(ratings).filter(v => v > 0);
     if (vals.length === 0) return;
-
     const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
     const promedio = Math.round(avg * 10) / 10;
     const comentario = document.getElementById('rating-comment').value.trim();
-
     document.getElementById('rating-submit').disabled = true;
     document.getElementById('rating-submit').textContent = 'Enviando…';
-
-    try {
-      await fetch(RATING_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guia: ratingGuia,
-          ratings,
-          promedio,
-          comentario,
-          fecha: new Date().toISOString()
-        })
-      });
-    } catch(e) {
-      // Fallo silencioso — mostrar gracias igual
-    }
-
-    // Mostrar pantalla de gracias
+    try { await fetch(RATING_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guia: ratingGuia, ratings, promedio, comentario, fecha: new Date().toISOString() }) }); } catch(e) {}
     document.getElementById('rating-form-wrap').style.display = 'none';
     const thanksDiv = document.getElementById('rating-thanks');
     thanksDiv.style.display = 'block';
-
-    const googleUrl = currentPais?.google_reviews_url || null;
-    const mostrarGoogle = (promedio === 5) && !!googleUrl && googleUrl !== '#' === false ? (googleUrl === '#' ? false : true) : false;
-    const esCincoEstrellas = promedio === 5;
-    const tieneGoogle = !!googleUrl && googleUrl !== null;
-
-    if (esCincoEstrellas && tieneGoogle) {
-      // 5 estrellas + país con Google Reviews → incentivo completo
-      thanksDiv.innerHTML = `
-        <div class="thanks-5star">
-          <div class="thanks-emoji">🎉</div>
-          <div class="thanks-title">¡Muchas gracias!</div>
-          <p class="thanks-msg">
-            Tu calificación de <strong>5 estrellas</strong> nos llena de orgullo.<br>
-            Déjanos una reseña en Google y te regalamos <strong>$2 en tu próximo envío</strong>. 🙏
-          </p>
-          <a class="btn-google" href="${googleUrl}" target="${googleUrl === '#' ? '_self' : '_blank'}" rel="noopener" ${googleUrl === '#' ? 'onclick="return false"' : ''} onclick="revelarDescuento(event)">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Dejar reseña en Google →
-          </a>
-          <p class="btn-google-sub">Se abre en una nueva pestaña · Sin obligación</p>
-          <div class="discount-badge" id="descuento-reveal" style="display:none; margin-top:16px">
-            <div>
-              <div class="discount-code">${DESCUENTO_CODIGO}</div>
-              <div class="discount-label">$2 de descuento en tu próximo envío · Mencionalo al contactarnos</div>
-            </div>
-          </div>
-        </div>`;
-    } else {
-      // CR, o CO con menos de 5 estrellas → solo gracias
-      thanksDiv.innerHTML = `
-        <div class="thanks-low">
-          <div class="thanks-emoji">🎉</div>
-          <div class="thanks-title">¡Ya estás participando!</div>
-          <p class="thanks-msg">
-            Tu calificación quedó registrada en la rifa de esta semana.<br>
-            ${comentario ? 'También recibimos tu comentario, ¡gracias!' : 'El ganador se anuncia cada viernes por WhatsApp.'}<br><br>
-            ¡Mucha suerte! 🍀
-          </p>
-        </div>`;
-    }
+    thanksDiv.innerHTML = `<div style="border-radius:16px;padding:28px;text-align:center;background:rgba(0,156,201,0.06);border:1px solid rgba(0,156,201,0.15)"><div style="font-size:48px;margin-bottom:12px">🙏</div><div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px">¡Gracias por tu calificación!</div><p style="color:var(--zb-muted);font-size:14px;line-height:1.6">${comentario ? 'Hemos recibido tu comentario y lo revisaremos.' : 'Tu opinión nos ayuda a mejorar el servicio.'}</p></div>`;
   }
-
-  // ── FIN RATING SYSTEM ──
-
-  function revelarDescuento(e) {
-    // Abre Google en nueva pestaña y revela el código de descuento
-    setTimeout(() => {
-      const el = document.getElementById('descuento-reveal');
-      if (el) {
-        el.style.display = 'flex';
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 400);
-  }
-
 
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
-    const guia = params.get('guia') || params.get('tracking');
-    if (guia) {
-      document.getElementById('guia-input').value = guia.toUpperCase();
-      buscarGuia();
-    }
+    const guia = params.get('guia') || params.get('tracking') || params.get('q');
+    if (guia) { document.getElementById('guia-input').value = guia.toUpperCase(); buscarGuia(); }
   });
 </script>
 
