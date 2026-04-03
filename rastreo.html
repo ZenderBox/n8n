@@ -1275,6 +1275,85 @@
       if (estaEntregado) initRating();
   }
 
+  // ── TRADUCIR EVENTOS DE CARRIERS A ESPAÑOL ──
+  function traducirEvento(desc) {
+    if (!desc) return '—';
+    const d = desc.trim();
+    
+    // Mapa de traducciones (busca parcial, orden importa)
+    const traducciones = [
+      // Estados finales
+      [/delivered.*door/i, '✅ Entregado en puerta'],
+      [/delivered.*yard/i, '✅ Entregado en patio/entrada'],
+      [/delivered.*mailbox/i, '✅ Entregado en buzón'],
+      [/delivered.*reception/i, '✅ Entregado en recepción'],
+      [/delivered.*neighbor/i, '✅ Entregado a vecino'],
+      [/delivered.*agent/i, '✅ Entregado a agente'],
+      [/delivered.*left with individual/i, '✅ Entregado a persona en la dirección'],
+      [/delivered.*parcel locker/i, '✅ Entregado en casillero'],
+      [/^delivered$/i, '✅ Entregado'],
+      [/delivered/i, '✅ Entregado'],
+
+      // En reparto
+      [/out for delivery/i, '🚚 En camino a tu dirección'],
+      [/with delivery courier/i, '🚚 Con el mensajero para entrega'],
+
+      // En tránsito
+      [/in transit to next facility/i, '✈️ En tránsito a siguiente centro'],
+      [/in transit/i, '✈️ En tránsito'],
+      [/departed.*facility/i, '📤 Salió del centro de distribución'],
+      [/departed.*hub/i, '📤 Salió del centro regional'],
+      [/departed.*station/i, '📤 Salió de la estación'],
+      [/departed.*origin/i, '📤 Salió del origen'],
+      [/arrived.*facility/i, '📥 Llegó al centro de distribución'],
+      [/arrived.*hub/i, '📥 Llegó al centro regional'],
+      [/arrived.*station/i, '📥 Llegó a la estación'],
+      [/arrived.*destination/i, '📥 Llegó al destino'],
+      [/arrived.*post office/i, '📥 Llegó a la oficina postal'],
+      [/processing.*facility/i, '⚙️ Procesando en centro de distribución'],
+      [/processed.*facility/i, '⚙️ Procesado en centro de distribución'],
+
+      // Aduanas
+      [/customs clearance/i, '🛃 En proceso de aduanas'],
+      [/cleared customs/i, '🛃 Liberado de aduanas'],
+      [/held.*customs/i, '🛃 Retenido en aduanas'],
+
+      // Recogida
+      [/picked up/i, '📦 Paquete recogido por el carrier'],
+      [/package received/i, '📦 Paquete recibido por el carrier'],
+      [/usps in possession/i, '📦 USPS tiene el paquete'],
+      [/accepted.*post office/i, '📦 Aceptado en oficina postal'],
+      [/acceptance/i, '📦 Paquete aceptado'],
+
+      // Etiqueta / Info
+      [/shipping label created/i, '📋 Etiqueta de envío creada'],
+      [/label created/i, '📋 Etiqueta creada'],
+      [/shipper created.*label/i, '📋 El remitente creó la etiqueta'],
+      [/pre.?shipment/i, '📋 Pre-envío — etiqueta creada'],
+      [/shipment information.*sent/i, '📋 Información enviada al carrier'],
+      [/electronic.*notification/i, '📋 Notificación electrónica recibida'],
+      [/info received/i, '📋 Información recibida por el carrier'],
+
+      // Problemas
+      [/delivery attempt/i, '⚠️ Intento de entrega fallido'],
+      [/no.*access/i, '⚠️ No se pudo acceder a la dirección'],
+      [/return.*sender/i, '↩️ Devuelto al remitente'],
+      [/held.*at/i, '⏸️ Retenido temporalmente'],
+      [/address.*issue/i, '⚠️ Problema con la dirección'],
+
+      // Disponible para recoger
+      [/available.*pick.?up/i, '🏬 Disponible para recoger'],
+      [/ready.*pick.?up/i, '🏬 Listo para recoger'],
+    ];
+
+    for (const [regex, traduccion] of traducciones) {
+      if (regex.test(d)) return traduccion;
+    }
+
+    // Si no hay traducción, devolver original
+    return d;
+  }
+
   // ── MOSTRAR RESULTADO BODEGA (CubiQ) ──
   function mostrarResultadoBodega(number, data) {
     document.getElementById('bk-number').textContent = number;
@@ -1301,7 +1380,7 @@
   // ── MOSTRAR RESULTADO TRACKING (17track) ──
   function mostrarResultadoTracking(number, data) {
     document.getElementById('tk-number').textContent = number;
-    const statusMap = { 'InTransit': ['En tránsito','tk-intransit'], 'Delivered': ['Entregado','tk-delivered'] };
+    const statusMap = { 'InTransit': ['En tránsito','tk-intransit'], 'Delivered': ['Entregado en dirección ZB','tk-delivered'], 'OutForDelivery': ['En camino a entrega','tk-intransit'], 'InfoReceived': ['Info recibida','tk-other'], 'Exception': ['Excepción','tk-other'], 'Expired': ['Expirado','tk-other'], 'AvailableForPickup': ['Listo para recoger','tk-other'], 'DeliveryFailure': ['Fallo en entrega','tk-other'], 'NotFound': ['No encontrado','tk-other'] };
     const [txt, cls] = statusMap[data.status] || [data.status_text || data.status, 'tk-other'];
     const tkBadge = document.getElementById('tk-badge');
     tkBadge.className = `tk-badge ${cls}`;
@@ -1326,7 +1405,7 @@
       const time = d ? d.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
       const item = document.createElement('div');
       item.className = 'tk-event';
-      item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${evt.description || '—'}</div><div class="tk-event-meta">${date ? `<span>📅 ${date}</span>` : ''}${time ? `<span>🕐 ${time}</span>` : ''}${evt.location ? `<span>📍 ${evt.location}</span>` : ''}</div></div>`;
+      item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${traducirEvento(evt.description)}</div><div class="tk-event-meta">${date ? `<span>📅 ${date}</span>` : ''}${time ? `<span>🕐 ${time}</span>` : ''}${evt.location ? `<span>📍 ${evt.location}</span>` : ''}</div></div>`;
       container.appendChild(item);
     });
     document.getElementById('resultado-tracking').style.display = 'block';
