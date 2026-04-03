@@ -1628,8 +1628,7 @@
   // ═══════════════════════════════════════
   //  WEBHOOKS
   // ═══════════════════════════════════════
-  const N8N_WEBHOOK_URL     = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
-  const N8N_TRACKING_URL    = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-tracking';
+  const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-unificado';
 
   let mapInstance = null;
 
@@ -1660,13 +1659,11 @@
   }
 
   // ═══════════════════════════════════════
-  //  BÚSQUEDA PRINCIPAL — fallback inteligente
+  //  BÚSQUEDA UNIFICADA — un solo webhook
   // ═══════════════════════════════════════
   async function buscarGuia() {
     const input = document.getElementById('guia-input').value.trim();
     if (!input) return;
-
-    const guia = input.toUpperCase();
 
     // Reset all views
     document.getElementById('resultado').style.display = 'none';
@@ -1674,71 +1671,47 @@
     document.getElementById('resultado-bodega').style.display = 'none';
     document.getElementById('resultado-notice').style.display = 'none';
     document.getElementById('error-box').style.display = 'none';
-    // Clean up dynamic elements from previous searches
     document.querySelectorAll('.delivery-note').forEach(el => el.remove());
     document.getElementById('loading').style.display = 'block';
+    document.getElementById('loading-text').textContent = 'Consultando estado del paquete…';
     document.getElementById('buscar-btn').disabled = true;
 
-    // ── DECIDIR RUTA ──
-    // 3 letras + número = guía interna ZenderBox (SSW, LSF, SMU, CLO, WHR...)
-    // Excluir prefijos conocidos de carriers: TBA (Amazon), JJD (DHL)
-    const carrierExceptions = ['TBA', 'JJD'];
-    const starts3lettersDigit = /^[A-Z]{3}\d/.test(guia);
-    const isInternal = starts3lettersDigit && !carrierExceptions.includes(guia.substring(0,3));
+    try {
+      const res = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(input)}`);
+      const data = await res.json();
 
-    if (isInternal) {
-      // ══ RAMA INTERNA (guías, WHR, consolidados) ══
-      document.getElementById('loading-text').textContent = 'Consultando estado del paquete…';
-      try {
-        const res = await fetch(`${N8N_WEBHOOK_URL}?guia=${encodeURIComponent(guia)}`);
-        const data = await res.json();
-        document.getElementById('loading').style.display = 'none';
+      document.getElementById('loading').style.display = 'none';
 
-        if (data && !data.error && data.estado) {
-          mostrarResultadoInterno(guia, data);
-        } else {
-          showError('No encontramos esa guía en el sistema. Verifica el número e intenta de nuevo.');
+      if (data.error) {
+        showError(data.message || 'No encontramos información para ese número.');
+      } else {
+        switch (data.source) {
+          case 'consolidados':
+            mostrarResultadoInterno(data.q, data);
+            break;
+          case 'cubiq':
+            mostrarResultadoBodega(data.q, data);
+            break;
+          case 'api':
+            if (data.events && data.events.length > 0) {
+              mostrarResultadoTracking(data.q, data);
+            } else {
+              mostrarResultadoNotice('📦', 'Tracking registrado', data.message || 'Intenta de nuevo en unos minutos.', data.carrier_name, data.carrier_url);
+            }
+            break;
+          case 'usps_link':
+            mostrarResultadoNotice('📬', 'Tu paquete aún no llega a nuestra bodega', data.message, 'USPS', data.carrier_url);
+            break;
+          case 'api_pending':
+            mostrarResultadoNotice('⏳', 'Tracking registrado', data.message || 'Intenta de nuevo en 2-3 minutos.', data.carrier_name, data.carrier_url);
+            break;
+          default:
+            showError('No encontramos información para ese número.');
         }
-      } catch(e) {
-        document.getElementById('loading').style.display = 'none';
-        showError('Error al conectar con el servidor. Intenta de nuevo.');
       }
-    } else {
-      // ══ RAMA TRACKING (USPS, UPS, FedEx, DHL, etc.) ══
-      document.getElementById('loading-text').textContent = 'Buscando en carriers internacionales…';
-      try {
-        const tkRes = await fetch(`${N8N_TRACKING_URL}?tracking=${encodeURIComponent(guia)}`);
-        const tkData = await tkRes.json();
-        document.getElementById('loading').style.display = 'none';
-
-        if (tkData && !tkData.error) {
-          switch (tkData.source) {
-            case 'cubiq':
-              mostrarResultadoBodega(guia, tkData);
-              break;
-            case 'api':
-              if (tkData.events && tkData.events.length > 0) {
-                mostrarResultadoTracking(guia, tkData);
-              } else {
-                mostrarResultadoNotice('📦', 'Tracking registrado', tkData.message || 'Intenta buscar de nuevo en unos minutos.', tkData.carrier_name, tkData.carrier_url);
-              }
-              break;
-            case 'usps_link':
-              mostrarResultadoNotice('📬', 'Tu paquete aún no llega a nuestra bodega', tkData.message, 'USPS', tkData.carrier_url);
-              break;
-            case 'api_pending':
-              mostrarResultadoNotice('⏳', 'Tracking registrado', tkData.message || 'Intenta buscar de nuevo en 2-3 minutos.', tkData.carrier_name, tkData.carrier_url);
-              break;
-            default:
-              showError(tkData?.message || 'No encontramos información para ese número.');
-          }
-        } else {
-          showError(tkData?.message || 'No encontramos información para ese número. Verifica e intenta de nuevo.');
-        }
-      } catch(e) {
-        document.getElementById('loading').style.display = 'none';
-        showError('Error al conectar con el servidor. Intenta de nuevo.');
-      }
+    } catch(e) {
+      document.getElementById('loading').style.display = 'none';
+      showError('Error al conectar con el servidor. Intenta de nuevo.');
     }
 
     document.getElementById('buscar-btn').disabled = false;
