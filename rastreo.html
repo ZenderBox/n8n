@@ -1180,6 +1180,16 @@
       </div>
     </div>
   </div>
+  <div class="zb-card" id="wms-photo-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📸</div>
+      <div><div class="map-title">Foto del paquete</div><div class="map-sub">Captura al ingresar a bodega</div></div>
+    </div>
+    <div style="padding:20px 24px;text-align:center">
+      <img class="bodega-photo" id="wms-photo" src="" alt="Paquete" style="max-width:100%" onclick="window.open(this.src,'_blank')"/>
+    </div>
+  </div>
   <div class="zb-card" id="wms-events-card" style="display:none">
     <div class="card-top-bar"></div>
     <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
@@ -1316,6 +1326,15 @@
       document.getElementById(stepIds[lastCompleted + 1]).classList.add('active');
     } else if (lastCompleted === -1 && stepStages.length > 0) {
       document.getElementById(stepIds[0]).classList.add('active');
+    }
+
+    // Photo from CubiQ
+    const photoCard = document.getElementById('wms-photo-card');
+    if (data.foto) {
+      document.getElementById('wms-photo').src = data.foto;
+      photoCard.style.display = 'block';
+    } else {
+      photoCard.style.display = 'none';
     }
 
     // Events
