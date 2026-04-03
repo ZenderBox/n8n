@@ -20,6 +20,9 @@
       --zb-off:    #e8f4f8;
       --zb-muted:  #7a9ab5;
       --zb-grad:   linear-gradient(135deg, #009CC9 0%, #CCD32A 100%);
+      --zb-green:  #2ecc71;
+      --zb-orange: #f39c12;
+      --zb-red:    #e74c3c;
     }
 
     body {
@@ -30,7 +33,6 @@
       overflow-x: hidden;
     }
 
-    /* Subtle grid background */
     body::before {
       content: '';
       position: fixed;
@@ -232,6 +234,7 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
     #loading p { color: var(--zb-muted); font-size: 14px; }
+    #loading-text { color: var(--zb-muted); font-size: 14px; }
 
     /* ERROR */
     .error-box {
@@ -246,7 +249,7 @@
     }
     .error-box p { color: #ff8080; font-size: 14px; }
 
-    /* RESULT */
+    /* RESULT (internal) */
     #resultado {
       display: none;
       position: relative;
@@ -441,6 +444,507 @@
       border-color: var(--zb-cyan);
     }
 
+    /* ══════════════════════════════════════════
+       TRACKING EXTERNO — TIMELINE UI
+       ══════════════════════════════════════════ */
+
+    #resultado-tracking {
+      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    /* Carrier + Status header card */
+    .tracking-header-card {
+      background: rgba(12,40,71,0.7);
+      border: 1px solid rgba(0,156,201,0.15);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .tracking-header-body {
+      padding: 28px 32px;
+    }
+
+    .tracking-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .carrier-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .carrier-icon {
+      width: 44px; height: 44px;
+      background: rgba(0,156,201,0.1);
+      border: 1px solid rgba(0,156,201,0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .carrier-name {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--zb-white);
+    }
+
+    .carrier-service {
+      font-size: 12px;
+      color: var(--zb-muted);
+      margin-top: 2px;
+    }
+
+    /* Status badges for tracking */
+    .ts-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .ts-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+    }
+
+    .ts-intransit   { background: rgba(204,211,42,0.1); color: var(--zb-lime); border: 1px solid rgba(204,211,42,0.25); }
+    .ts-intransit .ts-dot { background: var(--zb-lime); animation: pulse 2s infinite; }
+    .ts-delivered   { background: rgba(46,204,113,0.1); color: var(--zb-green); border: 1px solid rgba(46,204,113,0.25); }
+    .ts-delivered .ts-dot { background: var(--zb-green); }
+    .ts-info        { background: rgba(0,156,201,0.1); color: var(--zb-cyan); border: 1px solid rgba(0,156,201,0.25); }
+    .ts-info .ts-dot { background: var(--zb-cyan); }
+    .ts-exception   { background: rgba(231,76,60,0.1); color: var(--zb-red); border: 1px solid rgba(231,76,60,0.25); }
+    .ts-exception .ts-dot { background: var(--zb-red); animation: pulse 1.5s infinite; }
+    .ts-expired     { background: rgba(243,156,18,0.1); color: var(--zb-orange); border: 1px solid rgba(243,156,18,0.25); }
+    .ts-expired .ts-dot { background: var(--zb-orange); }
+    .ts-notfound    { background: rgba(255,255,255,0.05); color: var(--zb-muted); border: 1px solid rgba(255,255,255,0.1); }
+    .ts-notfound .ts-dot { background: var(--zb-muted); }
+    .ts-pickup      { background: rgba(0,156,201,0.1); color: var(--zb-cyan); border: 1px solid rgba(0,156,201,0.25); }
+    .ts-pickup .ts-dot { background: var(--zb-cyan); animation: pulse 2s infinite; }
+
+    /* Tracking stats grid */
+    .tracking-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,156,201,0.1);
+    }
+
+    .tracking-stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--zb-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 5px;
+    }
+
+    .tracking-stat-value {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--zb-white);
+    }
+
+    .tracking-stat-value.cyan { color: var(--zb-cyan); }
+    .tracking-stat-value.lime { color: var(--zb-lime); }
+
+    /* ── MILESTONES STEPPER ── */
+    .milestones-card {
+      background: rgba(12,40,71,0.7);
+      border: 1px solid rgba(0,156,201,0.15);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .milestones-body {
+      padding: 28px 32px;
+    }
+
+    .milestones-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
+      padding: 0 8px;
+    }
+
+    /* Connecting line behind milestones */
+    .milestones-row::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 28px;
+      right: 28px;
+      height: 2px;
+      background: rgba(0,156,201,0.15);
+      z-index: 0;
+    }
+
+    .milestone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      max-width: 100px;
+    }
+
+    .ms-circle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,156,201,0.2);
+      background: var(--zb-navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .milestone.completed .ms-circle {
+      border-color: var(--zb-cyan);
+      background: rgba(0,156,201,0.15);
+    }
+
+    .milestone.active .ms-circle {
+      border-color: var(--zb-lime);
+      background: rgba(204,211,42,0.15);
+      box-shadow: 0 0 0 4px rgba(204,211,42,0.15);
+      animation: pulseBorder 2s infinite;
+    }
+
+    .milestone.delivered .ms-circle {
+      border-color: var(--zb-green);
+      background: rgba(46,204,113,0.15);
+    }
+
+    @keyframes pulseBorder {
+      0%,100% { box-shadow: 0 0 0 4px rgba(204,211,42,0.15); }
+      50%     { box-shadow: 0 0 0 8px rgba(204,211,42,0.05); }
+    }
+
+    .ms-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--zb-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .milestone.completed .ms-label { color: var(--zb-cyan); }
+    .milestone.active .ms-label    { color: var(--zb-lime); }
+    .milestone.delivered .ms-label  { color: var(--zb-green); }
+
+    .ms-time {
+      font-size: 9px;
+      color: var(--zb-muted);
+      margin-top: 4px;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    /* ── EVENTS TIMELINE ── */
+    .events-card {
+      background: rgba(12,40,71,0.7);
+      border: 1px solid rgba(0,156,201,0.15);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .events-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0,156,201,0.1);
+    }
+
+    .events-icon {
+      width: 36px; height: 36px;
+      background: rgba(204,211,42,0.1);
+      border: 1px solid rgba(204,211,42,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .events-title {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .events-count {
+      font-size: 12px;
+      color: var(--zb-muted);
+    }
+
+    .events-body {
+      padding: 24px 28px;
+    }
+
+    .event-item {
+      display: flex;
+      gap: 16px;
+      position: relative;
+      padding-bottom: 24px;
+    }
+
+    .event-item:last-child { padding-bottom: 0; }
+
+    /* Vertical line */
+    .event-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 28px;
+      bottom: 0;
+      width: 2px;
+      background: rgba(0,156,201,0.12);
+    }
+
+    .event-dot-wrap {
+      flex-shrink: 0;
+      width: 24px;
+      display: flex;
+      justify-content: center;
+      padding-top: 2px;
+    }
+
+    .event-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--zb-cyan);
+      background: var(--zb-navy);
+      position: relative;
+      z-index: 1;
+    }
+
+    .event-item:first-child .event-dot {
+      width: 12px; height: 12px;
+      border-color: var(--zb-lime);
+      background: rgba(204,211,42,0.3);
+      box-shadow: 0 0 0 3px rgba(204,211,42,0.15);
+    }
+
+    .event-content { flex: 1; min-width: 0; }
+
+    .event-desc {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--zb-white);
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
+    .event-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--zb-muted);
+    }
+
+    .event-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Bodega badge special */
+    .bodega-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(204,211,42,0.1);
+      border: 1px solid rgba(204,211,42,0.25);
+      color: var(--zb-lime);
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-left: 8px;
+    }
+
+    /* ── BODEGA CARD (CubiQ) ── */
+    #resultado-bodega {
+      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .bodega-status-bar {
+      background: linear-gradient(135deg, rgba(204,211,42,0.15) 0%, rgba(0,156,201,0.15) 100%);
+      border: 1px solid rgba(204,211,42,0.3);
+      border-radius: 14px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .bodega-status-bar .bodega-icon { font-size: 28px; }
+
+    .bodega-status-bar .bodega-text {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--zb-lime);
+    }
+
+    .bodega-status-bar .bodega-date {
+      font-size: 13px;
+      color: var(--zb-muted);
+      margin-top: 2px;
+    }
+
+    .bodega-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,156,201,0.1);
+    }
+
+    .bodega-photo-wrap {
+      margin-top: 20px;
+      border-top: 1px solid rgba(0,156,201,0.1);
+      padding-top: 20px;
+    }
+
+    .bodega-photo {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,156,201,0.2);
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .bodega-photo:hover {
+      transform: scale(1.02);
+      border-color: var(--zb-cyan);
+    }
+
+    /* ── USPS / PENDING NOTICE ── */
+    .notice-card {
+      background: rgba(12,40,71,0.7);
+      border: 1px solid rgba(243,156,18,0.2);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .notice-bar {
+      height: 3px;
+      background: linear-gradient(90deg, var(--zb-orange) 0%, var(--zb-cyan) 100%);
+    }
+
+    .notice-body {
+      padding: 28px 32px;
+      text-align: center;
+    }
+
+    .notice-icon { font-size: 48px; margin-bottom: 16px; }
+
+    .notice-title {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .notice-msg {
+      color: var(--zb-muted);
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .carrier-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: rgba(0,156,201,0.1);
+      border: 1px solid rgba(0,156,201,0.3);
+      border-radius: 12px;
+      color: var(--zb-cyan);
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .carrier-link-btn:hover {
+      background: rgba(0,156,201,0.2);
+      transform: scale(1.02);
+    }
+
+    .delivery-note {
+      background: rgba(243,156,18,0.08);
+      border: 1px solid rgba(243,156,18,0.2);
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--zb-orange);
+      line-height: 1.6;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .delivery-note-icon { font-size: 18px; flex-shrink: 0; }
+
     /* FOOTER */
     footer {
       position: relative;
@@ -457,10 +961,18 @@
     @media (max-width: 600px) {
       header { padding: 14px 20px; }
       .hero  { padding: 48px 20px 36px; }
-      #resultado { padding: 0 16px 60px; }
+      #resultado, #resultado-tracking { padding: 0 16px 60px; }
       .search-wrap { flex-direction: column; }
       #buscar-btn  { padding: 16px; }
-      .card-body   { padding: 20px; }
+      .card-body, .tracking-header-body, .milestones-body { padding: 20px; }
+
+      .milestones-row { flex-wrap: wrap; gap: 8px; justify-content: center; }
+      .milestones-row::before { display: none; }
+      .milestone { flex: 0 0 auto; width: 60px; }
+      .ms-circle { width: 32px; height: 32px; font-size: 14px; }
+      .ms-label  { font-size: 9px; }
+
+      .events-body { padding: 16px 20px; }
     }
 
     /* ── RATING CARD ── */
@@ -522,7 +1034,6 @@
 
     .rating-sub strong { color: var(--zb-lime); font-weight: 600; }
 
-    /* Categorías */
     .rating-cats {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -551,10 +1062,7 @@
 
     .rating-cat-label span { margin-right: 6px; }
 
-    .stars-row {
-      display: flex;
-      gap: 4px;
-    }
+    .stars-row { display: flex; gap: 4px; }
 
     .star {
       font-size: 24px;
@@ -578,7 +1086,6 @@
       100% { transform: scale(1.2); }
     }
 
-    /* Promedio visual */
     .rating-overall {
       display: flex;
       align-items: center;
@@ -604,7 +1111,6 @@
     }
     .overall-label { font-size: 12px; color: var(--zb-muted); margin-top: 2px; }
 
-    /* Comentarios */
     #rating-comment-wrap {
       display: none;
       animation: fadeUp 0.3s ease both;
@@ -639,7 +1145,6 @@
     #rating-comment:focus { border-color: var(--zb-cyan); }
     #rating-comment::placeholder { color: #3a6080; }
 
-    /* Botón enviar */
     #rating-submit {
       width: 100%;
       padding: 16px;
@@ -659,7 +1164,6 @@
     #rating-submit:active { transform: scale(0.99); }
     #rating-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Estado post-envío */
     #rating-thanks { display: none; animation: fadeUp 0.4s ease both; }
 
     .thanks-5star, .thanks-low {
@@ -775,13 +1279,13 @@
 <section class="hero">
   <div class="hero-eyebrow">Rastreo en tiempo real</div>
   <h1>¿Dónde está<br>tu <span class="gradient-text">paquete</span>?</h1>
-  <p class="hero-sub" id="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega.</p>
+  <p class="hero-sub" id="hero-sub">Ingresa tu número de guía o tracking y te mostramos el estado actual de tu envío.</p>
 
   <div class="search-wrap">
     <input
       id="guia-input"
       type="text"
-      placeholder="Ej: SSW0208110485"
+      placeholder="Guía, tracking USPS, FedEx, Amazon…"
       autocomplete="off"
       spellcheck="false"
     />
@@ -795,9 +1299,12 @@
 
 <div id="loading">
   <div class="spinner"></div>
-  <p>Consultando estado del paquete…</p>
+  <p id="loading-text">Consultando estado del paquete…</p>
 </div>
 
+<!-- ═══════════════════════════════════════
+     RESULTADO INTERNO (guía ZenderBox)
+     ═══════════════════════════════════════ -->
 <div id="resultado">
 
   <!-- STATUS CARD -->
@@ -870,7 +1377,6 @@
     <div class="rating-top-bar"></div>
     <div class="rating-body">
 
-      <!-- Formulario -->
       <div id="rating-form-wrap">
         <div class="rating-eyebrow">⭐ Tu opinión importa</div>
         <div class="rating-title">¿Cómo fue tu experiencia?</div>
@@ -879,58 +1385,36 @@
           <strong>Los clientes que califican reciben un descuento en su próximo envío.</strong>
         </p>
 
-        <!-- Categorías -->
         <div class="rating-cats">
           <div class="rating-cat" id="cat-velocidad">
             <div class="rating-cat-label"><span>🚀</span> Velocidad</div>
             <div class="stars-row" data-cat="velocidad">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
+              <span class="star" data-val="1">⭐</span><span class="star" data-val="2">⭐</span><span class="star" data-val="3">⭐</span><span class="star" data-val="4">⭐</span><span class="star" data-val="5">⭐</span>
             </div>
           </div>
           <div class="rating-cat" id="cat-estado">
             <div class="rating-cat-label"><span>📦</span> Estado del paquete</div>
             <div class="stars-row" data-cat="estado">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
+              <span class="star" data-val="1">⭐</span><span class="star" data-val="2">⭐</span><span class="star" data-val="3">⭐</span><span class="star" data-val="4">⭐</span><span class="star" data-val="5">⭐</span>
             </div>
           </div>
           <div class="rating-cat" id="cat-comunicacion">
             <div class="rating-cat-label"><span>📱</span> Comunicación</div>
             <div class="stars-row" data-cat="comunicacion">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
+              <span class="star" data-val="1">⭐</span><span class="star" data-val="2">⭐</span><span class="star" data-val="3">⭐</span><span class="star" data-val="4">⭐</span><span class="star" data-val="5">⭐</span>
             </div>
           </div>
           <div class="rating-cat" id="cat-atencion">
             <div class="rating-cat-label"><span>🤝</span> Atención al cliente</div>
             <div class="stars-row" data-cat="atencion">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
+              <span class="star" data-val="1">⭐</span><span class="star" data-val="2">⭐</span><span class="star" data-val="3">⭐</span><span class="star" data-val="4">⭐</span><span class="star" data-val="5">⭐</span>
             </div>
           </div>
         </div>
 
-        <!-- Promedio general -->
         <div class="rating-overall" id="rating-overall" style="display:none">
           <div class="overall-stars">
-            <span class="overall-star" data-pos="1">⭐</span>
-            <span class="overall-star" data-pos="2">⭐</span>
-            <span class="overall-star" data-pos="3">⭐</span>
-            <span class="overall-star" data-pos="4">⭐</span>
-            <span class="overall-star" data-pos="5">⭐</span>
+            <span class="overall-star" data-pos="1">⭐</span><span class="overall-star" data-pos="2">⭐</span><span class="overall-star" data-pos="3">⭐</span><span class="overall-star" data-pos="4">⭐</span><span class="overall-star" data-pos="5">⭐</span>
           </div>
           <div class="overall-text">
             <div class="overall-num" id="overall-num">—</div>
@@ -938,7 +1422,6 @@
           </div>
         </div>
 
-        <!-- Comentario -->
         <div id="rating-comment-wrap">
           <label for="rating-comment">¿Algo que quieras contarnos? (opcional)</label>
           <textarea id="rating-comment" placeholder="Cuéntanos tu experiencia, sugerencias o lo que podemos mejorar…"></textarea>
@@ -949,9 +1432,189 @@
         </button>
       </div>
 
-      <!-- Post-envío -->
       <div id="rating-thanks"></div>
+    </div>
+  </div>
+</div>
 
+<!-- ═══════════════════════════════════════
+     RESULTADO TRACKING EXTERNO (17track)
+     ═══════════════════════════════════════ -->
+<div id="resultado-tracking">
+
+  <!-- Header: Carrier + Status -->
+  <div class="tracking-header-card">
+    <div class="card-top-bar"></div>
+    <div class="tracking-header-body">
+      <div class="tracking-top-row">
+        <div>
+          <div class="guia-label">Tracking number</div>
+          <div class="guia-value" id="tk-number">—</div>
+        </div>
+        <div class="ts-badge ts-notfound" id="tk-badge">
+          <div class="ts-dot"></div>
+          <span id="tk-status-text">—</span>
+        </div>
+      </div>
+
+      <div class="carrier-info" id="tk-carrier-wrap">
+        <div class="carrier-icon" id="tk-carrier-icon">📦</div>
+        <div>
+          <div class="carrier-name" id="tk-carrier-name">—</div>
+          <div class="carrier-service" id="tk-carrier-service"></div>
+        </div>
+      </div>
+
+      <div class="tracking-stats" id="tk-stats">
+        <div>
+          <div class="tracking-stat-label">Origen</div>
+          <div class="tracking-stat-value cyan" id="tk-origin">—</div>
+        </div>
+        <div>
+          <div class="tracking-stat-label">Destino</div>
+          <div class="tracking-stat-value cyan" id="tk-dest">—</div>
+        </div>
+        <div>
+          <div class="tracking-stat-label">Días en tránsito</div>
+          <div class="tracking-stat-value lime" id="tk-days">—</div>
+        </div>
+        <div>
+          <div class="tracking-stat-label">ETA estimada</div>
+          <div class="tracking-stat-value lime" id="tk-eta">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Milestones stepper -->
+  <div class="milestones-card">
+    <div class="card-top-bar"></div>
+    <div class="milestones-body">
+      <div class="milestones-row" id="tk-milestones">
+        <div class="milestone" id="ms-info">
+          <div class="ms-circle">📋</div>
+          <div class="ms-label">Info recibida</div>
+          <div class="ms-time" id="ms-info-time"></div>
+        </div>
+        <div class="milestone" id="ms-pickup">
+          <div class="ms-circle">🏬</div>
+          <div class="ms-label">Recogido</div>
+          <div class="ms-time" id="ms-pickup-time"></div>
+        </div>
+        <div class="milestone" id="ms-transit">
+          <div class="ms-circle">✈️</div>
+          <div class="ms-label">En tránsito</div>
+          <div class="ms-time" id="ms-transit-time"></div>
+        </div>
+        <div class="milestone" id="ms-customs">
+          <div class="ms-circle">🛃</div>
+          <div class="ms-label">Aduanas</div>
+          <div class="ms-time" id="ms-customs-time"></div>
+        </div>
+        <div class="milestone" id="ms-delivery">
+          <div class="ms-circle">🏠</div>
+          <div class="ms-label">Entregado</div>
+          <div class="ms-time" id="ms-delivery-time"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Events timeline -->
+  <div class="events-card">
+    <div class="card-top-bar"></div>
+    <div class="events-header">
+      <div class="events-icon">📍</div>
+      <div>
+        <div class="events-title">Historial de movimientos</div>
+        <div class="events-count" id="tk-events-count"></div>
+      </div>
+    </div>
+    <div class="events-body" id="tk-events-list">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     RESULTADO BODEGA (CubiQ)
+     ═══════════════════════════════════════ -->
+<div id="resultado-bodega">
+
+  <div class="tracking-header-card">
+    <div class="card-top-bar"></div>
+    <div class="tracking-header-body">
+      <div class="tracking-top-row">
+        <div>
+          <div class="guia-label">Tracking number</div>
+          <div class="guia-value" id="bk-number">—</div>
+        </div>
+        <div class="ts-badge ts-delivered">
+          <div class="ts-dot"></div>
+          <span>EN BODEGA</span>
+        </div>
+      </div>
+
+      <div class="bodega-status-bar">
+        <div class="bodega-icon">✅</div>
+        <div>
+          <div class="bodega-text">Recibido en bodega ZenderBox — Miami</div>
+          <div class="bodega-date" id="bk-date"></div>
+        </div>
+      </div>
+
+      <div class="carrier-info" id="bk-carrier-wrap">
+        <div class="carrier-icon" id="bk-carrier-icon">📦</div>
+        <div>
+          <div class="carrier-name" id="bk-carrier-name">—</div>
+          <div class="carrier-service" id="bk-carrier-service">Carrier detectado</div>
+        </div>
+      </div>
+
+      <div class="bodega-grid">
+        <div>
+          <div class="tracking-stat-label">Casillero</div>
+          <div class="tracking-stat-value lime" id="bk-casillero">—</div>
+        </div>
+        <div>
+          <div class="tracking-stat-label">Peso</div>
+          <div class="tracking-stat-value cyan" id="bk-peso">—</div>
+        </div>
+        <div>
+          <div class="tracking-stat-label">Dimensiones</div>
+          <div class="tracking-stat-value cyan" id="bk-dims">—</div>
+        </div>
+        <div>
+          <div class="tracking-stat-label">Destino</div>
+          <div class="tracking-stat-value lime" id="bk-dest">—</div>
+        </div>
+      </div>
+
+      <div class="bodega-photo-wrap" id="bk-photo-wrap" style="display:none">
+        <div class="tracking-stat-label" style="margin-bottom:12px">📸 Foto del paquete</div>
+        <img class="bodega-photo" id="bk-photo" src="" alt="Foto del paquete en bodega" onclick="window.open(this.src,'_blank')"/>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     RESULTADO USPS / PENDIENTE
+     ═══════════════════════════════════════ -->
+<div id="resultado-notice" style="display:none; position:relative; z-index:1; max-width:800px; margin:0 auto; padding:0 40px 80px; animation: fadeUp 0.5s ease both;">
+
+  <div class="notice-card">
+    <div class="notice-bar"></div>
+    <div class="notice-body">
+      <div class="notice-icon" id="nc-icon">📦</div>
+      <div class="notice-title" id="nc-title">—</div>
+      <p class="notice-msg" id="nc-msg">—</p>
+      <a class="carrier-link-btn" id="nc-link" href="#" target="_blank" rel="noopener" style="display:none">
+        Rastrear en <span id="nc-carrier-name">—</span> →
+      </a>
     </div>
   </div>
 
@@ -962,7 +1625,11 @@
 </footer>
 
 <script>
-  const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
+  // ═══════════════════════════════════════
+  //  WEBHOOKS
+  // ═══════════════════════════════════════
+  const N8N_WEBHOOK_URL     = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
+  const N8N_TRACKING_URL    = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-tracking';
 
   let mapInstance = null;
 
@@ -970,6 +1637,9 @@
     if (e.key === 'Enter') buscarGuia();
   });
 
+  // ═══════════════════════════════════════
+  //  ESTADO CLASSES (interno)
+  // ═══════════════════════════════════════
   function getEstadoClass(estado) {
     if (!estado) return 's-default';
     const e = estado.toLowerCase();
@@ -989,122 +1659,393 @@
     } catch { return fecha; }
   }
 
+  // ═══════════════════════════════════════
+  //  BÚSQUEDA PRINCIPAL — fallback inteligente
+  // ═══════════════════════════════════════
   async function buscarGuia() {
-    const guia = document.getElementById('guia-input').value.trim().toUpperCase();
-    if (!guia) return;
+    const input = document.getElementById('guia-input').value.trim();
+    if (!input) return;
 
+    const guia = input.toUpperCase();
+
+    // Reset all views
     document.getElementById('resultado').style.display = 'none';
+    document.getElementById('resultado-tracking').style.display = 'none';
+    document.getElementById('resultado-bodega').style.display = 'none';
+    document.getElementById('resultado-notice').style.display = 'none';
     document.getElementById('error-box').style.display = 'none';
+    // Clean up dynamic elements from previous searches
+    document.querySelectorAll('.delivery-note').forEach(el => el.remove());
     document.getElementById('loading').style.display = 'block';
+    document.getElementById('loading-text').textContent = 'Consultando estado del paquete…';
     document.getElementById('buscar-btn').disabled = true;
 
     try {
+      // ── PASO 1: Buscar en sistema interno ──
       const res = await fetch(`${N8N_WEBHOOK_URL}?guia=${encodeURIComponent(guia)}`);
       const data = await res.json();
 
-      document.getElementById('loading').style.display = 'none';
-
-      if (!data || data.error || !data.estado) {
-        showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
+      if (data && !data.error && data.estado) {
+        // ✅ Encontrado en sistema interno → mostrar como siempre
+        document.getElementById('loading').style.display = 'none';
+        mostrarResultadoInterno(guia, data);
+        document.getElementById('buscar-btn').disabled = false;
         return;
       }
+    } catch(e) {
+      // Error en webhook interno → continuar a tracking externo
+    }
 
-      document.getElementById('res-guia').textContent = guia;
-      document.getElementById('res-estado').textContent = data.estado || '—';
-      document.getElementById('res-direccion').textContent = data.direccion || '—';
-      document.getElementById('res-ciudad').textContent = data.ciudad || '—';
-      document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
-      document.getElementById('res-conductor').textContent = data.conductor?.trim() || 'Por asignar';
+    // ── PASO 2: No encontrado internamente → probar tracking externo ──
+    document.getElementById('loading-text').textContent = 'Buscando en carriers internacionales…';
 
-      // Aplicar país dinámicamente desde el webhook
-      aplicarPais(data.pais);
+    try {
+      const tkRes = await fetch(`${N8N_TRACKING_URL}?tracking=${encodeURIComponent(guia)}`);
+      const tkData = await tkRes.json();
 
-      const badge = document.getElementById('res-badge');
-      badge.className = `estado-badge ${getEstadoClass(data.estado)}`;
+      document.getElementById('loading').style.display = 'none';
 
-      // Mapa
-      if (data.latitude && data.longitude) {
-        document.getElementById('no-map').style.display = 'none';
-        document.getElementById('map').style.display = 'block';
-
-        if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-
-        mapInstance = L.map('map').setView([data.latitude, data.longitude], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap'
-        }).addTo(mapInstance);
-
-        const icon = L.divIcon({
-          html: `<div style="
-            width:22px;height:22px;
-            background:linear-gradient(135deg,#009CC9,#CCD32A);
-            border-radius:50%;
-            border:3px solid #081F3A;
-            box-shadow:0 0 0 3px rgba(0,156,201,0.4)
-          "></div>`,
-          iconSize: [22,22], iconAnchor: [11,11], className: ''
-        });
-
-        L.marker([data.latitude, data.longitude], { icon })
-          .addTo(mapInstance)
-          .bindPopup(`<b>${guia}</b><br>${data.direccion || ''}`)
-          .openPopup();
+      if (tkData && !tkData.error) {
+        // Dispatch based on source
+        switch (tkData.source) {
+          case 'cubiq':
+            mostrarResultadoBodega(guia, tkData);
+            break;
+          case 'api':
+            if (tkData.events && tkData.events.length > 0) {
+              mostrarResultadoTracking(guia, tkData);
+            } else {
+              mostrarResultadoNotice('📦', 'Tracking registrado', tkData.message || 'Intenta buscar de nuevo en unos minutos.', tkData.carrier_name, tkData.carrier_url);
+            }
+            break;
+          case 'usps_link':
+            mostrarResultadoNotice('📬', 'Tu paquete aún no llega a nuestra bodega', tkData.message, 'USPS', tkData.carrier_url);
+            break;
+          case 'api_pending':
+            mostrarResultadoNotice('⏳', 'Tracking registrado', tkData.message || 'Intenta buscar de nuevo en 2-3 minutos.', tkData.carrier_name, tkData.carrier_url);
+            break;
+          default:
+            showError(tkData?.message || 'No encontramos información para ese número.');
+        }
       } else {
-        document.getElementById('no-map').style.display = 'flex';
-        document.getElementById('map').style.display = 'none';
+        showError(tkData?.message || 'No encontramos información para ese número. Verifica e intenta de nuevo.');
       }
-
-      // Fotos
-      const fotosCard = document.getElementById('fotos-card');
-      const fotosGrid = document.getElementById('photos-grid');
-      fotosGrid.innerHTML = '';
-
-      if (data.fotos && data.fotos.length > 0) {
-        fotosCard.style.display = 'block';
-        data.fotos.forEach(url => {
-          const img = document.createElement('img');
-          img.src = url;
-          img.alt = 'Evidencia de entrega';
-          img.onclick = () => window.open(url, '_blank');
-          fotosGrid.appendChild(img);
-        });
-      } else {
-        fotosCard.style.display = 'none';
-      }
-
-      document.getElementById('resultado').style.display = 'block';
-      initRating();
-
     } catch(e) {
       document.getElementById('loading').style.display = 'none';
-      showError('Error al conectar con el servidor. Intenta de nuevo.');
+      showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
     }
 
     document.getElementById('buscar-btn').disabled = false;
   }
 
+  // ═══════════════════════════════════════
+  //  RESULTADO INTERNO (sin cambios)
+  // ═══════════════════════════════════════
+  function mostrarResultadoInterno(guia, data) {
+    document.getElementById('res-guia').textContent = guia;
+    document.getElementById('res-estado').textContent = data.estado || '—';
+    document.getElementById('res-direccion').textContent = data.direccion || '—';
+    document.getElementById('res-ciudad').textContent = data.ciudad || '—';
+    document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
+    document.getElementById('res-conductor').textContent = data.conductor?.trim() || 'Por asignar';
+
+    aplicarPais(data.pais);
+
+    const badge = document.getElementById('res-badge');
+    badge.className = `estado-badge ${getEstadoClass(data.estado)}`;
+
+    // Mapa
+    if (data.latitude && data.longitude) {
+      document.getElementById('no-map').style.display = 'none';
+      document.getElementById('map').style.display = 'block';
+
+      if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+
+      mapInstance = L.map('map').setView([data.latitude, data.longitude], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(mapInstance);
+
+      const icon = L.divIcon({
+        html: `<div style="
+          width:22px;height:22px;
+          background:linear-gradient(135deg,#009CC9,#CCD32A);
+          border-radius:50%;
+          border:3px solid #081F3A;
+          box-shadow:0 0 0 3px rgba(0,156,201,0.4)
+        "></div>`,
+        iconSize: [22,22], iconAnchor: [11,11], className: ''
+      });
+
+      L.marker([data.latitude, data.longitude], { icon })
+        .addTo(mapInstance)
+        .bindPopup(`<b>${guia}</b><br>${data.direccion || ''}`)
+        .openPopup();
+    } else {
+      document.getElementById('no-map').style.display = 'flex';
+      document.getElementById('map').style.display = 'none';
+    }
+
+    // Fotos
+    const fotosCard = document.getElementById('fotos-card');
+    const fotosGrid = document.getElementById('photos-grid');
+    fotosGrid.innerHTML = '';
+
+    if (data.fotos && data.fotos.length > 0) {
+      fotosCard.style.display = 'block';
+      data.fotos.forEach(url => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Evidencia de entrega';
+        img.onclick = () => window.open(url, '_blank');
+        fotosGrid.appendChild(img);
+      });
+    } else {
+      fotosCard.style.display = 'none';
+    }
+
+    document.getElementById('resultado').style.display = 'block';
+    initRating();
+  }
+
+  // ═══════════════════════════════════════
+  //  RESULTADO TRACKING EXTERNO
+  // ═══════════════════════════════════════
+
+  const STATUS_MAP = {
+    'NotFound':           { text: 'No encontrado',        class: 'ts-notfound',  icon: '🔍' },
+    'InfoReceived':       { text: 'Info recibida',         class: 'ts-info',      icon: '📋' },
+    'InTransit':          { text: 'En tránsito',           class: 'ts-intransit', icon: '✈️' },
+    'Expired':            { text: 'Expirado',              class: 'ts-expired',   icon: '⏰' },
+    'AvailableForPickup': { text: 'Listo para recoger',    class: 'ts-pickup',    icon: '🏬' },
+    'OutForDelivery':     { text: 'En reparto',            class: 'ts-intransit', icon: '🚚' },
+    'DeliveryFailure':    { text: 'Fallo en entrega',      class: 'ts-exception', icon: '❌' },
+    'Delivered':          { text: 'Entregado',             class: 'ts-delivered', icon: '✅' },
+    'Exception':          { text: 'Excepción',             class: 'ts-exception', icon: '⚠️' },
+  };
+
+  const CARRIER_ICONS = {
+    'usps':    '🇺🇸', 'fedex':   '📦', 'ups':     '📦',
+    'dhl':     '📦', 'amazon':  '📦', 'tcc':     '🇨🇴',
+    'default': '📦'
+  };
+
+  function getCarrierIcon(name) {
+    if (!name) return '📦';
+    const n = name.toLowerCase();
+    for (const [key, icon] of Object.entries(CARRIER_ICONS)) {
+      if (n.includes(key)) return icon;
+    }
+    return '📦';
+  }
+
+  function formatTrackingDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch { return dateStr; }
+  }
+
+  function formatTrackingTime(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+    } catch { return ''; }
+  }
+
+  function mostrarResultadoTracking(number, data) {
+    // Number + Status badge
+    document.getElementById('tk-number').textContent = number;
+
+    const statusInfo = STATUS_MAP[data.status] || STATUS_MAP['NotFound'];
+    const tkBadge = document.getElementById('tk-badge');
+    tkBadge.className = `ts-badge ${statusInfo.class}`;
+    document.getElementById('tk-status-text').textContent = statusInfo.text;
+
+    // Carrier info
+    document.getElementById('tk-carrier-icon').textContent = getCarrierIcon(data.carrier_name);
+    document.getElementById('tk-carrier-name').textContent = data.carrier_name || 'Carrier detectado';
+    document.getElementById('tk-carrier-service').textContent = data.service_type || '';
+
+    // Stats
+    document.getElementById('tk-origin').textContent = data.origin_country || '—';
+    document.getElementById('tk-dest').textContent = data.dest_country || '—';
+    document.getElementById('tk-days').textContent = data.days_in_transit != null ? `${data.days_in_transit} días` : '—';
+    document.getElementById('tk-eta').textContent = data.eta ? formatTrackingDate(data.eta) : '—';
+
+    // Milestones
+    updateMilestones(data.milestones || [], data.status);
+
+    // Events timeline
+    renderEvents(data.events || []);
+
+    document.getElementById('resultado-tracking').style.display = 'block';
+
+    // Delivery note (if carrier says delivered but not in CubiQ)
+    if (data.delivery_note) {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'delivery-note';
+      noteEl.innerHTML = `<span class="delivery-note-icon">⚠️</span><span>${data.delivery_note}</span>`;
+      document.querySelector('.tracking-header-body').appendChild(noteEl);
+    }
+  }
+
+  // ═══════════════════════════════════════
+  //  RESULTADO BODEGA (CubiQ)
+  // ═══════════════════════════════════════
+  function mostrarResultadoBodega(number, data) {
+    document.getElementById('bk-number').textContent = number;
+    document.getElementById('bk-date').textContent = data.cubiq.measure_date ? `Procesado: ${formatFecha(data.cubiq.measure_date)}` : '';
+    document.getElementById('bk-carrier-icon').textContent = getCarrierIcon(data.carrier_name);
+    document.getElementById('bk-carrier-name').textContent = data.carrier_name || 'Carrier detectado';
+
+    document.getElementById('bk-casillero').textContent = data.cubiq.casillero || data.cubiq.dest_code || '—';
+    
+    const peso = data.cubiq.peso || data.cubiq.weight;
+    const unit = data.cubiq.unidad || data.cubiq.weight_unit || 'kg';
+    document.getElementById('bk-peso').textContent = peso ? `${peso} ${unit}` : '—';
+
+    const l = data.cubiq.largo || data.cubiq.length;
+    const w = data.cubiq.ancho || data.cubiq.width;
+    const h = data.cubiq.alto || data.cubiq.height;
+    document.getElementById('bk-dims').textContent = (l && w && h) ? `${l} × ${w} × ${h} cm` : '—';
+
+    document.getElementById('bk-dest').textContent = data.cubiq.dest_name || data.cubiq.dest_code || '—';
+
+    // Photo
+    const photoWrap = document.getElementById('bk-photo-wrap');
+    const photo = document.getElementById('bk-photo');
+    if (data.cubiq.img_main) {
+      photo.src = data.cubiq.img_main;
+      photoWrap.style.display = 'block';
+    } else {
+      photoWrap.style.display = 'none';
+    }
+
+    document.getElementById('resultado-bodega').style.display = 'block';
+  }
+
+  // ═══════════════════════════════════════
+  //  RESULTADO NOTICE (USPS link / Pending)
+  // ═══════════════════════════════════════
+  function mostrarResultadoNotice(icon, title, message, carrierName, carrierUrl) {
+    document.getElementById('nc-icon').textContent = icon;
+    document.getElementById('nc-title').textContent = title;
+    document.getElementById('nc-msg').textContent = message;
+
+    const linkBtn = document.getElementById('nc-link');
+    if (carrierUrl) {
+      document.getElementById('nc-carrier-name').textContent = carrierName || 'carrier';
+      linkBtn.href = carrierUrl;
+      linkBtn.style.display = 'inline-flex';
+    } else {
+      linkBtn.style.display = 'none';
+    }
+
+    document.getElementById('resultado-notice').style.display = 'block';
+  }
+
+  function updateMilestones(milestones, currentStatus) {
+    const msMap = {};
+    milestones.forEach(m => { msMap[m.key_stage] = m; });
+
+    const stages = [
+      { id: 'ms-info',     key: 'InfoReceived',     timeId: 'ms-info-time' },
+      { id: 'ms-pickup',   key: 'PickedUp',         timeId: 'ms-pickup-time' },
+      { id: 'ms-transit',  key: 'Departure',        timeId: 'ms-transit-time' },
+      { id: 'ms-customs',  key: 'Arrival',          timeId: 'ms-customs-time' },
+      { id: 'ms-delivery', key: 'Delivered',        timeId: 'ms-delivery-time' },
+    ];
+
+    const stageOrder = ['InfoReceived','PickedUp','Departure','Arrival','AvailableForPickup','OutForDelivery','Delivered'];
+    const currentIdx = stageOrder.indexOf(currentStatus);
+
+    let reachedActive = false;
+
+    stages.forEach((stage, i) => {
+      const el = document.getElementById(stage.id);
+      const timeEl = document.getElementById(stage.timeId);
+      el.classList.remove('completed', 'active', 'delivered');
+
+      const ms = msMap[stage.key];
+      const hasTime = ms && ms.time_iso;
+
+      if (stage.key === 'Delivered' && currentStatus === 'Delivered') {
+        el.classList.add('delivered');
+        if (hasTime) timeEl.textContent = formatTrackingDate(ms.time_iso);
+      } else if (hasTime) {
+        el.classList.add('completed');
+        timeEl.textContent = formatTrackingDate(ms.time_iso);
+      } else if (!reachedActive && !hasTime) {
+        // Mark the first unfinished stage as active if current status suggests it
+        if (currentStatus === 'InTransit' || currentStatus === 'OutForDelivery' || currentStatus === 'AvailableForPickup') {
+          el.classList.add('active');
+          reachedActive = true;
+        }
+        timeEl.textContent = '';
+      } else {
+        timeEl.textContent = '';
+      }
+    });
+  }
+
+  function renderEvents(events) {
+    const container = document.getElementById('tk-events-list');
+    const countEl = document.getElementById('tk-events-count');
+    container.innerHTML = '';
+    countEl.textContent = `${events.length} evento${events.length !== 1 ? 's' : ''} registrado${events.length !== 1 ? 's' : ''}`;
+
+    events.forEach(evt => {
+      const item = document.createElement('div');
+      item.className = 'event-item';
+
+      const date = formatTrackingDate(evt.time);
+      const time = formatTrackingTime(evt.time);
+
+      item.innerHTML = `
+        <div class="event-dot-wrap">
+          <div class="event-dot"></div>
+        </div>
+        <div class="event-content">
+          <div class="event-desc">${evt.description || '—'}</div>
+          <div class="event-meta">
+            ${date ? `<span>📅 ${date}</span>` : ''}
+            ${time ? `<span>🕐 ${time}</span>` : ''}
+            ${evt.location ? `<span>📍 ${evt.location}</span>` : ''}
+          </div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  // ═══════════════════════════════════════
+  //  ERROR
+  // ═══════════════════════════════════════
   function showError(msg) {
     document.getElementById('error-msg').textContent = msg;
     document.getElementById('error-box').style.display = 'block';
   }
 
-  // ── RATING SYSTEM ──
+  // ═══════════════════════════════════════
+  //  RATING SYSTEM (sin cambios)
+  // ═══════════════════════════════════════
   const RATING_WEBHOOK    = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-rating';
   const DESCUENTO_CODIGO  = 'GRACIAS10';
 
-  // Config por país — se puebla desde la respuesta del webhook
   const PAISES = {
     CR: { bandera: '🇨🇷', nombre: 'Costa Rica',  google_reviews_url: null },
-    CO: { bandera: '🇨🇴', nombre: 'Colombia',    google_reviews_url: '#' }, // ← reemplazar con link real de Google Reviews
+    CO: { bandera: '🇨🇴', nombre: 'Colombia',    google_reviews_url: '#' },
     PA: { bandera: '🇵🇦', nombre: 'Panamá',      google_reviews_url: null },
     EC: { bandera: '🇪🇨', nombre: 'Ecuador',     google_reviews_url: null },
   };
 
-  let currentPais    = null;   // objeto del país activo
+  let currentPais    = null;
   const ratings = { velocidad: 0, estado: 0, comunicacion: 0, atencion: 0 };
   let ratingGuia = '';
 
-  // Actualiza el badge, hero y footer según el país recibido del webhook
   function aplicarPais(codigoPais) {
     const config = PAISES[codigoPais?.toUpperCase()] || null;
     currentPais  = config;
@@ -1122,7 +2063,6 @@
 
   function initRating() {
     ratingGuia = document.getElementById('guia-input').value.trim().toUpperCase();
-    // reset
     Object.keys(ratings).forEach(k => ratings[k] = 0);
     document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.rating-cat').forEach(c => c.classList.remove('rated'));
@@ -1135,7 +2075,6 @@
     document.getElementById('rating-thanks').innerHTML = '';
   }
 
-  // Eventos de estrellas
   document.querySelectorAll('.stars-row').forEach(row => {
     const cat = row.dataset.cat;
     const stars = row.querySelectorAll('.star');
@@ -1180,10 +2119,7 @@
       s.classList.toggle('lit', parseInt(s.dataset.pos) <= Math.round(avg));
     });
 
-    // Mostrar comentario si hay al menos 1 categoría calificada
     document.getElementById('rating-comment-wrap').style.display = 'block';
-
-    // Habilitar envío si al menos 1 categoría calificada
     document.getElementById('rating-submit').disabled = false;
   }
 
@@ -1210,22 +2146,17 @@
           fecha: new Date().toISOString()
         })
       });
-    } catch(e) {
-      // Fallo silencioso — mostrar gracias igual
-    }
+    } catch(e) {}
 
-    // Mostrar pantalla de gracias
     document.getElementById('rating-form-wrap').style.display = 'none';
     const thanksDiv = document.getElementById('rating-thanks');
     thanksDiv.style.display = 'block';
 
     const googleUrl = currentPais?.google_reviews_url || null;
-    const mostrarGoogle = (promedio === 5) && !!googleUrl && googleUrl !== '#' === false ? (googleUrl === '#' ? false : true) : false;
     const esCincoEstrellas = promedio === 5;
     const tieneGoogle = !!googleUrl && googleUrl !== null;
 
     if (esCincoEstrellas && tieneGoogle) {
-      // 5 estrellas + país con Google Reviews → incentivo completo
       thanksDiv.innerHTML = `
         <div class="thanks-5star">
           <div class="thanks-emoji">🎉</div>
@@ -1252,7 +2183,6 @@
           </div>
         </div>`;
     } else {
-      // CR, o CO con menos de 5 estrellas → solo gracias
       thanksDiv.innerHTML = `
         <div class="thanks-low">
           <div class="thanks-emoji">🙏</div>
@@ -1265,10 +2195,7 @@
     }
   }
 
-  // ── FIN RATING SYSTEM ──
-
   function revelarDescuento(e) {
-    // Abre Google en nueva pestaña y revela el código de descuento
     setTimeout(() => {
       const el = document.getElementById('descuento-reveal');
       if (el) {
@@ -1278,10 +2205,12 @@
     }, 400);
   }
 
-
+  // ═══════════════════════════════════════
+  //  AUTO-SEARCH from URL params
+  // ═══════════════════════════════════════
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
-    const guia = params.get('guia');
+    const guia = params.get('guia') || params.get('tracking');
     if (guia) {
       document.getElementById('guia-input').value = guia.toUpperCase();
       buscarGuia();
