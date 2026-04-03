@@ -1317,10 +1317,18 @@
   // ═══ RESULTADO WMS ═══
   function mostrarResultadoWMS(data) {
     document.getElementById('wms-guia').textContent = data.guia || data.q;
-    document.getElementById('wms-status').textContent = data.ultimo_status || 'En proceso';
+    
+    // If SmartQuick says delivered but WMS doesn't know yet, override status
+    const sqEstado = (data.smartquick?.estado || '').toLowerCase();
+    let displayStatus = data.ultimo_status || 'En proceso';
+    if ((sqEstado.includes('finaliz') || sqEstado.includes('entregad')) && !displayStatus.toLowerCase().includes('entregad')) {
+      displayStatus = 'Entregado';
+    }
+    
+    document.getElementById('wms-status').textContent = displayStatus;
 
     const badge = document.getElementById('wms-badge');
-    badge.className = `estado-badge ${getEstadoClass(data.ultimo_status)}`;
+    badge.className = `estado-badge ${getEstadoClass(displayStatus)}`;
 
     // Resolved tracking → guia
     const resolvedWrap = document.getElementById('wms-resolved-wrap');
@@ -1437,8 +1445,17 @@
     document.getElementById('resultado-wms').style.display = 'block';
 
     // Show rating only if delivered (not "entregada a la aerolinea")
+    // Check BOTH: WMS status OR SmartQuick status
     const wmsStatus = (data.ultimo_status || '').toLowerCase();
-    const wmsEntregado = (wmsStatus.includes('entregad') || wmsStatus.includes('finaliz')) && !wmsStatus.includes('aerolinea');
+    const sqStatus = (data.smartquick?.estado || '').toLowerCase();
+    const wmsEntregado = ((wmsStatus.includes('entregad') || wmsStatus.includes('finaliz')) && !wmsStatus.includes('aerolinea'))
+                      || sqStatus.includes('finaliz') || sqStatus.includes('entregad');
+
+    // If delivered by SmartQuick but WMS doesn't know yet, complete the stepper visually
+    if (wmsEntregado && !wmsStatus.includes('entregad')) {
+      document.querySelectorAll('.wms-step').forEach(el => el.classList.add('done'));
+      document.querySelectorAll('.wms-step').forEach(el => el.classList.remove('active'));
+    }
     if (wmsEntregado) {
       document.getElementById('rating-card').style.display = 'block';
       document.getElementById('rating-wrapper').style.display = 'block';
