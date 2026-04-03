@@ -1363,9 +1363,9 @@
 
     document.getElementById('resultado-wms').style.display = 'block';
 
-    // Show rating only if delivered
+    // Show rating only if delivered (not "entregada a la aerolinea")
     const wmsStatus = (data.ultimo_status || '').toLowerCase();
-    const wmsEntregado = wmsStatus.includes('entregad') || wmsStatus.includes('finaliz');
+    const wmsEntregado = (wmsStatus.includes('entregad') || wmsStatus.includes('finaliz')) && !wmsStatus.includes('aerolinea');
     if (wmsEntregado) {
       document.getElementById('rating-card').style.display = 'block';
       document.getElementById('rating-wrapper').style.display = 'block';
