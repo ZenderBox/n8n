@@ -1628,7 +1628,8 @@
   // ═══════════════════════════════════════
   //  WEBHOOKS
   // ═══════════════════════════════════════
-  const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-unificado';
+  const N8N_SMARTQUICK_URL  = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
+  const N8N_TRACKING_URL   = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-tracking';
 
   let mapInstance = null;
 
@@ -1659,7 +1660,7 @@
   }
 
   // ═══════════════════════════════════════
-  //  BÚSQUEDA UNIFICADA — un solo webhook
+  //  BÚSQUEDA SECUENCIAL — SmartQuick → CubiQ → 17track
   // ═══════════════════════════════════════
   async function buscarGuia() {
     const input = document.getElementById('guia-input').value.trim();
@@ -1676,42 +1677,57 @@
     document.getElementById('loading-text').textContent = 'Consultando estado del paquete…';
     document.getElementById('buscar-btn').disabled = true;
 
+    // ── PASO 1: SmartQuick (rastreo-cr) ──
     try {
-      const res = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(input)}`);
+      const res = await fetch(`${N8N_SMARTQUICK_URL}?guia=${encodeURIComponent(input)}`);
       const data = await res.json();
+
+      if (data && !data.error && data.estado) {
+        document.getElementById('loading').style.display = 'none';
+        mostrarResultadoInterno(input.toUpperCase(), data);
+        document.getElementById('buscar-btn').disabled = false;
+        return;
+      }
+    } catch(e) {
+      // SmartQuick no encontró → seguir a tracking
+    }
+
+    // ── PASO 2: CubiQ + 17track (rastreo-tracking) ──
+    document.getElementById('loading-text').textContent = 'Buscando en carriers internacionales…';
+
+    try {
+      const tkRes = await fetch(`${N8N_TRACKING_URL}?tracking=${encodeURIComponent(input)}`);
+      const tkData = await tkRes.json();
 
       document.getElementById('loading').style.display = 'none';
 
-      if (data.error) {
-        showError(data.message || 'No encontramos información para ese número.');
-      } else {
-        switch (data.source) {
-          case 'consolidados':
-            mostrarResultadoInterno(data.q, data);
-            break;
+      if (tkData && !tkData.error) {
+        switch (tkData.source) {
           case 'cubiq':
-            mostrarResultadoBodega(data.q, data);
+            mostrarResultadoBodega(input.toUpperCase(), tkData);
             break;
           case 'api':
-            if (data.events && data.events.length > 0) {
-              mostrarResultadoTracking(data.q, data);
+            if (tkData.events && tkData.events.length > 0) {
+              mostrarResultadoTracking(input.toUpperCase(), tkData);
             } else {
-              mostrarResultadoNotice('📦', 'Tracking registrado', data.message || 'Intenta de nuevo en unos minutos.', data.carrier_name, data.carrier_url);
+              mostrarResultadoNotice('📦', 'Tracking registrado', tkData.message || 'Intenta de nuevo en unos minutos.', tkData.carrier_name, tkData.carrier_url);
             }
             break;
           case 'usps_link':
-            mostrarResultadoNotice('📬', 'Tu paquete aún no llega a nuestra bodega', data.message, 'USPS', data.carrier_url);
+            mostrarResultadoNotice('📬', 'Tu paquete aún no llega a nuestra bodega', tkData.message, 'USPS', tkData.carrier_url);
             break;
           case 'api_pending':
-            mostrarResultadoNotice('⏳', 'Tracking registrado', data.message || 'Intenta de nuevo en 2-3 minutos.', data.carrier_name, data.carrier_url);
+            mostrarResultadoNotice('⏳', 'Tracking registrado', tkData.message || 'Intenta de nuevo en 2-3 minutos.', tkData.carrier_name, tkData.carrier_url);
             break;
           default:
             showError('No encontramos información para ese número.');
         }
+      } else {
+        showError(tkData?.message || 'No encontramos información para ese número. Verifica e intenta de nuevo.');
       }
     } catch(e) {
       document.getElementById('loading').style.display = 'none';
-      showError('Error al conectar con el servidor. Intenta de nuevo.');
+      showError('No encontramos información para ese número. Verifica e intenta de nuevo.');
     }
 
     document.getElementById('buscar-btn').disabled = false;
