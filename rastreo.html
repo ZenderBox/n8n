@@ -1102,6 +1102,32 @@
       <img class="bodega-photo" id="wms-photo" src="" alt="Paquete" style="max-width:100%" onclick="window.open(this.src,'_blank')"/>
     </div>
   </div>
+  <!-- CONDUCTOR + MAP (SmartQuick) -->
+  <div class="zb-card" id="wms-conductor-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div><div class="info-label">Conductor</div><div class="info-value lime" id="wms-conductor">—</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="zb-card" id="wms-map-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">🗺️</div>
+      <div><div class="map-title">Ubicación de entrega</div><div class="map-sub">Dirección registrada del destinatario</div></div>
+    </div>
+    <div id="wms-no-map" class="no-map" style="display:none"><div class="icon">📍</div>Sin coordenadas disponibles</div>
+    <div id="wms-map" style="height:320px;display:none;filter:brightness(0.8) saturate(0.6) hue-rotate(180deg)"></div>
+  </div>
+  <div class="zb-card" id="wms-fotos-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📷</div>
+      <div><div class="map-title">Evidencia de entrega</div><div class="map-sub">Fotos tomadas por el conductor</div></div>
+    </div>
+    <div id="wms-fotos-grid" style="padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
+  </div>
   <div class="zb-card" id="wms-events-card" style="display:none">
     <div class="card-top-bar"></div>
     <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
@@ -1341,6 +1367,53 @@
       photoCard.style.display = 'block';
     } else {
       photoCard.style.display = 'none';
+    }
+
+    // SmartQuick data (conductor, GPS, delivery photos)
+    const sq = data.smartquick;
+    const mapCard = document.getElementById('wms-map-card');
+    const fotosCard = document.getElementById('wms-fotos-card');
+
+    if (sq) {
+      // Conductor info
+      if (sq.conductor) {
+        document.getElementById('wms-conductor').textContent = sq.conductor;
+        document.getElementById('wms-conductor-card').style.display = 'block';
+      }
+
+      // Map
+      if (sq.latitude && sq.longitude && mapCard) {
+        mapCard.style.display = 'block';
+        document.getElementById('wms-no-map').style.display = 'none';
+        document.getElementById('wms-map').style.display = 'block';
+        if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+        mapInstance = L.map('wms-map').setView([sq.latitude, sq.longitude], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapInstance);
+        const icon = L.divIcon({ html: '<div style="width:22px;height:22px;background:linear-gradient(135deg,#009CC9,#CCD32A);border-radius:50%;border:3px solid #081F3A;box-shadow:0 0 0 3px rgba(0,156,201,0.4)"></div>', iconSize: [22,22], iconAnchor: [11,11], className: '' });
+        L.marker([sq.latitude, sq.longitude], { icon }).addTo(mapInstance).bindPopup(`<b>${data.guia}</b><br>${sq.direccion || ''}`).openPopup();
+      } else if (mapCard) {
+        mapCard.style.display = 'none';
+      }
+
+      // Delivery photos
+      if (sq.fotos && sq.fotos.length > 0 && fotosCard) {
+        const grid = document.getElementById('wms-fotos-grid');
+        grid.innerHTML = '';
+        sq.fotos.forEach(url => {
+          const img = document.createElement('img');
+          img.src = url; img.alt = 'Evidencia de entrega';
+          img.style.cssText = 'width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:1px solid rgba(0,156,201,0.1);cursor:pointer';
+          img.onclick = () => window.open(url, '_blank');
+          grid.appendChild(img);
+        });
+        fotosCard.style.display = 'block';
+      } else if (fotosCard) {
+        fotosCard.style.display = 'none';
+      }
+    } else {
+      if (mapCard) mapCard.style.display = 'none';
+      if (fotosCard) fotosCard.style.display = 'none';
+      document.getElementById('wms-conductor-card').style.display = 'none';
     }
 
     // Events
