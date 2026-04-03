@@ -866,7 +866,7 @@
   </div>
 
   <!-- RATING CARD -->
-  <div class="rating-card" id="rating-card">
+  <div class="rating-card" id="rating-card" style="display:none">
     <div class="rating-top-bar"></div>
     <div class="rating-body">
 
@@ -1082,7 +1082,12 @@
       }
 
       document.getElementById('resultado').style.display = 'block';
-      initRating();
+
+      // Mostrar rating solo si el paquete fue entregado
+      const estadoLower = (data.estado || '').toLowerCase();
+      const estaEntregado = estadoLower.includes('finaliz') || estadoLower.includes('entregad');
+      document.getElementById('rating-card').style.display = estaEntregado ? 'block' : 'none';
+      if (estaEntregado) initRating();
 
     } catch(e) {
       document.getElementById('loading').style.display = 'none';
