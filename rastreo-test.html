@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rastreo de Paquete · ZenderBox</title>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --zb-cyan:   #009CC9;
+      --zb-lime:   #CCD32A;
+      --zb-navy:   #081F3A;
+      --zb-dark:   #2D2D2D;
+      --zb-navy2:  #0c2847;
+      --zb-white:  #ffffff;
+      --zb-off:    #e8f4f8;
+      --zb-muted:  #7a9ab5;
+      --zb-grad:   linear-gradient(135deg, #009CC9 0%, #CCD32A 100%);
+    }
+
+    body {
+      background: var(--zb-navy);
+      color: var(--zb-white);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,156,201,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,156,201,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HEADER */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,31,58,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,156,201,0.15);
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .logo-mark { width: 42px; height: 42px; }
+
+    .logo-text {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text .zender { color: var(--zb-cyan); }
+    .logo-text .box    { color: var(--zb-lime); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cr-badge {
+      background: rgba(0,156,201,0.12);
+      border: 1px solid rgba(0,156,201,0.25);
+      color: var(--zb-cyan);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 80px 40px 56px;
+      max-width: 660px;
+      margin: 0 auto;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(204,211,42,0.08);
+      border: 1px solid rgba(204,211,42,0.2);
+      color: var(--zb-lime);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--zb-lime);
+      border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+
+    h1 {
+      font-family: 'Exo 2', sans-serif;
+      font-size: clamp(34px, 6vw, 56px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+    }
+
+    h1 .gradient-text {
+      background: var(--zb-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      color: var(--zb-muted);
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.65;
+      margin-bottom: 44px;
+    }
+
+    /* SEARCH */
+    .search-wrap {
+      display: flex;
+      border: 1.5px solid rgba(0,156,201,0.25);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(12,40,71,0.8);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-wrap:focus-within {
+      border-color: var(--zb-cyan);
+      box-shadow: 0 0 0 4px rgba(0,156,201,0.1);
+    }
+
+    #guia-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 18px 24px;
+      color: var(--zb-white);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    #guia-input::placeholder { color: #3a6080; }
+
+    #buscar-btn {
+      background: var(--zb-grad);
+      color: var(--zb-navy);
+      border: none;
+      padding: 18px 32px;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    #buscar-btn:hover   { opacity: 0.9; }
+    #buscar-btn:active  { transform: scale(0.98); }
+    #buscar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* LOADING */
+    #loading {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .spinner {
+      width: 52px; height: 52px;
+      border: 3px solid rgba(0,156,201,0.15);
+      border-top-color: var(--zb-cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: var(--zb-muted); font-size: 14px; }
+
+    /* ERROR */
+    .error-box {
+      display: none;
+      background: rgba(255,80,80,0.06);
+      border: 1px solid rgba(255,80,80,0.2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-top: 20px;
+      text-align: center;
+      animation: fadeUp 0.3s ease both;
+    }
+    .error-box p { color: #ff8080; font-size: 14px; }
+
+    /* RESULT */
+    #resultado {
+      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    /* CARD */
+    .zb-card {
+      background: rgba(12,40,71,0.7);
+      border: 1px solid rgba(0,156,201,0.15);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .card-top-bar {
+      height: 3px;
+      background: var(--zb-grad);
+    }
+
+    .card-body { padding: 28px 32px; }
+
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .guia-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--zb-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .guia-value {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--zb-cyan);
+      letter-spacing: 0.5px;
+    }
+
+    /* Estado badge */
+    .estado-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .estado-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+    }
+
+    .estado-dot.pulse { animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.5; transform:scale(0.8); }
+    }
+
+    .s-no-asignado { background: rgba(108,127,216,0.1); color: #8090e0; border: 1px solid rgba(108,127,216,0.2); }
+    .s-no-asignado .estado-dot { background: #8090e0; }
+    .s-asignado    { background: rgba(0,156,201,0.1); color: var(--zb-cyan); border: 1px solid rgba(0,156,201,0.25); }
+    .s-asignado .estado-dot    { background: var(--zb-cyan); }
+    .s-en-ruta     { background: rgba(204,211,42,0.1); color: var(--zb-lime); border: 1px solid rgba(204,211,42,0.25); }
+    .s-en-ruta .estado-dot     { background: var(--zb-lime); }
+    .s-entregado   { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid rgba(46,204,113,0.25); }
+    .s-entregado .estado-dot   { background: #2ecc71; }
+    .s-default     { background: rgba(255,255,255,0.05); color: var(--zb-muted); border: 1px solid rgba(255,255,255,0.08); }
+    .s-default .estado-dot     { background: var(--zb-muted); }
+
+    /* Info grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,156,201,0.1);
+    }
+
+    .info-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--zb-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 5px;
+    }
+    .info-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--zb-white);
+      line-height: 1.4;
+    }
+    .info-value.accent { color: var(--zb-cyan); }
+    .info-value.lime   { color: var(--zb-lime); }
+
+    /* MAP */
+    .map-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0,156,201,0.1);
+    }
+
+    .map-icon {
+      width: 36px; height: 36px;
+      background: rgba(0,156,201,0.1);
+      border: 1px solid rgba(0,156,201,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .map-title {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .map-sub { font-size: 12px; color: var(--zb-muted); }
+
+    #map {
+      height: 320px;
+      display: none;
+      filter: brightness(0.8) saturate(0.6) hue-rotate(180deg);
+    }
+
+    .no-map {
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--zb-muted);
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .no-map .icon { font-size: 36px; opacity: 0.4; }
+
+    /* PHOTOS */
+    .photos-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(0,156,201,0.1);
+    }
+
+    .photos-grid {
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .photos-grid img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(0,156,201,0.1);
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .photos-grid img:hover {
+      transform: scale(1.02);
+      border-color: var(--zb-cyan);
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 32px 40px;
+      border-top: 1px solid rgba(0,156,201,0.08);
+      color: var(--zb-muted);
+      font-size: 12px;
+    }
+
+    footer span { color: var(--zb-cyan); }
+
+    @media (max-width: 600px) {
+      header { padding: 14px 20px; }
+      .hero  { padding: 48px 20px 36px; }
+      #resultado { padding: 0 16px 60px; }
+      .search-wrap { flex-direction: column; }
+      #buscar-btn  { padding: 16px; }
+      .card-body   { padding: 20px; }
+    }
+
+    /* ── RATING CARD ── */
+    .rating-card {
+      background: rgba(12,40,71,0.7);
+      border: 1px solid rgba(204,211,42,0.2);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+      position: relative;
+    }
+
+    .rating-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(204,211,42,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .rating-top-bar {
+      height: 3px;
+      background: linear-gradient(90deg, #CCD32A 0%, #009CC9 100%);
+    }
+
+    .rating-body { padding: 28px 32px; position: relative; }
+
+    .rating-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(204,211,42,0.08);
+      border: 1px solid rgba(204,211,42,0.2);
+      color: var(--zb-lime);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 16px;
+    }
+
+    .rating-title {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .rating-sub {
+      color: var(--zb-muted);
+      font-size: 13px;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .rating-sub strong { color: var(--zb-lime); font-weight: 600; }
+
+    /* Categorías */
+    .rating-cats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .rating-cat {
+      background: rgba(8,31,58,0.6);
+      border: 1px solid rgba(0,156,201,0.12);
+      border-radius: 14px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .rating-cat.rated { border-color: rgba(204,211,42,0.3); }
+
+    .rating-cat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--zb-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .rating-cat-label span { margin-right: 6px; }
+
+    .stars-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .star {
+      font-size: 24px;
+      cursor: pointer;
+      transition: transform 0.15s, filter 0.15s;
+      filter: grayscale(1) brightness(0.5);
+      user-select: none;
+      line-height: 1;
+    }
+
+    .star:hover, .star.active {
+      filter: grayscale(0) brightness(1);
+      transform: scale(1.2);
+    }
+
+    .star.active { animation: starPop 0.2s ease; }
+
+    @keyframes starPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.4); }
+      100% { transform: scale(1.2); }
+    }
+
+    /* Promedio visual */
+    .rating-overall {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(8,31,58,0.6);
+      border: 1px solid rgba(0,156,201,0.15);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+
+    .overall-stars { display: flex; gap: 3px; }
+    .overall-star  { font-size: 28px; filter: grayscale(1) brightness(0.4); transition: filter 0.3s; }
+    .overall-star.lit { filter: grayscale(0) brightness(1.1); }
+
+    .overall-text { flex: 1; }
+    .overall-num {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--zb-lime);
+      line-height: 1;
+    }
+    .overall-label { font-size: 12px; color: var(--zb-muted); margin-top: 2px; }
+
+    /* Comentarios */
+    #rating-comment-wrap {
+      display: none;
+      animation: fadeUp 0.3s ease both;
+      margin-bottom: 20px;
+    }
+
+    #rating-comment-wrap label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--zb-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    #rating-comment {
+      width: 100%;
+      background: rgba(8,31,58,0.6);
+      border: 1px solid rgba(0,156,201,0.2);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: var(--zb-white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 90px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #rating-comment:focus { border-color: var(--zb-cyan); }
+    #rating-comment::placeholder { color: #3a6080; }
+
+    /* Botón enviar */
+    #rating-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--zb-grad);
+      border: none;
+      border-radius: 12px;
+      color: var(--zb-navy);
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    #rating-submit:hover  { opacity: 0.9; }
+    #rating-submit:active { transform: scale(0.99); }
+    #rating-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Estado post-envío */
+    #rating-thanks { display: none; animation: fadeUp 0.4s ease both; }
+
+    .thanks-5star, .thanks-low {
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .thanks-5star {
+      background: linear-gradient(135deg, rgba(204,211,42,0.08) 0%, rgba(0,156,201,0.08) 100%);
+      border: 1px solid rgba(204,211,42,0.25);
+    }
+
+    .thanks-low {
+      background: rgba(0,156,201,0.06);
+      border: 1px solid rgba(0,156,201,0.15);
+    }
+
+    .thanks-emoji { font-size: 48px; margin-bottom: 12px; }
+
+    .thanks-title {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .thanks-msg {
+      color: var(--zb-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .thanks-msg strong { color: var(--zb-lime); }
+
+    .discount-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(204,211,42,0.1);
+      border: 1px dashed rgba(204,211,42,0.4);
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .discount-code {
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--zb-lime);
+      letter-spacing: 3px;
+    }
+
+    .discount-label { font-size: 12px; color: var(--zb-muted); margin-top: 2px; }
+
+    .btn-google {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px;
+      background: #fff;
+      border: none;
+      border-radius: 12px;
+      color: #1a1a1a;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-google:hover  { opacity: 0.92; transform: scale(1.01); }
+    .btn-google svg    { width: 20px; height: 20px; flex-shrink: 0; }
+    .btn-google-sub    { font-size: 11px; color: #888; font-weight: 400; margin-top: 8px; }
+
+    @media (max-width: 600px) {
+      .rating-body  { padding: 20px; }
+      .rating-cats  { grid-template-columns: 1fr 1fr; }
+      .overall-num  { font-size: 26px; }
+    }
+
+    /* ── TRACKING EXTERNO ── */
+    #resultado-tracking, #resultado-bodega, #resultado-notice, #resultado-wms {
+      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .tk-carrier { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .tk-carrier-icon { font-size: 28px; }
+    .tk-carrier-name { font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 16px; }
+    .tk-carrier-service { font-size: 12px; color: var(--zb-muted); }
+
+    .tk-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; padding-top: 20px; border-top: 1px solid rgba(0,156,201,0.1); }
+
+    .tk-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 100px; font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .tk-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    .tk-intransit { background: rgba(204,211,42,0.1); color: var(--zb-lime); border: 1px solid rgba(204,211,42,0.25); }
+    .tk-intransit .tk-dot { background: var(--zb-lime); animation: pulse 2s infinite; }
+    .tk-delivered { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid rgba(46,204,113,0.25); }
+    .tk-delivered .tk-dot { background: #2ecc71; }
+    .tk-other { background: rgba(0,156,201,0.1); color: var(--zb-cyan); border: 1px solid rgba(0,156,201,0.25); }
+    .tk-other .tk-dot { background: var(--zb-cyan); }
+
+    .tk-events { padding: 24px 28px; }
+    .tk-event { display: flex; gap: 16px; position: relative; padding-bottom: 24px; }
+    .tk-event:last-child { padding-bottom: 0; }
+    .tk-event:not(:last-child)::after { content: ''; position: absolute; left: 11px; top: 28px; bottom: 0; width: 2px; background: rgba(0,156,201,0.12); }
+    .tk-event-dot { flex-shrink: 0; width: 24px; display: flex; justify-content: center; padding-top: 2px; }
+    .tk-event-dot span { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--zb-cyan); background: var(--zb-navy); display: block; position: relative; z-index: 1; }
+    .tk-event:first-child .tk-event-dot span { width: 12px; height: 12px; border-color: var(--zb-lime); background: rgba(204,211,42,0.3); box-shadow: 0 0 0 3px rgba(204,211,42,0.15); }
+    .tk-event-desc { font-size: 14px; font-weight: 500; color: var(--zb-white); line-height: 1.5; margin-bottom: 4px; }
+    .tk-event-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--zb-muted); }
+
+    .bodega-bar { background: linear-gradient(135deg, rgba(204,211,42,0.15), rgba(0,156,201,0.15)); border: 1px solid rgba(204,211,42,0.3); border-radius: 14px; padding: 16px 24px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .bodega-bar-text { font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 16px; color: var(--zb-lime); }
+    .bodega-bar-date { font-size: 13px; color: var(--zb-muted); margin-top: 2px; }
+    .bodega-photo { width: 100%; max-width: 400px; border-radius: 14px; border: 1px solid rgba(0,156,201,0.2); cursor: pointer; transition: transform 0.2s; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0,156,201,0.1); }
+    .bodega-photo:hover { transform: scale(1.02); }
+
+    .notice-card { background: rgba(12,40,71,0.7); border: 1px solid rgba(243,156,18,0.2); border-radius: 20px; overflow: hidden; backdrop-filter: blur(8px); }
+    .notice-bar { height: 3px; background: linear-gradient(90deg, #f39c12, var(--zb-cyan)); }
+    .notice-body { padding: 28px 32px; text-align: center; }
+    .notice-icon { font-size: 48px; margin-bottom: 16px; }
+    .notice-title { font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 10px; }
+    .notice-msg { color: var(--zb-muted); font-size: 14px; line-height: 1.7; margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .carrier-link-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: rgba(0,156,201,0.1); border: 1px solid rgba(0,156,201,0.3); border-radius: 12px; color: var(--zb-cyan); font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s; }
+    .carrier-link-btn:hover { background: rgba(0,156,201,0.2); transform: scale(1.02); }
+
+    .delivery-note { background: rgba(243,156,18,0.08); border: 1px solid rgba(243,156,18,0.2); border-radius: 12px; padding: 14px 20px; margin-top: 16px; font-size: 13px; color: #f39c12; line-height: 1.6; }
+
+    @media (max-width: 600px) {
+      #resultado-tracking, #resultado-bodega, #resultado-notice, #resultado-wms { padding: 0 16px 60px; }
+    }
+
+    /* ── WMS STEPPER ── */
+    .wms-stepper { display: flex; align-items: flex-start; justify-content: space-between; position: relative; padding: 0 8px; margin: 24px 0; }
+    .wms-stepper::before { content: ''; position: absolute; top: 18px; left: 28px; right: 28px; height: 2px; background: rgba(0,156,201,0.15); z-index: 0; }
+    .wms-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; flex: 1; max-width: 90px; }
+    .wms-step-circle { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,156,201,0.2); background: var(--zb-navy); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; transition: all 0.3s; }
+    .wms-step.done .wms-step-circle { border-color: var(--zb-cyan); background: rgba(0,156,201,0.15); }
+    .wms-step.active .wms-step-circle { border-color: var(--zb-lime); background: rgba(204,211,42,0.15); box-shadow: 0 0 0 4px rgba(204,211,42,0.15); animation: pulseBorder 2s infinite; }
+    @keyframes pulseBorder { 0%,100% { box-shadow: 0 0 0 4px rgba(204,211,42,0.15); } 50% { box-shadow: 0 0 0 8px rgba(204,211,42,0.05); } }
+    .wms-step-label { font-size: 9px; font-weight: 600; color: var(--zb-muted); text-transform: uppercase; letter-spacing: 0.5px; text-align: center; line-height: 1.3; }
+    .wms-step.done .wms-step-label { color: var(--zb-cyan); }
+    .wms-step.active .wms-step-label { color: var(--zb-lime); }
+    .wms-info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .wms-info-box { background: rgba(8,31,58,0.6); border: 1px solid rgba(0,156,201,0.12); border-radius: 14px; padding: 16px; }
+    .wms-info-box-title { font-size: 10px; font-weight: 600; color: var(--zb-muted); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+    .wms-resolved { background: rgba(204,211,42,0.06); border: 1px solid rgba(204,211,42,0.15); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; font-size: 12px; color: var(--zb-muted); }
+    .wms-resolved strong { color: var(--zb-lime); }
+    @media (max-width: 600px) { .wms-stepper { flex-wrap: wrap; gap: 8px; justify-content: center; } .wms-stepper::before { display: none; } .wms-step { flex: 0 0 auto; width: 60px; } .wms-info-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg class="logo-mark" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="zbgrad" x1="0" y1="0" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#009CC9"/>
+          <stop offset="100%" stop-color="#CCD32A"/>
+        </linearGradient>
+      </defs>
+      <rect width="42" height="42" rx="10" fill="url(#zbgrad)"/>
+      <text x="7" y="31" font-family="'Exo 2',sans-serif" font-weight="900" font-size="26" fill="white">Z</text>
+    </svg>
+    <div class="logo-text">
+      <span class="zender">Zender</span><span class="box">Box</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="cr-badge" id="pais-badge">🌎 ZenderBox</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">Rastreo en tiempo real</div>
+  <h1>¿Dónde está<br>tu <span class="gradient-text">paquete</span>?</h1>
+  <p class="hero-sub" id="hero-sub">Ingresa tu número de guía o tracking y te mostramos el estado actual de tu envío.</p>
+
+  <div class="search-wrap">
+    <input
+      id="guia-input"
+      type="text"
+      placeholder="Guía, tracking USPS, FedEx, Amazon…"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button id="buscar-btn" onclick="buscarGuia()">Rastrear →</button>
+  </div>
+
+  <div class="error-box" id="error-box">
+    <p id="error-msg">No encontramos esa guía. Verifica el número e intenta de nuevo.</p>
+  </div>
+</section>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Consultando estado del paquete…</p>
+</div>
+
+<div id="resultado">
+
+  <!-- STATUS CARD -->
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Número de guía</div>
+          <div class="guia-value" id="res-guia">—</div>
+        </div>
+        <div class="estado-badge s-default" id="res-badge">
+          <div class="estado-dot pulse"></div>
+          <span id="res-estado">—</span>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Dirección</div>
+          <div class="info-value" id="res-direccion">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Ciudad</div>
+          <div class="info-value accent" id="res-ciudad">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Fecha de entrega</div>
+          <div class="info-value lime" id="res-fecha">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Conductor</div>
+          <div class="info-value" id="res-conductor">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP CARD -->
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="map-header">
+      <div class="map-icon">🗺️</div>
+      <div>
+        <div class="map-title">Ubicación de entrega</div>
+        <div class="map-sub">Dirección registrada del destinatario</div>
+      </div>
+    </div>
+    <div id="no-map" class="no-map">
+      <div class="icon">📍</div>
+      Sin coordenadas disponibles
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <!-- PHOTOS CARD -->
+  <div class="zb-card" id="fotos-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div class="photos-header">
+      <div class="map-icon">📷</div>
+      <div>
+        <div class="map-title">Evidencia de entrega</div>
+        <div class="map-sub">Fotos tomadas por el conductor</div>
+      </div>
+    </div>
+    <div class="photos-grid" id="photos-grid"></div>
+  </div>
+
+
+
+</div>
+
+<!-- BODEGA (CubiQ) -->
+<div id="resultado-bodega">
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Tracking number</div>
+          <div class="guia-value" id="bk-number">—</div>
+        </div>
+        <div class="tk-badge tk-delivered"><div class="tk-dot"></div><span>EN BODEGA</span></div>
+      </div>
+      <div class="bodega-bar">
+        <span style="font-size:28px">✅</span>
+        <div>
+          <div class="bodega-bar-text">Recibido en bodega ZenderBox — Miami</div>
+          <div class="bodega-bar-date" id="bk-date"></div>
+        </div>
+      </div>
+      <div class="tk-carrier" id="bk-carrier">
+        <div class="tk-carrier-icon" id="bk-carrier-icon">📦</div>
+        <div><div class="tk-carrier-name" id="bk-carrier-name">—</div></div>
+      </div>
+      <div class="tk-stats">
+        <div><div class="info-label">Casillero</div><div class="info-value lime" id="bk-casillero">—</div></div>
+        <div><div class="info-label">Peso</div><div class="info-value accent" id="bk-peso">—</div></div>
+        <div><div class="info-label">Dimensiones</div><div class="info-value accent" id="bk-dims">—</div></div>
+        <div><div class="info-label">Destino</div><div class="info-value lime" id="bk-dest">—</div></div>
+      </div>
+      <div id="bk-photo-wrap" style="display:none">
+        <div class="info-label" style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(0,156,201,0.1);margin-bottom:12px">📸 Foto del paquete</div>
+        <img class="bodega-photo" id="bk-photo" src="" alt="Paquete" onclick="window.open(this.src,'_blank')"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRACKING EXTERNO (17track) -->
+<div id="resultado-tracking">
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Tracking number</div>
+          <div class="guia-value" id="tk-number">—</div>
+        </div>
+        <div class="tk-badge tk-other" id="tk-badge"><div class="tk-dot"></div><span id="tk-status-text">—</span></div>
+      </div>
+      <div class="tk-carrier">
+        <div class="tk-carrier-icon" id="tk-carrier-icon">📦</div>
+        <div>
+          <div class="tk-carrier-name" id="tk-carrier-name">—</div>
+          <div class="tk-carrier-service" id="tk-carrier-service"></div>
+        </div>
+      </div>
+      <div class="tk-stats" id="tk-stats">
+        <div><div class="info-label">Origen</div><div class="info-value accent" id="tk-origin">—</div></div>
+        <div><div class="info-label">Destino</div><div class="info-value accent" id="tk-dest">—</div></div>
+        <div><div class="info-label">Días en tránsito</div><div class="info-value lime" id="tk-days">—</div></div>
+        <div><div class="info-label">ETA</div><div class="info-value lime" id="tk-eta">—</div></div>
+      </div>
+      <div id="tk-delivery-note"></div>
+      <div id="tk-last-event" style="display:none; margin-top:20px; padding:20px 24px; background:rgba(204,211,42,0.08); border:1px solid rgba(204,211,42,0.2); border-radius:14px;">
+        <div style="font-size:10px; font-weight:600; color:var(--zb-muted); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:8px;">Último movimiento</div>
+        <div id="tk-last-event-desc" style="font-family:'Exo 2',sans-serif; font-weight:700; font-size:18px; color:var(--zb-lime); line-height:1.4;"></div>
+        <div id="tk-last-event-meta" style="font-size:13px; color:var(--zb-muted); margin-top:6px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📍</div>
+      <div><div class="map-title">Historial de movimientos</div><div class="map-sub" id="tk-events-count"></div></div>
+    </div>
+    <div class="tk-events" id="tk-events-list"></div>
+  </div>
+</div>
+
+<!-- NOTICE (USPS / Pendiente) -->
+<div id="resultado-notice">
+  <div class="notice-card">
+    <div class="notice-bar"></div>
+    <div class="notice-body">
+      <div class="notice-icon" id="nc-icon">📦</div>
+      <div class="notice-title" id="nc-title">—</div>
+      <p class="notice-msg" id="nc-msg">—</p>
+      <a class="carrier-link-btn" id="nc-link" href="#" target="_blank" rel="noopener" style="display:none">Rastrear en <span id="nc-carrier-name">—</span> →</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- WMS RESULT -->
+<div id="resultado-wms">
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Número de guía</div>
+          <div class="guia-value" id="wms-guia">—</div>
+        </div>
+        <div class="estado-badge s-default" id="wms-badge">
+          <div class="estado-dot pulse"></div>
+          <span id="wms-status">—</span>
+        </div>
+      </div>
+      <div id="wms-resolved-wrap" class="wms-resolved" style="display:none"></div>
+      <div class="wms-info-row">
+        <div class="wms-info-box">
+          <div class="wms-info-box-title">📤 Origen</div>
+          <div class="info-value" id="wms-origen-ciudad">—</div>
+          <div style="font-size:12px;color:var(--zb-muted);margin-top:4px" id="wms-remitente"></div>
+        </div>
+        <div class="wms-info-box">
+          <div class="wms-info-box-title">📥 Destino</div>
+          <div class="info-value accent" id="wms-destino-ciudad">—</div>
+          <div style="font-size:12px;color:var(--zb-muted);margin-top:4px" id="wms-destinatario"></div>
+        </div>
+      </div>
+      <div class="wms-stepper" id="wms-stepper">
+        <div class="wms-step" id="ws-aerolinea">
+          <div class="wms-step-circle">✈️</div>
+          <div class="wms-step-label">Aerolínea</div>
+        </div>
+        <div class="wms-step" id="ws-aeropuerto">
+          <div class="wms-step-circle">🛬</div>
+          <div class="wms-step-label">Aeropuerto</div>
+        </div>
+        <div class="wms-step" id="ws-bodega">
+          <div class="wms-step-circle">📦</div>
+          <div class="wms-step-label">Bodega destino</div>
+        </div>
+        <div class="wms-step" id="ws-reparto">
+          <div class="wms-step-circle">🚚</div>
+          <div class="wms-step-label">En reparto</div>
+        </div>
+        <div class="wms-step" id="ws-entregado">
+          <div class="wms-step-circle">✅</div>
+          <div class="wms-step-label">Entregado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="zb-card" id="wms-photo-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📸</div>
+      <div><div class="map-title">Foto del paquete</div><div class="map-sub">Captura al ingresar a bodega</div></div>
+    </div>
+    <div style="padding:20px 24px;text-align:center">
+      <img class="bodega-photo" id="wms-photo" src="" alt="Paquete" style="max-width:100%" onclick="window.open(this.src,'_blank')"/>
+    </div>
+  </div>
+  <!-- CONDUCTOR + MAP (SmartQuick) -->
+  <div class="zb-card" id="wms-conductor-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div><div class="info-label">Conductor</div><div class="info-value lime" id="wms-conductor">—</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="zb-card" id="wms-map-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">🗺️</div>
+      <div><div class="map-title">Ubicación de entrega</div><div class="map-sub">Dirección registrada del destinatario</div></div>
+    </div>
+    <div id="wms-no-map" class="no-map" style="display:none"><div class="icon">📍</div>Sin coordenadas disponibles</div>
+    <div id="wms-map" style="height:320px;display:none;filter:brightness(0.8) saturate(0.6) hue-rotate(180deg)"></div>
+  </div>
+  <div class="zb-card" id="wms-fotos-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📷</div>
+      <div><div class="map-title">Evidencia de entrega</div><div class="map-sub">Fotos tomadas por el conductor</div></div>
+    </div>
+    <div id="wms-fotos-grid" style="padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
+  </div>
+  <div class="zb-card" id="wms-events-card" style="display:none">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📍</div>
+      <div><div class="map-title">Progreso del envío</div><div class="map-sub" id="wms-events-count"></div></div>
+    </div>
+    <div class="tk-events" id="wms-events-list"></div>
+  </div>
+
+</div>
+
+
+<!-- RATING CARD (standalone - shows for any result type) -->
+<div id="rating-wrapper" style="display:none;position:relative;z-index:1;max-width:800px;margin:0 auto;padding:0 40px 40px;animation:fadeUp 0.5s ease both">
+  <!-- RATING CARD -->
+  <div class="rating-card" id="rating-card" style="display:none">
+    <div class="rating-top-bar"></div>
+    <div class="rating-body">
+
+      <!-- Formulario -->
+      <div id="rating-form-wrap">
+        <div class="rating-eyebrow">⭐ Tu opinión importa</div>
+        <div class="rating-title">¿Cómo fue tu experiencia?</div>
+        <p class="rating-sub">
+          Tarda menos de 30 segundos y nos ayuda a mejorar.<br>
+          <strong>Al calificarnos participas automáticamente en la rifa semanal de un envío gratis 🎁</strong>
+        </p>
+
+        <!-- Categorías -->
+        <div class="rating-cats">
+          <div class="rating-cat" id="cat-velocidad">
+            <div class="rating-cat-label"><span>🚀</span> Velocidad</div>
+            <div class="stars-row" data-cat="velocidad">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+          <div class="rating-cat" id="cat-estado">
+            <div class="rating-cat-label"><span>📦</span> Estado del paquete</div>
+            <div class="stars-row" data-cat="estado">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+          <div class="rating-cat" id="cat-comunicacion">
+            <div class="rating-cat-label"><span>📱</span> Comunicación</div>
+            <div class="stars-row" data-cat="comunicacion">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+          <div class="rating-cat" id="cat-atencion">
+            <div class="rating-cat-label"><span>🤝</span> Atención al cliente</div>
+            <div class="stars-row" data-cat="atencion">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Promedio general -->
+        <div class="rating-overall" id="rating-overall" style="display:none">
+          <div class="overall-stars">
+            <span class="overall-star" data-pos="1">⭐</span>
+            <span class="overall-star" data-pos="2">⭐</span>
+            <span class="overall-star" data-pos="3">⭐</span>
+            <span class="overall-star" data-pos="4">⭐</span>
+            <span class="overall-star" data-pos="5">⭐</span>
+          </div>
+          <div class="overall-text">
+            <div class="overall-num" id="overall-num">—</div>
+            <div class="overall-label">Promedio de tu calificación</div>
+          </div>
+        </div>
+
+        <!-- Comentario -->
+        <div id="rating-comment-wrap">
+          <label for="rating-comment">¿Algo que quieras contarnos? (opcional)</label>
+          <textarea id="rating-comment" placeholder="Cuéntanos tu experiencia, sugerencias o lo que podemos mejorar…"></textarea>
+        </div>
+
+        <button id="rating-submit" onclick="enviarCalificacion()" disabled>
+          Enviar calificación →
+        </button>
+      </div>
+
+      <!-- Post-envío -->
+      <div id="rating-thanks"></div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 <span>ZenderBox</span> · <span id="footer-pais">Costa Rica & Colombia</span> · Todos los derechos reservados
+</footer>
+
+<script>
+  const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-wms-v4';
+  const RATING_WEBHOOK = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-rating';
+  const DESCUENTO_CODIGO = 'GRACIAS10';
+
+  let mapInstance = null;
+
+  document.getElementById('guia-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') buscarGuia();
+  });
+
+  function getEstadoClass(estado) {
+    if (!estado) return 's-default';
+    const e = estado.toLowerCase();
+    if (e.includes('no asig')) return 's-no-asignado';
+    if (e.includes('asig') || e.includes('preparar')) return 's-asignado';
+    if (e.includes('ruta') || e.includes('llegado') || e.includes('acept') || e.includes('camino')) return 's-en-ruta';
+    if (e.includes('finaliz') || e.includes('entregad')) return 's-entregado';
+    if (e.includes('bodega') || e.includes('aerol') || e.includes('aerop') || e.includes('miami') || e.includes('vuelo')) return 's-en-ruta';
+    return 's-default';
+  }
+
+  function formatFecha(fecha) {
+    if (!fecha) return '—';
+    try {
+      return new Date(fecha).toLocaleDateString('es-CR', { day: '2-digit', month: 'long', year: 'numeric' });
+    } catch { return fecha; }
+  }
+
+  // ═══ BÚSQUEDA UNIFICADA — UN SOLO WEBHOOK ═══
+  async function buscarGuia() {
+    const guia = document.getElementById('guia-input').value.trim();
+    if (!guia) return;
+
+    ['resultado','resultado-wms','resultado-tracking','resultado-bodega','resultado-notice','error-box','rating-wrapper'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.querySelectorAll('.delivery-note').forEach(el => el.remove());
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('buscar-btn').disabled = true;
+
+    try {
+      const res = await fetch(`${N8N_WEBHOOK_URL}?q=${encodeURIComponent(guia)}`);
+      const data = await res.json();
+      document.getElementById('loading').style.display = 'none';
+
+      if (data.error) {
+        showError(data.message || 'No encontramos información para ese número.');
+      } else {
+        switch (data.source) {
+          case 'wms':
+            mostrarResultadoWMS(data);
+            break;
+          case 'api':
+            if (data.events && data.events.length > 0) {
+              mostrarResultadoTracking(data.q, data);
+            } else {
+              mostrarNotice('📦', 'Tracking registrado', data.message || 'Intenta de nuevo en unos minutos.', data.carrier_name, data.carrier_url);
+            }
+            break;
+          case 'usps_link':
+            mostrarNotice('📬', 'Tu paquete aún no llega a nuestra bodega', data.message, 'USPS', data.carrier_url);
+            break;
+          case 'api_pending':
+            mostrarNotice('⏳', 'Tracking registrado', data.message || 'Intenta de nuevo en 2-3 minutos.', data.carrier_name, data.carrier_url);
+            break;
+          default:
+            showError('No encontramos información para ese número.');
+        }
+      }
+    } catch(e) {
+      document.getElementById('loading').style.display = 'none';
+      showError('Error al conectar con el servidor. Intenta de nuevo.');
+    }
+    document.getElementById('buscar-btn').disabled = false;
+  }
+
+  // ═══ RESULTADO WMS ═══
+  function mostrarResultadoWMS(data) {
+    document.getElementById('wms-guia').textContent = data.guia || data.q;
+    
+    // If SmartQuick says delivered but WMS doesn't know yet, override status
+    const sqEstado = (data.smartquick?.estado || '').toLowerCase();
+    let displayStatus = data.ultimo_status || 'En proceso';
+    if ((sqEstado.includes('finaliz') || sqEstado.includes('entregad')) && !displayStatus.toLowerCase().includes('entregad')) {
+      displayStatus = 'Entregado';
+    }
+    
+    document.getElementById('wms-status').textContent = displayStatus;
+
+    const badge = document.getElementById('wms-badge');
+    badge.className = `estado-badge ${getEstadoClass(displayStatus)}`;
+
+    // Resolved tracking → guia
+    const resolvedWrap = document.getElementById('wms-resolved-wrap');
+    if (data.guia_resuelta && data.q.toUpperCase() !== data.guia) {
+      resolvedWrap.innerHTML = `Tracking <strong>${data.q}</strong> → Guía <strong>${data.guia}</strong>`;
+      resolvedWrap.style.display = 'block';
+    } else {
+      resolvedWrap.style.display = 'none';
+    }
+
+    // Origin / Destination
+    document.getElementById('wms-origen-ciudad').textContent = data.origen?.ciudad || 'Miami';
+    document.getElementById('wms-remitente').textContent = data.origen?.remitente || '';
+    document.getElementById('wms-destino-ciudad').textContent = data.destino?.ciudad || '—';
+    document.getElementById('wms-destinatario').textContent = data.destino?.destinatario || '';
+
+    // Apply country
+    aplicarPais(data.pais);
+
+    // Stepper
+    const stepIds = ['ws-aerolinea','ws-aeropuerto','ws-bodega','ws-reparto','ws-entregado'];
+    const stepStages = data.stepper || [];
+    let lastCompleted = -1;
+
+    stepIds.forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.classList.remove('done', 'active');
+      if (stepStages[i] && stepStages[i].completed) {
+        el.classList.add('done');
+        lastCompleted = i;
+      }
+    });
+    // Mark the next step as active
+    if (lastCompleted >= 0 && lastCompleted < stepIds.length - 1) {
+      document.getElementById(stepIds[lastCompleted + 1]).classList.add('active');
+    } else if (lastCompleted === -1 && stepStages.length > 0) {
+      document.getElementById(stepIds[0]).classList.add('active');
+    }
+
+    // Photo from CubiQ
+    const photoCard = document.getElementById('wms-photo-card');
+    if (data.foto) {
+      document.getElementById('wms-photo').src = data.foto;
+      photoCard.style.display = 'block';
+    } else {
+      photoCard.style.display = 'none';
+    }
+
+    // SmartQuick data (conductor, GPS, delivery photos)
+    const sq = data.smartquick;
+    const mapCard = document.getElementById('wms-map-card');
+    const fotosCard = document.getElementById('wms-fotos-card');
+
+    if (sq) {
+      // Conductor info
+      if (sq.conductor) {
+        document.getElementById('wms-conductor').textContent = sq.conductor;
+        document.getElementById('wms-conductor-card').style.display = 'block';
+      }
+
+      // Map
+      if (sq.latitude && sq.longitude && mapCard) {
+        mapCard.style.display = 'block';
+        document.getElementById('wms-no-map').style.display = 'none';
+        document.getElementById('wms-map').style.display = 'block';
+        if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+        mapInstance = L.map('wms-map').setView([sq.latitude, sq.longitude], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapInstance);
+        const icon = L.divIcon({ html: '<div style="width:22px;height:22px;background:linear-gradient(135deg,#009CC9,#CCD32A);border-radius:50%;border:3px solid #081F3A;box-shadow:0 0 0 3px rgba(0,156,201,0.4)"></div>', iconSize: [22,22], iconAnchor: [11,11], className: '' });
+        L.marker([sq.latitude, sq.longitude], { icon }).addTo(mapInstance).bindPopup(`<b>${data.guia}</b><br>${sq.direccion || ''}`).openPopup();
+      } else if (mapCard) {
+        mapCard.style.display = 'none';
+      }
+
+      // Delivery photos
+      if (sq.fotos && sq.fotos.length > 0 && fotosCard) {
+        const grid = document.getElementById('wms-fotos-grid');
+        grid.innerHTML = '';
+        sq.fotos.forEach(url => {
+          const img = document.createElement('img');
+          img.src = url; img.alt = 'Evidencia de entrega';
+          img.style.cssText = 'width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:1px solid rgba(0,156,201,0.1);cursor:pointer';
+          img.onclick = () => window.open(url, '_blank');
+          grid.appendChild(img);
+        });
+        fotosCard.style.display = 'block';
+      } else if (fotosCard) {
+        fotosCard.style.display = 'none';
+      }
+    } else {
+      if (mapCard) mapCard.style.display = 'none';
+      if (fotosCard) fotosCard.style.display = 'none';
+      document.getElementById('wms-conductor-card').style.display = 'none';
+    }
+
+    // Events
+    const eventsCard = document.getElementById('wms-events-card');
+    const eventsList = document.getElementById('wms-events-list');
+    eventsList.innerHTML = '';
+
+    if (data.events && data.events.length > 0) {
+      document.getElementById('wms-events-count').textContent = `${data.events.length} evento${data.events.length !== 1 ? 's' : ''}`;
+      data.events.forEach(evt => {
+        const item = document.createElement('div');
+        item.className = 'tk-event';
+        item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${traducirEvento(evt.descripcion)}</div><div class="tk-event-meta"><span>📅 ${evt.fecha || ''}</span></div></div>`;
+        eventsList.appendChild(item);
+      });
+      eventsCard.style.display = 'block';
+    } else {
+      eventsCard.style.display = 'none';
+    }
+
+    document.getElementById('resultado-wms').style.display = 'block';
+
+    // Show rating only if delivered (not "entregada a la aerolinea")
+    // Check BOTH: WMS status OR SmartQuick status
+    const wmsStatus = (data.ultimo_status || '').toLowerCase();
+    const sqStatus = (data.smartquick?.estado || '').toLowerCase();
+    const wmsEntregado = ((wmsStatus.includes('entregad') || wmsStatus.includes('finaliz')) && !wmsStatus.includes('aerolinea'))
+                      || sqStatus.includes('finaliz') || sqStatus.includes('entregad');
+
+    // If delivered by SmartQuick but WMS doesn't know yet, complete the stepper visually
+    if (wmsEntregado && !wmsStatus.includes('entregad')) {
+      document.querySelectorAll('.wms-step').forEach(el => el.classList.add('done'));
+      document.querySelectorAll('.wms-step').forEach(el => el.classList.remove('active'));
+    }
+    if (wmsEntregado) {
+      document.getElementById('rating-card').style.display = 'block';
+      document.getElementById('rating-wrapper').style.display = 'block';
+      initRating();
+    }
+  }
+
+  // ═══ TRADUCIR EVENTOS ═══
+  function traducirEvento(desc) {
+    if (!desc) return '—';
+    const d = desc.trim();
+    const traducciones = [
+      [/delivered.*door/i, '✅ Entregado en puerta'],
+      [/delivered.*yard/i, '✅ Entregado en patio/entrada'],
+      [/delivered.*mailbox/i, '✅ Entregado en buzón'],
+      [/delivered.*agent/i, '✅ Entregado a agente'],
+      [/delivered.*left with individual/i, '✅ Entregado a persona en la dirección'],
+      [/^delivered$/i, '✅ Entregado'],
+      [/delivered/i, '✅ Entregado'],
+      [/out for delivery/i, '🚚 En camino a tu dirección'],
+      [/in transit/i, '✈️ En tránsito'],
+      [/departed.*facility/i, '📤 Salió del centro de distribución'],
+      [/departed.*hub/i, '📤 Salió del centro regional'],
+      [/departed.*station/i, '📤 Salió de la estación'],
+      [/arrived.*facility/i, '📥 Llegó al centro de distribución'],
+      [/arrived.*hub/i, '📥 Llegó al centro regional'],
+      [/arrived.*station/i, '📥 Llegó a la estación'],
+      [/arrived.*post office/i, '📥 Llegó a la oficina postal'],
+      [/processing.*facility/i, '⚙️ Procesando en centro de distribución'],
+      [/customs clearance/i, '🛃 En proceso de aduanas'],
+      [/picked up/i, '📦 Paquete recogido por el carrier'],
+      [/usps in possession/i, '📦 USPS tiene el paquete'],
+      [/shipping label created/i, '📋 Etiqueta de envío creada'],
+      [/shipper created.*label/i, '📋 El remitente creó la etiqueta'],
+      [/shipment information.*sent/i, '📋 Información enviada al carrier'],
+      [/info received/i, '📋 Información recibida por el carrier'],
+      [/delivery attempt/i, '⚠️ Intento de entrega fallido'],
+      [/return.*sender/i, '↩️ Devuelto al remitente'],
+      [/available.*pick.?up/i, '🏬 Disponible para recoger'],
+      // WMS Spanish events (pass through with emoji)
+      [/entrada bodega miami/i, '📦 Entrada Bodega Miami'],
+      [/consolidado casillero/i, '📦 Consolidado en Casillero'],
+      [/entregad.*aerolinea/i, '✈️ Entregado a la Aerolínea'],
+      [/llegada.*aeropuerto/i, '🛬 Llegada al Aeropuerto de Destino'],
+      [/entrada bodega destino/i, '📦 Llegó a Bodega ZenderBox'],
+      [/en reparto/i, '🚚 En Reparto'],
+      [/^entregado$/i, '✅ Entregado'],
+      [/ingreso desde cubiq/i, '📦 Ingresado a Bodega Miami'],
+      [/editar guias/i, '📋 En proceso de preparación'],
+    ];
+    for (const [regex, traduccion] of traducciones) {
+      if (regex.test(d)) return traduccion;
+    }
+    return d;
+  }
+
+  // ═══ RESULTADO TRACKING (17track) ═══
+  function mostrarResultadoTracking(number, data) {
+    document.getElementById('tk-number').textContent = number;
+    const statusMap = { 'InTransit': ['En tránsito','tk-intransit'], 'Delivered': ['Entregado en dirección ZB','tk-delivered'], 'OutForDelivery': ['En camino a entrega','tk-intransit'], 'InfoReceived': ['Info recibida','tk-other'], 'Exception': ['Excepción','tk-other'], 'NotFound': ['No encontrado','tk-other'] };
+    const [txt, cls] = statusMap[data.status] || [data.status_text || data.status, 'tk-other'];
+    document.getElementById('tk-badge').className = `tk-badge ${cls}`;
+    document.getElementById('tk-status-text').textContent = txt;
+    document.getElementById('tk-carrier-icon').textContent = '📦';
+    document.getElementById('tk-carrier-name').textContent = data.carrier_name || 'Carrier';
+    document.getElementById('tk-carrier-service').textContent = data.service_type || '';
+    document.getElementById('tk-origin').textContent = data.origin_country || '—';
+    document.getElementById('tk-dest').textContent = data.dest_country || '—';
+    document.getElementById('tk-days').textContent = data.days_in_transit != null ? `${data.days_in_transit} días` : '—';
+    document.getElementById('tk-eta').textContent = data.eta ? formatFecha(data.eta) : '—';
+    document.getElementById('tk-delivery-note').innerHTML = data.delivery_note ? `<div class="delivery-note">⚠️ ${data.delivery_note}</div>` : '';
+
+    // Last event
+    const lastEvtEl = document.getElementById('tk-last-event');
+    if (data.events && data.events.length > 0) {
+      const last = data.events[0];
+      const ld = last.time ? new Date(last.time) : null;
+      const ldate = ld ? ld.toLocaleDateString('es', {day:'2-digit',month:'long',year:'numeric'}) : '';
+      const ltime = ld ? ld.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
+      document.getElementById('tk-last-event-desc').textContent = traducirEvento(last.description);
+      document.getElementById('tk-last-event-meta').textContent = [ldate, ltime, last.location].filter(Boolean).join(' · ');
+      lastEvtEl.style.display = 'block';
+    } else { lastEvtEl.style.display = 'none'; }
+
+    const container = document.getElementById('tk-events-list');
+    container.innerHTML = '';
+    document.getElementById('tk-events-count').textContent = `${data.events.length} evento${data.events.length !== 1 ? 's' : ''}`;
+    data.events.forEach(evt => {
+      const d2 = evt.time ? new Date(evt.time) : null;
+      const date = d2 ? d2.toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric'}) : '';
+      const time = d2 ? d2.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
+      const item = document.createElement('div');
+      item.className = 'tk-event';
+      item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${traducirEvento(evt.description)}</div><div class="tk-event-meta">${date ? `<span>📅 ${date}</span>` : ''}${time ? `<span>🕐 ${time}</span>` : ''}${evt.location ? `<span>📍 ${evt.location}</span>` : ''}</div></div>`;
+      container.appendChild(item);
+    });
+    document.getElementById('resultado-tracking').style.display = 'block';
+  }
+
+  // ═══ RESULTADO BODEGA (CubiQ) ═══
+  function mostrarResultadoBodega(number, data) {
+    document.getElementById('bk-number').textContent = number;
+    document.getElementById('bk-date').textContent = data.cubiq?.measure_date ? `Procesado: ${formatFecha(data.cubiq.measure_date)}` : '';
+    document.getElementById('bk-carrier-icon').textContent = '📦';
+    document.getElementById('bk-carrier-name').textContent = data.carrier_name || 'Carrier detectado';
+    document.getElementById('bk-casillero').textContent = data.cubiq?.casillero || data.cubiq?.dest_code || '—';
+    const peso = data.cubiq?.peso; const unit = data.cubiq?.unidad || 'kg';
+    document.getElementById('bk-peso').textContent = peso ? `${peso} ${unit}` : '—';
+    const l = data.cubiq?.largo, w = data.cubiq?.ancho, h = data.cubiq?.alto;
+    document.getElementById('bk-dims').textContent = (l && w && h) ? `${l} × ${w} × ${h} cm` : '—';
+    document.getElementById('bk-dest').textContent = data.cubiq?.dest_name || data.cubiq?.dest_code || '—';
+    const photoWrap = document.getElementById('bk-photo-wrap');
+    if (data.cubiq?.external_pic) { document.getElementById('bk-photo').src = data.cubiq.external_pic; photoWrap.style.display = 'block'; }
+    else if (data.cubiq?.img_main) { document.getElementById('bk-photo').src = data.cubiq.img_main; photoWrap.style.display = 'block'; }
+    else { photoWrap.style.display = 'none'; }
+    document.getElementById('resultado-bodega').style.display = 'block';
+  }
+
+  // ═══ NOTICE ═══
+  function mostrarNotice(icon, title, message, carrierName, carrierUrl) {
+    document.getElementById('nc-icon').textContent = icon;
+    document.getElementById('nc-title').textContent = title;
+    document.getElementById('nc-msg').textContent = message;
+    const linkBtn = document.getElementById('nc-link');
+    if (carrierUrl) { document.getElementById('nc-carrier-name').textContent = carrierName || 'carrier'; linkBtn.href = carrierUrl; linkBtn.style.display = 'inline-flex'; }
+    else { linkBtn.style.display = 'none'; }
+    document.getElementById('resultado-notice').style.display = 'block';
+  }
+
+  function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-box').style.display = 'block';
+  }
+
+  // ═══ RATING ═══
+  const PAISES = {
+    CR: { bandera: '🇨🇷', nombre: 'Costa Rica', google_reviews_url: null },
+    CO: { bandera: '🇨🇴', nombre: 'Colombia', google_reviews_url: '#' },
+    PA: { bandera: '🇵🇦', nombre: 'Panamá', google_reviews_url: null },
+  };
+  let currentPais = null;
+  let currentPaisCode = '';
+  const ratings = { velocidad: 0, estado: 0, comunicacion: 0, atencion: 0 };
+  let ratingGuia = '';
+
+  function aplicarPais(codigoPais) {
+    const config = PAISES[codigoPais?.toUpperCase()] || null;
+    currentPais = config;
+    currentPaisCode = codigoPais?.toUpperCase() || '';
+    if (!config) return;
+    const badge = document.getElementById('pais-badge');
+    if (badge) badge.textContent = `${config.bandera} ${config.nombre}`;
+    const footerPais = document.getElementById('footer-pais');
+    if (footerPais) footerPais.textContent = config.nombre;
+  }
+
+  function initRating() {
+    ratingGuia = document.getElementById('guia-input').value.trim().toUpperCase();
+    Object.keys(ratings).forEach(k => ratings[k] = 0);
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.rating-cat').forEach(c => c.classList.remove('rated'));
+    document.getElementById('rating-overall').style.display = 'none';
+    document.getElementById('rating-comment-wrap').style.display = 'none';
+    document.getElementById('rating-comment').value = '';
+    document.getElementById('rating-submit').disabled = true;
+    document.getElementById('rating-form-wrap').style.display = 'block';
+    document.getElementById('rating-thanks').style.display = 'none';
+    document.getElementById('rating-thanks').innerHTML = '';
+  }
+
+  document.querySelectorAll('.stars-row').forEach(row => {
+    const cat = row.dataset.cat;
+    const stars = row.querySelectorAll('.star');
+    stars.forEach(star => {
+      star.addEventListener('mouseenter', () => { const val = parseInt(star.dataset.val); stars.forEach(s => { s.classList.toggle('active', parseInt(s.dataset.val) <= val); }); });
+      star.addEventListener('mouseleave', () => { stars.forEach(s => { s.classList.toggle('active', parseInt(s.dataset.val) <= ratings[cat]); }); });
+      star.addEventListener('click', () => { const val = parseInt(star.dataset.val); ratings[cat] = val; stars.forEach(s => { s.classList.toggle('active', parseInt(s.dataset.val) <= val); }); document.getElementById(`cat-${cat}`).classList.add('rated'); actualizarPromedio(); });
+    });
+  });
+
+  function actualizarPromedio() {
+    const vals = Object.values(ratings).filter(v => v > 0);
+    if (vals.length === 0) return;
+    const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
+    const rounded = Math.round(avg * 10) / 10;
+    document.getElementById('rating-overall').style.display = 'flex';
+    document.getElementById('overall-num').textContent = rounded.toFixed(1) + ' / 5.0';
+    document.querySelectorAll('.overall-star').forEach(s => { s.classList.toggle('lit', parseInt(s.dataset.pos) <= Math.round(avg)); });
+    document.getElementById('rating-comment-wrap').style.display = 'block';
+    document.getElementById('rating-submit').disabled = false;
+  }
+
+  async function enviarCalificacion() {
+    const vals = Object.values(ratings).filter(v => v > 0);
+    if (vals.length === 0) return;
+    const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
+    const promedio = Math.round(avg * 10) / 10;
+    const comentario = document.getElementById('rating-comment').value.trim();
+    document.getElementById('rating-submit').disabled = true;
+    document.getElementById('rating-submit').textContent = 'Enviando…';
+    try { await fetch(RATING_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guia: ratingGuia, pais: currentPaisCode, ratings, promedio, comentario, fecha: new Date().toISOString() }) }); } catch(e) {}
+    document.getElementById('rating-form-wrap').style.display = 'none';
+    const thanksDiv = document.getElementById('rating-thanks');
+    thanksDiv.style.display = 'block';
+
+    if (promedio === 5 && currentPaisCode === 'CO') {
+      thanksDiv.innerHTML = `
+        <div style="border-radius:16px;padding:28px;text-align:center;background:linear-gradient(135deg,rgba(204,211,42,0.08),rgba(0,156,201,0.08));border:1px solid rgba(204,211,42,0.25)">
+          <div style="font-size:48px;margin-bottom:12px">🎉</div>
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px">¡Muchas gracias!</div>
+          <p style="color:var(--zb-muted);font-size:14px;line-height:1.6;margin-bottom:20px">
+            Tu calificación de <strong style="color:var(--zb-lime)">5 estrellas</strong> nos llena de orgullo.<br>
+            Déjanos una reseña en Google y te regalamos <strong style="color:var(--zb-lime)">$2 en tu próximo envío</strong>.
+          </p>
+          <a class="btn-google" href="https://g.page/r/zenderbox-colombia/review" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Dejar reseña en Google →
+          </a>
+          <p style="font-size:11px;color:#888;margin-top:8px">Se abre en nueva pestaña</p>
+          <div id="descuento-reveal" style="display:none;margin-top:16px;background:rgba(204,211,42,0.1);border:1px dashed rgba(204,211,42,0.4);border-radius:12px;padding:14px 20px;text-align:center">
+            <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:20px;color:var(--zb-lime);letter-spacing:3px">${DESCUENTO_CODIGO}</div>
+            <div style="font-size:12px;color:var(--zb-muted);margin-top:2px">$2 de descuento · Menciónalo al contactarnos</div>
+          </div>
+        </div>`;
+    } else {
+      thanksDiv.innerHTML = `
+        <div style="border-radius:16px;padding:28px;text-align:center;background:rgba(0,156,201,0.06);border:1px solid rgba(0,156,201,0.15)">
+          <div style="font-size:48px;margin-bottom:12px">🙏</div>
+          <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px">¡Gracias por tu calificación!</div>
+          <p style="color:var(--zb-muted);font-size:14px;line-height:1.6">${comentario ? 'Hemos recibido tu comentario y lo revisaremos.' : 'Tu opinión nos ayuda a mejorar el servicio.'}</p>
+        </div>`;
+    }
+  }
+
+  window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const guia = params.get('guia') || params.get('tracking') || params.get('q');
+    if (guia) { document.getElementById('guia-input').value = guia.toUpperCase(); buscarGuia(); }
+  });
+</script>
+
+</body>
+</html>
