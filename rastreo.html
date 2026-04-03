@@ -1079,6 +1079,11 @@
         <div><div class="info-label">ETA</div><div class="info-value lime" id="tk-eta">—</div></div>
       </div>
       <div id="tk-delivery-note"></div>
+      <div id="tk-last-event" style="display:none; margin-top:20px; padding:20px 24px; background:rgba(204,211,42,0.08); border:1px solid rgba(204,211,42,0.2); border-radius:14px;">
+        <div style="font-size:10px; font-weight:600; color:var(--zb-muted); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:8px;">Último movimiento</div>
+        <div id="tk-last-event-desc" style="font-family:'Exo 2',sans-serif; font-weight:700; font-size:18px; color:var(--zb-lime); line-height:1.4;"></div>
+        <div id="tk-last-event-meta" style="font-size:13px; color:var(--zb-muted); margin-top:6px;"></div>
+      </div>
     </div>
   </div>
   <div class="zb-card">
@@ -1392,6 +1397,20 @@
     document.getElementById('tk-dest').textContent = data.dest_country || '—';
     document.getElementById('tk-days').textContent = data.days_in_transit != null ? `${data.days_in_transit} días` : '—';
     document.getElementById('tk-eta').textContent = data.eta ? formatFecha(data.eta) : '—';
+    // Last event prominent display
+    const lastEvtEl = document.getElementById('tk-last-event');
+    if (data.events && data.events.length > 0) {
+      const last = data.events[0];
+      const ld = last.time ? new Date(last.time) : null;
+      const ldate = ld ? ld.toLocaleDateString('es', {day:'2-digit',month:'long',year:'numeric'}) : '';
+      const ltime = ld ? ld.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
+      document.getElementById('tk-last-event-desc').textContent = traducirEvento(last.description);
+      document.getElementById('tk-last-event-meta').textContent = [ldate, ltime, last.location].filter(Boolean).join(' · ');
+      lastEvtEl.style.display = 'block';
+    } else {
+      lastEvtEl.style.display = 'none';
+    }
+
     // Delivery note
     const noteEl = document.getElementById('tk-delivery-note');
     noteEl.innerHTML = data.delivery_note ? `<div class="delivery-note">⚠️ ${data.delivery_note}</div>` : '';
