@@ -1784,7 +1784,12 @@
     }
 
     document.getElementById('resultado').style.display = 'block';
-    initRating();
+
+    // Solo mostrar rating si el paquete fue entregado
+    const estadoLower = (data.estado || '').toLowerCase();
+    const esEntregado = estadoLower.includes('finaliz') || estadoLower.includes('entregad');
+    document.getElementById('rating-card').style.display = esEntregado ? 'block' : 'none';
+    if (esEntregado) initRating();
   }
 
   // ═══════════════════════════════════════
