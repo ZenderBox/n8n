@@ -1288,7 +1288,10 @@
     document.getElementById('bk-dims').textContent = (l && w && h) ? `${l} × ${w} × ${h} cm` : '—';
     document.getElementById('bk-dest').textContent = data.cubiq?.dest_name || data.cubiq?.dest_code || '—';
     const photoWrap = document.getElementById('bk-photo-wrap');
-    if (data.cubiq?.img_main) {
+    if (data.cubiq?.external_pic) {
+      document.getElementById('bk-photo').src = data.cubiq.external_pic;
+      photoWrap.style.display = 'block';
+    } else if (data.cubiq?.img_main) {
       document.getElementById('bk-photo').src = data.cubiq.img_main;
       photoWrap.style.display = 'block';
     } else { photoWrap.style.display = 'none'; }
