@@ -942,95 +942,7 @@
     <div class="photos-grid" id="photos-grid"></div>
   </div>
 
-  <!-- RATING CARD -->
-  <div class="rating-card" id="rating-card" style="display:none">
-    <div class="rating-top-bar"></div>
-    <div class="rating-body">
 
-      <!-- Formulario -->
-      <div id="rating-form-wrap">
-        <div class="rating-eyebrow">⭐ Tu opinión importa</div>
-        <div class="rating-title">¿Cómo fue tu experiencia?</div>
-        <p class="rating-sub">
-          Tarda menos de 30 segundos y nos ayuda a mejorar.<br>
-          <strong>Al calificarnos participas automáticamente en la rifa semanal de un envío gratis 🎁</strong>
-        </p>
-
-        <!-- Categorías -->
-        <div class="rating-cats">
-          <div class="rating-cat" id="cat-velocidad">
-            <div class="rating-cat-label"><span>🚀</span> Velocidad</div>
-            <div class="stars-row" data-cat="velocidad">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-          <div class="rating-cat" id="cat-estado">
-            <div class="rating-cat-label"><span>📦</span> Estado del paquete</div>
-            <div class="stars-row" data-cat="estado">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-          <div class="rating-cat" id="cat-comunicacion">
-            <div class="rating-cat-label"><span>📱</span> Comunicación</div>
-            <div class="stars-row" data-cat="comunicacion">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-          <div class="rating-cat" id="cat-atencion">
-            <div class="rating-cat-label"><span>🤝</span> Atención al cliente</div>
-            <div class="stars-row" data-cat="atencion">
-              <span class="star" data-val="1">⭐</span>
-              <span class="star" data-val="2">⭐</span>
-              <span class="star" data-val="3">⭐</span>
-              <span class="star" data-val="4">⭐</span>
-              <span class="star" data-val="5">⭐</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Promedio general -->
-        <div class="rating-overall" id="rating-overall" style="display:none">
-          <div class="overall-stars">
-            <span class="overall-star" data-pos="1">⭐</span>
-            <span class="overall-star" data-pos="2">⭐</span>
-            <span class="overall-star" data-pos="3">⭐</span>
-            <span class="overall-star" data-pos="4">⭐</span>
-            <span class="overall-star" data-pos="5">⭐</span>
-          </div>
-          <div class="overall-text">
-            <div class="overall-num" id="overall-num">—</div>
-            <div class="overall-label">Promedio de tu calificación</div>
-          </div>
-        </div>
-
-        <!-- Comentario -->
-        <div id="rating-comment-wrap">
-          <label for="rating-comment">¿Algo que quieras contarnos? (opcional)</label>
-          <textarea id="rating-comment" placeholder="Cuéntanos tu experiencia, sugerencias o lo que podemos mejorar…"></textarea>
-        </div>
-
-        <button id="rating-submit" onclick="enviarCalificacion()" disabled>
-          Enviar calificación →
-        </button>
-      </div>
-
-      <!-- Post-envío -->
-      <div id="rating-thanks"></div>
-
-    </div>
-  </div>
 
 </div>
 
@@ -1201,6 +1113,100 @@
 
 </div>
 
+
+<!-- RATING CARD (standalone - shows for any result type) -->
+<div id="rating-wrapper" style="display:none;position:relative;z-index:1;max-width:800px;margin:0 auto;padding:0 40px 40px;animation:fadeUp 0.5s ease both">
+  <!-- RATING CARD -->
+  <div class="rating-card" id="rating-card" style="display:none">
+    <div class="rating-top-bar"></div>
+    <div class="rating-body">
+
+      <!-- Formulario -->
+      <div id="rating-form-wrap">
+        <div class="rating-eyebrow">⭐ Tu opinión importa</div>
+        <div class="rating-title">¿Cómo fue tu experiencia?</div>
+        <p class="rating-sub">
+          Tarda menos de 30 segundos y nos ayuda a mejorar.<br>
+          <strong>Al calificarnos participas automáticamente en la rifa semanal de un envío gratis 🎁</strong>
+        </p>
+
+        <!-- Categorías -->
+        <div class="rating-cats">
+          <div class="rating-cat" id="cat-velocidad">
+            <div class="rating-cat-label"><span>🚀</span> Velocidad</div>
+            <div class="stars-row" data-cat="velocidad">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+          <div class="rating-cat" id="cat-estado">
+            <div class="rating-cat-label"><span>📦</span> Estado del paquete</div>
+            <div class="stars-row" data-cat="estado">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+          <div class="rating-cat" id="cat-comunicacion">
+            <div class="rating-cat-label"><span>📱</span> Comunicación</div>
+            <div class="stars-row" data-cat="comunicacion">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+          <div class="rating-cat" id="cat-atencion">
+            <div class="rating-cat-label"><span>🤝</span> Atención al cliente</div>
+            <div class="stars-row" data-cat="atencion">
+              <span class="star" data-val="1">⭐</span>
+              <span class="star" data-val="2">⭐</span>
+              <span class="star" data-val="3">⭐</span>
+              <span class="star" data-val="4">⭐</span>
+              <span class="star" data-val="5">⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Promedio general -->
+        <div class="rating-overall" id="rating-overall" style="display:none">
+          <div class="overall-stars">
+            <span class="overall-star" data-pos="1">⭐</span>
+            <span class="overall-star" data-pos="2">⭐</span>
+            <span class="overall-star" data-pos="3">⭐</span>
+            <span class="overall-star" data-pos="4">⭐</span>
+            <span class="overall-star" data-pos="5">⭐</span>
+          </div>
+          <div class="overall-text">
+            <div class="overall-num" id="overall-num">—</div>
+            <div class="overall-label">Promedio de tu calificación</div>
+          </div>
+        </div>
+
+        <!-- Comentario -->
+        <div id="rating-comment-wrap">
+          <label for="rating-comment">¿Algo que quieras contarnos? (opcional)</label>
+          <textarea id="rating-comment" placeholder="Cuéntanos tu experiencia, sugerencias o lo que podemos mejorar…"></textarea>
+        </div>
+
+        <button id="rating-submit" onclick="enviarCalificacion()" disabled>
+          Enviar calificación →
+        </button>
+      </div>
+
+      <!-- Post-envío -->
+      <div id="rating-thanks"></div>
+
+    </div>
+  </div>
+</div>
+
 <footer>
   © 2026 <span>ZenderBox</span> · <span id="footer-pais">Costa Rica & Colombia</span> · Todos los derechos reservados
 </footer>
@@ -1239,7 +1245,7 @@
     const guia = document.getElementById('guia-input').value.trim();
     if (!guia) return;
 
-    ['resultado','resultado-wms','resultado-tracking','resultado-bodega','resultado-notice','error-box'].forEach(id => {
+    ['resultado','resultado-wms','resultado-tracking','resultado-bodega','resultado-notice','error-box','rating-wrapper'].forEach(id => {
       document.getElementById(id).style.display = 'none';
     });
     document.querySelectorAll('.delivery-note').forEach(el => el.remove());
@@ -1356,6 +1362,15 @@
     }
 
     document.getElementById('resultado-wms').style.display = 'block';
+
+    // Show rating only if delivered
+    const wmsStatus = (data.ultimo_status || '').toLowerCase();
+    const wmsEntregado = wmsStatus.includes('entregad') || wmsStatus.includes('finaliz');
+    if (wmsEntregado) {
+      document.getElementById('rating-card').style.display = 'block';
+      document.getElementById('rating-wrapper').style.display = 'block';
+      initRating();
+    }
   }
 
   // ═══ TRADUCIR EVENTOS ═══
@@ -1492,12 +1507,14 @@
     PA: { bandera: '🇵🇦', nombre: 'Panamá', google_reviews_url: null },
   };
   let currentPais = null;
+  let currentPaisCode = '';
   const ratings = { velocidad: 0, estado: 0, comunicacion: 0, atencion: 0 };
   let ratingGuia = '';
 
   function aplicarPais(codigoPais) {
     const config = PAISES[codigoPais?.toUpperCase()] || null;
     currentPais = config;
+    currentPaisCode = codigoPais?.toUpperCase() || '';
     if (!config) return;
     const badge = document.getElementById('pais-badge');
     if (badge) badge.textContent = `${config.bandera} ${config.nombre}`;
@@ -1549,7 +1566,7 @@
     const comentario = document.getElementById('rating-comment').value.trim();
     document.getElementById('rating-submit').disabled = true;
     document.getElementById('rating-submit').textContent = 'Enviando…';
-    try { await fetch(RATING_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guia: ratingGuia, ratings, promedio, comentario, fecha: new Date().toISOString() }) }); } catch(e) {}
+    try { await fetch(RATING_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guia: ratingGuia, pais: currentPaisCode, ratings, promedio, comentario, fecha: new Date().toISOString() }) }); } catch(e) {}
     document.getElementById('rating-form-wrap').style.display = 'none';
     const thanksDiv = document.getElementById('rating-thanks');
     thanksDiv.style.display = 'block';
