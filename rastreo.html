@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://checkout.epayco.co/checkout.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1090,6 +1091,12 @@
           <div class="wms-step-label">Entregado</div>
         </div>
       </div>
+      <!-- PAYMENT BUTTON -->
+      <div id="wms-pago-wrap" style="display:none;margin-top:20px">
+        <button id="wms-pago-btn" onclick="pagarConEpayco()" style="width:100%;padding:16px;background:linear-gradient(135deg,#2ecc71,#27ae60);border:none;border-radius:12px;color:white;font-family:'Exo 2',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:opacity 0.2s,transform 0.1s;display:flex;align-items:center;justify-content:center;gap:10px">
+          💳 Pagar <span id="wms-pago-monto-display"></span>
+        </button>
+      </div>
     </div>
   </div>
   <div class="zb-card" id="wms-photo-card" style="display:none">
@@ -1442,6 +1449,20 @@
       eventsCard.style.display = 'none';
     }
 
+    // Payment button
+    const pagoWrap = document.getElementById('wms-pago-wrap');
+    if (data.tiene_pago && data.pago?.monto > 0 && !data.guia?.startsWith('WHR')) {
+      const moneda = data.pago.moneda === 'COP' ? 'COP' : 'USD';
+      const fmt = moneda === 'COP' 
+        ? new Intl.NumberFormat('es-CO', {style:'currency',currency:'COP',minimumFractionDigits:0}).format(data.pago.monto)
+        : `$${data.pago.monto} USD`;
+      document.getElementById('wms-pago-monto-display').textContent = fmt;
+      window._pagoData = { guia: data.guia, monto: data.pago.monto, moneda, manId: data.pago.man_id, pais: data.pais };
+      pagoWrap.style.display = 'block';
+    } else {
+      pagoWrap.style.display = 'none';
+    }
+
     document.getElementById('resultado-wms').style.display = 'block';
 
     // Show rating only if delivered (not "entregada a la aerolinea")
@@ -1687,6 +1708,52 @@
           <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px">¡Gracias por tu calificación!</div>
           <p style="color:var(--zb-muted);font-size:14px;line-height:1.6">${comentario ? 'Hemos recibido tu comentario y lo revisaremos.' : 'Tu opinión nos ayuda a mejorar el servicio.'}</p>
         </div>`;
+    }
+  }
+
+  // ═══ EPAYCO PAYMENT ═══
+  function pagarConEpayco() {
+    const pd = window._pagoData;
+    if (!pd) return;
+
+    try {
+      if (typeof ePayco === 'undefined' || !ePayco?.checkout) {
+        alert('Error: La librería de pago no se cargó. Recarga la página.');
+        return;
+      }
+
+      const btn = document.getElementById('wms-pago-btn');
+      btn.style.opacity = '0.6';
+      btn.style.pointerEvents = 'none';
+
+      const handler = ePayco.checkout.configure({
+        key: '8bcec5477475f9de196ca4c6f05acf6d',
+        test: false  // PRODUCCIÓN
+      });
+
+      const isColombia = pd.pais === 'CO';
+
+      handler.open({
+        name: pd.guia,
+        description: pd.guia,
+        currency: pd.moneda,
+        amount: pd.monto,
+        tax_base: pd.monto,
+        tax: 0,
+        country: 'co',
+        lang: 'es',
+        external: 'false',
+        extra1: pd.manId,
+        methodsDisable: isColombia ? [] : ['SP', 'CASH', 'DP', 'PSE'],
+        confirmation: 'https://store1.zenderbox.com/app/rastreo/DetallePAGOEpayco.asp',
+        response: `https://hub.zenderbox.com/rastreo.html?guia=${pd.guia}`
+      });
+
+    } catch(e) {
+      console.error('ePayco Error:', e);
+      alert('Error al procesar el pago. Intenta de nuevo.');
+      const btn = document.getElementById('wms-pago-btn');
+      if (btn) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; }
     }
   }
 
