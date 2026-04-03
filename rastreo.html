@@ -747,6 +747,65 @@
       .rating-cats  { grid-template-columns: 1fr 1fr; }
       .overall-num  { font-size: 26px; }
     }
+
+    /* ── TRACKING EXTERNO ── */
+    #resultado-tracking, #resultado-bodega, #resultado-notice {
+      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .tk-carrier { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .tk-carrier-icon { font-size: 28px; }
+    .tk-carrier-name { font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 16px; }
+    .tk-carrier-service { font-size: 12px; color: var(--zb-muted); }
+
+    .tk-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; padding-top: 20px; border-top: 1px solid rgba(0,156,201,0.1); }
+
+    .tk-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 100px; font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .tk-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    .tk-intransit { background: rgba(204,211,42,0.1); color: var(--zb-lime); border: 1px solid rgba(204,211,42,0.25); }
+    .tk-intransit .tk-dot { background: var(--zb-lime); animation: pulse 2s infinite; }
+    .tk-delivered { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid rgba(46,204,113,0.25); }
+    .tk-delivered .tk-dot { background: #2ecc71; }
+    .tk-other { background: rgba(0,156,201,0.1); color: var(--zb-cyan); border: 1px solid rgba(0,156,201,0.25); }
+    .tk-other .tk-dot { background: var(--zb-cyan); }
+
+    .tk-events { padding: 24px 28px; }
+    .tk-event { display: flex; gap: 16px; position: relative; padding-bottom: 24px; }
+    .tk-event:last-child { padding-bottom: 0; }
+    .tk-event:not(:last-child)::after { content: ''; position: absolute; left: 11px; top: 28px; bottom: 0; width: 2px; background: rgba(0,156,201,0.12); }
+    .tk-event-dot { flex-shrink: 0; width: 24px; display: flex; justify-content: center; padding-top: 2px; }
+    .tk-event-dot span { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--zb-cyan); background: var(--zb-navy); display: block; position: relative; z-index: 1; }
+    .tk-event:first-child .tk-event-dot span { width: 12px; height: 12px; border-color: var(--zb-lime); background: rgba(204,211,42,0.3); box-shadow: 0 0 0 3px rgba(204,211,42,0.15); }
+    .tk-event-desc { font-size: 14px; font-weight: 500; color: var(--zb-white); line-height: 1.5; margin-bottom: 4px; }
+    .tk-event-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--zb-muted); }
+
+    .bodega-bar { background: linear-gradient(135deg, rgba(204,211,42,0.15), rgba(0,156,201,0.15)); border: 1px solid rgba(204,211,42,0.3); border-radius: 14px; padding: 16px 24px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .bodega-bar-text { font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 16px; color: var(--zb-lime); }
+    .bodega-bar-date { font-size: 13px; color: var(--zb-muted); margin-top: 2px; }
+    .bodega-photo { width: 100%; max-width: 400px; border-radius: 14px; border: 1px solid rgba(0,156,201,0.2); cursor: pointer; transition: transform 0.2s; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0,156,201,0.1); }
+    .bodega-photo:hover { transform: scale(1.02); }
+
+    .notice-card { background: rgba(12,40,71,0.7); border: 1px solid rgba(243,156,18,0.2); border-radius: 20px; overflow: hidden; backdrop-filter: blur(8px); }
+    .notice-bar { height: 3px; background: linear-gradient(90deg, #f39c12, var(--zb-cyan)); }
+    .notice-body { padding: 28px 32px; text-align: center; }
+    .notice-icon { font-size: 48px; margin-bottom: 16px; }
+    .notice-title { font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 10px; }
+    .notice-msg { color: var(--zb-muted); font-size: 14px; line-height: 1.7; margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .carrier-link-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: rgba(0,156,201,0.1); border: 1px solid rgba(0,156,201,0.3); border-radius: 12px; color: var(--zb-cyan); font-family: 'Exo 2', sans-serif; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s; }
+    .carrier-link-btn:hover { background: rgba(0,156,201,0.2); transform: scale(1.02); }
+
+    .delivery-note { background: rgba(243,156,18,0.08); border: 1px solid rgba(243,156,18,0.2); border-radius: 12px; padding: 14px 20px; margin-top: 16px; font-size: 13px; color: #f39c12; line-height: 1.6; }
+
+    @media (max-width: 600px) {
+      #resultado-tracking, #resultado-bodega, #resultado-notice { padding: 0 16px 60px; }
+    }
   </style>
 </head>
 <body>
@@ -775,13 +834,13 @@
 <section class="hero">
   <div class="hero-eyebrow">Rastreo en tiempo real</div>
   <h1>¿Dónde está<br>tu <span class="gradient-text">paquete</span>?</h1>
-  <p class="hero-sub" id="hero-sub">Ingresa tu número de guía y te mostramos el estado actual de tu entrega.</p>
+  <p class="hero-sub" id="hero-sub">Ingresa tu número de guía o tracking y te mostramos el estado actual de tu envío.</p>
 
   <div class="search-wrap">
     <input
       id="guia-input"
       type="text"
-      placeholder="Ej: SSW0208110485"
+      placeholder="Guía, tracking USPS, FedEx, Amazon…"
       autocomplete="off"
       spellcheck="false"
     />
@@ -957,12 +1016,101 @@
 
 </div>
 
+<!-- BODEGA (CubiQ) -->
+<div id="resultado-bodega">
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Tracking number</div>
+          <div class="guia-value" id="bk-number">—</div>
+        </div>
+        <div class="tk-badge tk-delivered"><div class="tk-dot"></div><span>EN BODEGA</span></div>
+      </div>
+      <div class="bodega-bar">
+        <span style="font-size:28px">✅</span>
+        <div>
+          <div class="bodega-bar-text">Recibido en bodega ZenderBox — Miami</div>
+          <div class="bodega-bar-date" id="bk-date"></div>
+        </div>
+      </div>
+      <div class="tk-carrier" id="bk-carrier">
+        <div class="tk-carrier-icon" id="bk-carrier-icon">📦</div>
+        <div><div class="tk-carrier-name" id="bk-carrier-name">—</div></div>
+      </div>
+      <div class="tk-stats">
+        <div><div class="info-label">Casillero</div><div class="info-value lime" id="bk-casillero">—</div></div>
+        <div><div class="info-label">Peso</div><div class="info-value accent" id="bk-peso">—</div></div>
+        <div><div class="info-label">Dimensiones</div><div class="info-value accent" id="bk-dims">—</div></div>
+        <div><div class="info-label">Destino</div><div class="info-value lime" id="bk-dest">—</div></div>
+      </div>
+      <div id="bk-photo-wrap" style="display:none">
+        <div class="info-label" style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(0,156,201,0.1);margin-bottom:12px">📸 Foto del paquete</div>
+        <img class="bodega-photo" id="bk-photo" src="" alt="Paquete" onclick="window.open(this.src,'_blank')"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRACKING EXTERNO (17track) -->
+<div id="resultado-tracking">
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div class="card-body">
+      <div class="status-header">
+        <div>
+          <div class="guia-label">Tracking number</div>
+          <div class="guia-value" id="tk-number">—</div>
+        </div>
+        <div class="tk-badge tk-other" id="tk-badge"><div class="tk-dot"></div><span id="tk-status-text">—</span></div>
+      </div>
+      <div class="tk-carrier">
+        <div class="tk-carrier-icon" id="tk-carrier-icon">📦</div>
+        <div>
+          <div class="tk-carrier-name" id="tk-carrier-name">—</div>
+          <div class="tk-carrier-service" id="tk-carrier-service"></div>
+        </div>
+      </div>
+      <div class="tk-stats" id="tk-stats">
+        <div><div class="info-label">Origen</div><div class="info-value accent" id="tk-origin">—</div></div>
+        <div><div class="info-label">Destino</div><div class="info-value accent" id="tk-dest">—</div></div>
+        <div><div class="info-label">Días en tránsito</div><div class="info-value lime" id="tk-days">—</div></div>
+        <div><div class="info-label">ETA</div><div class="info-value lime" id="tk-eta">—</div></div>
+      </div>
+      <div id="tk-delivery-note"></div>
+    </div>
+  </div>
+  <div class="zb-card">
+    <div class="card-top-bar"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid rgba(0,156,201,0.1)">
+      <div class="map-icon">📍</div>
+      <div><div class="map-title">Historial de movimientos</div><div class="map-sub" id="tk-events-count"></div></div>
+    </div>
+    <div class="tk-events" id="tk-events-list"></div>
+  </div>
+</div>
+
+<!-- NOTICE (USPS / Pendiente) -->
+<div id="resultado-notice">
+  <div class="notice-card">
+    <div class="notice-bar"></div>
+    <div class="notice-body">
+      <div class="notice-icon" id="nc-icon">📦</div>
+      <div class="notice-title" id="nc-title">—</div>
+      <p class="notice-msg" id="nc-msg">—</p>
+      <a class="carrier-link-btn" id="nc-link" href="#" target="_blank" rel="noopener" style="display:none">Rastrear en <span id="nc-carrier-name">—</span> →</a>
+    </div>
+  </div>
+</div>
+
 <footer>
   © 2026 <span>ZenderBox</span> · <span id="footer-pais">Costa Rica & Colombia</span> · Todos los derechos reservados
 </footer>
 
 <script>
   const N8N_WEBHOOK_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-cr';
+  const N8N_TRACKING_URL = 'https://zenderbox.app.n8n.cloud/webhook/rastreo-tracking';
 
   let mapInstance = null;
 
@@ -994,29 +1142,68 @@
     if (!guia) return;
 
     document.getElementById('resultado').style.display = 'none';
+    document.getElementById('resultado-tracking').style.display = 'none';
+    document.getElementById('resultado-bodega').style.display = 'none';
+    document.getElementById('resultado-notice').style.display = 'none';
     document.getElementById('error-box').style.display = 'none';
     document.getElementById('loading').style.display = 'block';
     document.getElementById('buscar-btn').disabled = true;
 
+    // ── PASO 1: SmartQuick + Consolidados (rastreo-cr) ──
     try {
       const res = await fetch(`${N8N_WEBHOOK_URL}?guia=${encodeURIComponent(guia)}`);
       const data = await res.json();
 
-      document.getElementById('loading').style.display = 'none';
-
-      if (!data || data.error) {
-        if (data?.error === 'Guia no encontrada') {
-          showError('Tu paquete está en tránsito y aún no ha sido asignado para entrega local. Intenta más tarde o escríbenos por WhatsApp.');
-        } else {
-          showError('No encontramos esa guía. Verifica el número e intenta de nuevo.');
-        }
+      if (data && !data.error && data.estado) {
+        document.getElementById('loading').style.display = 'none';
+        mostrarResultadoInterno(guia, data);
+        document.getElementById('buscar-btn').disabled = false;
         return;
       }
+    } catch(e) { /* SmartQuick falló → seguir */ }
 
-      // Si tiene error de estado vacío igual mostramos lo que tengamos
-      if (!data.estado) {
-        data.estado = 'En proceso';
+    // ── PASO 2: CubiQ + 17track (rastreo-tracking) ──
+    try {
+      const tkRes = await fetch(`${N8N_TRACKING_URL}?tracking=${encodeURIComponent(guia)}`);
+      const tkData = await tkRes.json();
+
+      document.getElementById('loading').style.display = 'none';
+
+      if (tkData && !tkData.error) {
+        switch (tkData.source) {
+          case 'cubiq':
+            mostrarResultadoBodega(guia, tkData);
+            break;
+          case 'api':
+            if (tkData.events && tkData.events.length > 0) {
+              mostrarResultadoTracking(guia, tkData);
+            } else {
+              mostrarNotice('📦', 'Tracking registrado', tkData.message || 'Intenta de nuevo en unos minutos.', tkData.carrier_name, tkData.carrier_url);
+            }
+            break;
+          case 'usps_link':
+            mostrarNotice('📬', 'Tu paquete aún no llega a nuestra bodega', tkData.message, 'USPS', tkData.carrier_url);
+            break;
+          case 'api_pending':
+            mostrarNotice('⏳', 'Tracking registrado', tkData.message || 'Intenta de nuevo en 2-3 minutos.', tkData.carrier_name, tkData.carrier_url);
+            break;
+          default:
+            showError('No encontramos información para ese número. Verifica e intenta de nuevo.');
+        }
+      } else {
+        showError(tkData?.message || 'No encontramos información para ese número. Verifica e intenta de nuevo.');
       }
+    } catch(e) {
+      document.getElementById('loading').style.display = 'none';
+      showError('No encontramos información para ese número. Verifica e intenta de nuevo.');
+    }
+
+    document.getElementById('buscar-btn').disabled = false;
+  }
+
+  // ── MOSTRAR RESULTADO INTERNO (SmartQuick/Consolidados) ──
+  function mostrarResultadoInterno(guia, data) {
+      if (!data.estado) data.estado = 'En proceso';
 
       document.getElementById('res-guia').textContent = guia;
       document.getElementById('res-estado').textContent = data.estado || '—';
@@ -1025,7 +1212,6 @@
       document.getElementById('res-fecha').textContent = formatFecha(data.fecha);
       document.getElementById('res-conductor').textContent = data.conductor?.trim() || 'Por asignar';
 
-      // Aplicar país dinámicamente desde el webhook
       aplicarPais(data.pais);
 
       const badge = document.getElementById('res-badge');
@@ -1083,18 +1269,78 @@
 
       document.getElementById('resultado').style.display = 'block';
 
-      // Mostrar rating solo si el paquete fue entregado
       const estadoLower = (data.estado || '').toLowerCase();
       const estaEntregado = estadoLower.includes('finaliz') || estadoLower.includes('entregad');
       document.getElementById('rating-card').style.display = estaEntregado ? 'block' : 'none';
       if (estaEntregado) initRating();
+  }
 
-    } catch(e) {
-      document.getElementById('loading').style.display = 'none';
-      showError('Error al conectar con el servidor. Intenta de nuevo.');
-    }
+  // ── MOSTRAR RESULTADO BODEGA (CubiQ) ──
+  function mostrarResultadoBodega(number, data) {
+    document.getElementById('bk-number').textContent = number;
+    document.getElementById('bk-date').textContent = data.cubiq?.measure_date ? `Procesado: ${formatFecha(data.cubiq.measure_date)}` : '';
+    document.getElementById('bk-carrier-icon').textContent = '📦';
+    document.getElementById('bk-carrier-name').textContent = data.carrier_name || 'Carrier detectado';
+    document.getElementById('bk-casillero').textContent = data.cubiq?.casillero || data.cubiq?.dest_code || '—';
+    const peso = data.cubiq?.peso; const unit = data.cubiq?.unidad || 'kg';
+    document.getElementById('bk-peso').textContent = peso ? `${peso} ${unit}` : '—';
+    const l = data.cubiq?.largo, w = data.cubiq?.ancho, h = data.cubiq?.alto;
+    document.getElementById('bk-dims').textContent = (l && w && h) ? `${l} × ${w} × ${h} cm` : '—';
+    document.getElementById('bk-dest').textContent = data.cubiq?.dest_name || data.cubiq?.dest_code || '—';
+    const photoWrap = document.getElementById('bk-photo-wrap');
+    if (data.cubiq?.img_main) {
+      document.getElementById('bk-photo').src = data.cubiq.img_main;
+      photoWrap.style.display = 'block';
+    } else { photoWrap.style.display = 'none'; }
+    document.getElementById('resultado-bodega').style.display = 'block';
+  }
 
-    document.getElementById('buscar-btn').disabled = false;
+  // ── MOSTRAR RESULTADO TRACKING (17track) ──
+  function mostrarResultadoTracking(number, data) {
+    document.getElementById('tk-number').textContent = number;
+    const statusMap = { 'InTransit': ['En tránsito','tk-intransit'], 'Delivered': ['Entregado','tk-delivered'] };
+    const [txt, cls] = statusMap[data.status] || [data.status_text || data.status, 'tk-other'];
+    const tkBadge = document.getElementById('tk-badge');
+    tkBadge.className = `tk-badge ${cls}`;
+    document.getElementById('tk-status-text').textContent = txt;
+    document.getElementById('tk-carrier-icon').textContent = '📦';
+    document.getElementById('tk-carrier-name').textContent = data.carrier_name || 'Carrier';
+    document.getElementById('tk-carrier-service').textContent = data.service_type || '';
+    document.getElementById('tk-origin').textContent = data.origin_country || '—';
+    document.getElementById('tk-dest').textContent = data.dest_country || '—';
+    document.getElementById('tk-days').textContent = data.days_in_transit != null ? `${data.days_in_transit} días` : '—';
+    document.getElementById('tk-eta').textContent = data.eta ? formatFecha(data.eta) : '—';
+    // Delivery note
+    const noteEl = document.getElementById('tk-delivery-note');
+    noteEl.innerHTML = data.delivery_note ? `<div class="delivery-note">⚠️ ${data.delivery_note}</div>` : '';
+    // Events
+    const container = document.getElementById('tk-events-list');
+    container.innerHTML = '';
+    document.getElementById('tk-events-count').textContent = `${data.events.length} evento${data.events.length !== 1 ? 's' : ''}`;
+    data.events.forEach(evt => {
+      const d = evt.time ? new Date(evt.time) : null;
+      const date = d ? d.toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric'}) : '';
+      const time = d ? d.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) : '';
+      const item = document.createElement('div');
+      item.className = 'tk-event';
+      item.innerHTML = `<div class="tk-event-dot"><span></span></div><div><div class="tk-event-desc">${evt.description || '—'}</div><div class="tk-event-meta">${date ? `<span>📅 ${date}</span>` : ''}${time ? `<span>🕐 ${time}</span>` : ''}${evt.location ? `<span>📍 ${evt.location}</span>` : ''}</div></div>`;
+      container.appendChild(item);
+    });
+    document.getElementById('resultado-tracking').style.display = 'block';
+  }
+
+  // ── MOSTRAR NOTICE (USPS / Pendiente) ──
+  function mostrarNotice(icon, title, message, carrierName, carrierUrl) {
+    document.getElementById('nc-icon').textContent = icon;
+    document.getElementById('nc-title').textContent = title;
+    document.getElementById('nc-msg').textContent = message;
+    const linkBtn = document.getElementById('nc-link');
+    if (carrierUrl) {
+      document.getElementById('nc-carrier-name').textContent = carrierName || 'carrier';
+      linkBtn.href = carrierUrl;
+      linkBtn.style.display = 'inline-flex';
+    } else { linkBtn.style.display = 'none'; }
+    document.getElementById('resultado-notice').style.display = 'block';
   }
 
   function showError(msg) {
@@ -1296,7 +1542,7 @@
 
   window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
-    const guia = params.get('guia');
+    const guia = params.get('guia') || params.get('tracking');
     if (guia) {
       document.getElementById('guia-input').value = guia.toUpperCase();
       buscarGuia();
