@@ -876,7 +876,7 @@
         <div class="rating-title">¿Cómo fue tu experiencia?</div>
         <p class="rating-sub">
           Tarda menos de 30 segundos y nos ayuda a mejorar.<br>
-          <strong>Los clientes que califican reciben un descuento en su próximo envío.</strong>
+          <strong>Al calificarnos participas automáticamente en la rifa semanal de un envío gratis 🎁</strong>
         </p>
 
         <!-- Categorías -->
@@ -1269,11 +1269,12 @@
       // CR, o CO con menos de 5 estrellas → solo gracias
       thanksDiv.innerHTML = `
         <div class="thanks-low">
-          <div class="thanks-emoji">🙏</div>
-          <div class="thanks-title">¡Gracias por tu calificación!</div>
+          <div class="thanks-emoji">🎉</div>
+          <div class="thanks-title">¡Ya estás participando!</div>
           <p class="thanks-msg">
-            Tu opinión nos ayuda a mejorar el servicio.<br>
-            ${comentario ? 'Hemos recibido tu comentario y lo revisaremos con atención.' : 'Si tienes algún comentario, escríbenos por WhatsApp.'}
+            Tu calificación quedó registrada en la rifa de esta semana.<br>
+            ${comentario ? 'También recibimos tu comentario, ¡gracias!' : 'El ganador se anuncia cada viernes por WhatsApp.'}<br><br>
+            ¡Mucha suerte! 🍀
           </p>
         </div>`;
     }
