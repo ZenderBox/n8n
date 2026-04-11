@@ -969,6 +969,12 @@
                 <button class="filter-btn f-green" id="f-contesto" onclick="setFilter('contesto')">✓ CONTESTARON</button>
                 <button class="filter-btn f-yellow" id="f-nocontesto" onclick="setFilter('nocontesto')">⚠ NO CONTESTARON</button>
                 <button class="filter-btn f-blue" id="f-sinllamada" onclick="setFilter('sinllamada')">📞 SIN LLAMADA</button>
+                <select id="rango-dias" onchange="fetchData()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:10px;color:var(--text);cursor:pointer;margin-left:8px;">
+                    <option value="30">Últimos 30 días</option>
+                    <option value="7">Últimos 7 días</option>
+                    <option value="90">Últimos 90 días</option>
+                    <option value="0">Todo</option>
+                </select>
                 <div class="filter-search">
                     <span style="color:var(--text-muted);font-size:13px">⌕</span>
                     <input id="filterSearch" placeholder="Buscar casillero, nombre..." oninput="renderList()">
@@ -1025,7 +1031,8 @@
     async function fetchData() {
         const subEl = document.getElementById('cons-sub'); if (subEl) subEl.textContent = 'Actualizando...';
         try {
-            const res  = await fetch(WEBHOOK_URL + '?t=' + Date.now());
+            const dias = document.getElementById('rango-dias')?.value || '30';
+            const res  = await fetch(WEBHOOK_URL + '?t=' + Date.now() + '&dias=' + dias);
             const json = await res.json();
             if (!json.ok) throw new Error('Error en workflow');
             CASILLEROS = json.casilleros || [];
