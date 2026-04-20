@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<meta name="theme-color" content="#0F2847" />
+<title>ZenderHub — Cotizador Comercial v2</title>
+<style>
+  :root {
+    --navy:        #0F2847;
+    --navy-2:      #1A3A63;
+    --cyan:        #2FB5E8;
+    --cyan-2:      #5CC8F2;
+    --green:       #12B886;
+    --green-bg:    #D4F7EB;
+    --amber:       #F59E0B;
+    --amber-bg:    #FEF3C7;
+    --red:         #E63946;
+    --red-bg:      #FDE7E9;
+    --bg:          #F4F7FB;
+    --card:        #FFFFFF;
+    --text:        #0F172A;
+    --muted:       #64748B;
+    --border:      #E2E8F0;
+    --border-2:    #CBD5E1;
+    --shadow-sm:   0 1px 2px rgba(15,40,71,0.06);
+    --shadow-md:   0 4px 12px rgba(15,40,71,0.08);
+    --shadow-lg:   0 8px 24px rgba(15,40,71,0.12);
+    --radius:      12px;
+    --radius-lg:   16px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding-bottom: 92px; /* espacio para tab bar */
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { margin: 0 0 8px 0; font-weight: 700; letter-spacing: -0.01em; }
+  h1 { font-size: 22px; }
+  h2 { font-size: 19px; }
+  h3 { font-size: 16px; }
+  p  { margin: 0 0 8px 0; }
+  button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+  /* Header */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: var(--shadow-md);
+  }
+  header .brand { display: flex; align-items: center; gap: 10px; }
+  header .brand img { max-height: 28px; width: auto; display: block; }
+  header .brand .fallback {
+    font-weight: 800; font-size: 18px; letter-spacing: -0.02em;
+  }
+  header .brand .fallback span { color: var(--cyan); }
+  #admin-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    padding: 8px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+    min-height: 36px;
+  }
+  #admin-btn.authed { background: var(--cyan); color: var(--navy); font-weight: 700; }
+
+  /* Main */
+  main { padding: 16px; max-width: 560px; margin: 0 auto; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+  }
+  .card h2 { color: var(--navy); }
+  .card .card-sub { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+  .card.dark { background: var(--navy); color: #fff; border-color: transparent; }
+  .card.dark h2, .card.dark h3 { color: #fff; }
+  .card.dark .card-sub { color: rgba(255,255,255,0.7); }
+
+  /* Form controls */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .field label .hint { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 6px; }
+
+  /* Segmented control */
+  .segmented {
+    display: flex; gap: 6px;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 4px;
+    border: 1px solid var(--border);
+  }
+  .segmented button {
+    flex: 1; min-height: 44px;
+    border-radius: 8px;
+    font-size: 14px; font-weight: 600;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .segmented button.active {
+    background: var(--navy); color: #fff;
+    box-shadow: var(--shadow-sm);
+  }
+  .segmented.accent button.active { background: var(--cyan); color: var(--navy); }
+  .warn-inline { color: var(--amber); font-size: 12px; margin-top: 6px; font-weight: 500; }
+
+  /* Slider + numeric bidir sync */
+  .slider-row {
+    display: grid;
+    grid-template-columns: 1fr 110px;
+    gap: 12px;
+    align-items: center;
+  }
+  .slider-row input[type="range"] {
+    width: 100%;
+    height: 44px;
+    -webkit-appearance: none; appearance: none;
+    background: transparent;
+  }
+  .slider-row input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; background: var(--border); border-radius: 999px;
+  }
+  .slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--cyan);
+    margin-top: -9px; cursor: pointer;
+    border: 3px solid #fff; box-shadow: var(--shadow-sm);
+  }
+  .slider-row input[type="range"]::-moz-range-thumb {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--cyan); border: 3px solid #fff; cursor: pointer;
+  }
+  .slider-row input[type="range"]::-moz-range-track {
+    height: 6px; background: var(--border); border-radius: 999px;
+  }
+  .num-input {
+    min-height: 44px; padding: 8px 10px;
+    border: 1px solid var(--border-2); border-radius: 8px;
+    background: #fff; text-align: right;
+    font: 600 15px/1 inherit; color: var(--text);
+    width: 100%;
+  }
+  .num-input:focus { outline: 2px solid var(--cyan); outline-offset: -2px; }
+  .num-prefix { position: relative; }
+  .num-prefix::before {
+    content: attr(data-prefix);
+    position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted); font-weight: 500;
+    pointer-events: none;
+  }
+  .num-prefix .num-input { padding-left: 22px; text-align: left; }
+
+  /* Radio-row */
+  .radio-row { display: flex; gap: 10px; margin: 6px 0; }
+  .radio-row label {
+    flex: 1;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer;
+    font-size: 14px; font-weight: 500;
+    min-height: 44px;
+  }
+  .radio-row label.active {
+    background: #EAF7FD; border-color: var(--cyan); color: var(--navy);
+    font-weight: 600;
+  }
+  .radio-row input { accent-color: var(--cyan); }
+
+  /* Semaforo */
+  .semaforo {
+    border-radius: var(--radius-lg);
+    padding: 22px 18px;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-md);
+  }
+  .semaforo.verde    { background: linear-gradient(135deg, #0CA678, var(--green)); }
+  .semaforo.amarillo { background: linear-gradient(135deg, #D97706, var(--amber)); }
+  .semaforo.rojo     { background: linear-gradient(135deg, #C1272F, var(--red)); }
+  .semaforo .status { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.9; font-weight: 700; }
+  .semaforo .title  { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 4px 0 10px 0; }
+  .semaforo .frase  { font-size: 15px; line-height: 1.45; opacity: 0.98; }
+
+  /* Prices grid */
+  .prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .price-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .price-box .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+  .price-box .val { font-size: 18px; font-weight: 800; color: var(--navy); margin-top: 4px; letter-spacing: -0.01em; }
+  .price-box.primary { border-color: var(--navy); box-shadow: 0 0 0 2px var(--navy); background: var(--navy); color: #fff; }
+  .price-box.primary .lbl { color: rgba(255,255,255,0.8); }
+  .price-box.primary .val { color: #fff; }
+  .price-box .star { font-size: 11px; color: var(--cyan); font-weight: 700; margin-top: 2px; }
+
+  /* Capacity bar */
+  .capbar {
+    background: var(--bg); border-radius: 10px; padding: 12px;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .capbar .cap-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .capbar .cap-head .name { font-weight: 600; color: var(--navy); font-size: 14px; }
+  .capbar .cap-head .pct { font-weight: 700; font-size: 17px; color: var(--navy); }
+  .capbar .cap-track {
+    height: 14px; background: var(--border); border-radius: 999px; overflow: hidden;
+    position: relative;
+  }
+  .capbar .cap-fill {
+    height: 100%; border-radius: 999px;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+  .capbar .cap-fill.ok    { background: linear-gradient(90deg, var(--green), #0CA678); }
+  .capbar .cap-fill.warn  { background: linear-gradient(90deg, var(--amber), #D97706); }
+  .capbar .cap-fill.bad   { background: linear-gradient(90deg, var(--red), #C1272F); }
+  .capbar .cap-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* Details / collapse */
+  details { border: 1px solid var(--border); border-radius: 10px; background: var(--bg); padding: 0; }
+  details summary {
+    padding: 12px 14px; cursor: pointer; font-weight: 600; color: var(--navy);
+    list-style: none; min-height: 44px; display: flex; align-items: center; justify-content: space-between;
+  }
+  details summary::after { content: "▸"; transition: transform 0.2s; }
+  details[open] summary::after { transform: rotate(90deg); }
+  details summary::-webkit-details-marker { display: none; }
+  details .details-body {
+    padding: 0 14px 14px 14px; font-size: 13px; color: var(--text);
+  }
+
+  .kv-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-row .k { color: var(--muted); }
+  .kv-row .v { font-weight: 600; }
+
+  /* Portfolio table */
+  .pf-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 14px; }
+  .pf-table th { text-align: left; padding: 10px 8px; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid var(--border); }
+  .pf-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  .pf-table td.right { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .pf-table td.label { color: var(--text); font-weight: 500; }
+  .pf-table .delta-positive { color: var(--green); font-weight: 700; }
+  .pf-table .delta-negative { color: var(--red); font-weight: 700; }
+
+  /* Bar chart */
+  .chart-bar { margin-bottom: 10px; }
+  .chart-bar .lbl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .chart-bar .lbl .k { color: var(--navy); font-weight: 600; }
+  .chart-bar .lbl .v { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart-bar .track { height: 18px; background: var(--border); border-radius: 999px; overflow: hidden; display: flex; }
+  .chart-bar .seg-beckett { background: var(--navy); height: 100%; }
+  .chart-bar .seg-c2      { background: var(--cyan); height: 100%; }
+
+  /* Simulator */
+  .sim-row { margin-bottom: 14px; }
+  .sim-row .sim-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .sim-row .sim-head .k { font-weight: 600; color: var(--navy); font-size: 14px; }
+  .sim-row .sim-head .k .flag { color: var(--green); font-weight: 700; margin-left: 4px; font-size: 12px; }
+  .sim-tooltip {
+    background: var(--green-bg); color: #045D43;
+    padding: 8px 10px; border-radius: 8px;
+    font-size: 12px; margin-top: 6px;
+    border-left: 3px solid var(--green);
+  }
+  .preset-list button {
+    display: block; width: 100%;
+    background: #fff; border: 1px solid var(--border-2);
+    padding: 12px 14px; border-radius: 10px;
+    margin-bottom: 8px; text-align: left;
+    font-weight: 600; color: var(--navy);
+    font-size: 14px;
+    min-height: 48px;
+    display: flex; align-items: center; gap: 10px;
+    transition: all 0.15s;
+  }
+  .preset-list button:hover { border-color: var(--cyan); background: #F4FBFE; }
+  .preset-list button.recommended {
+    background: #EDFDF6; border-color: var(--green);
+  }
+  .preset-list .badge-reco {
+    background: var(--green); color: #fff;
+    font-size: 10px; font-weight: 800;
+    padding: 3px 7px; border-radius: 999px;
+    letter-spacing: 0.06em; margin-left: auto;
+  }
+
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .metric-box { background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
+  .metric-box .lbl { font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 600; letter-spacing: 0.06em; }
+  .metric-box .val { font-size: 22px; font-weight: 800; color: var(--navy); margin-top: 4px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .metric-box .val.pos { color: var(--green); }
+  .metric-box .val.neg { color: var(--red); }
+  .metric-box .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* Reaccion banner */
+  .reaccion {
+    padding: 14px; border-radius: 10px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600;
+  }
+  .reaccion.verde    { background: var(--green-bg); color: #0A6E52; border-left: 4px solid var(--green); }
+  .reaccion.amarillo { background: var(--amber-bg); color: #92400E; border-left: 4px solid var(--amber); }
+  .reaccion.rojo     { background: var(--red-bg);   color: #8B1E28; border-left: 4px solid var(--red); }
+  .reaccion .ico { font-size: 22px; }
+
+  /* PIN pad */
+  .pin-wrap { max-width: 280px; margin: 40px auto; text-align: center; }
+  .pin-dots {
+    display: flex; gap: 14px; justify-content: center; margin-bottom: 28px;
+  }
+  .pin-dot {
+    width: 46px; height: 56px;
+    border: 2px solid var(--border-2); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 700; color: var(--navy);
+    background: #fff;
+  }
+  .pin-dot.filled { border-color: var(--cyan); background: #F4FBFE; }
+  .pin-dot.error { border-color: var(--red); background: var(--red-bg); animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  .pin-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .pin-grid button {
+    min-height: 64px; font-size: 22px; font-weight: 700;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; color: var(--navy);
+    box-shadow: var(--shadow-sm);
+  }
+  .pin-grid button:active { background: var(--bg); transform: scale(0.97); }
+  .pin-grid button.action { background: var(--bg); font-size: 14px; }
+
+  /* Admin cards */
+  .opp {
+    display: flex; gap: 12px;
+    padding: 14px; border-radius: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .opp .ico { font-size: 28px; flex-shrink: 0; }
+  .opp .body .title { font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .opp .body .desc { font-size: 13px; color: var(--text); margin-bottom: 6px; line-height: 1.45; }
+  .opp .body .num { font-size: 18px; font-weight: 800; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+  .opp.high   { border-left: 4px solid var(--amber); }
+  .opp.high .num   { color: var(--amber); }
+  .opp.crit   { border-left: 4px solid var(--red); }
+  .opp.crit .num   { color: var(--red); }
+  .opp.med    { border-left: 4px solid #FBBF24; }
+  .opp.med .num    { color: #D97706; }
+
+  .alert {
+    background: var(--red-bg); color: #8B1E28;
+    padding: 12px 14px; border-radius: 10px;
+    border-left: 4px solid var(--red);
+    font-weight: 600; font-size: 14px; margin-bottom: 10px;
+  }
+
+  /* Tab bar */
+  .tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 50; box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+  }
+  .tabbar button {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 2px; padding: 6px 4px; min-height: 56px;
+    color: var(--muted); font-size: 11px; font-weight: 600;
+  }
+  .tabbar button .ico { font-size: 22px; }
+  .tabbar button.active { color: var(--cyan); }
+
+  /* Export button */
+  .btn-primary {
+    width: 100%;
+    background: var(--cyan); color: var(--navy);
+    padding: 14px; border-radius: 12px;
+    font-weight: 700; font-size: 15px;
+    min-height: 48px;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:hover { background: var(--cyan-2); }
+
+  @media print {
+    header, .tabbar, button.btn-primary, details summary { display: none; }
+    details .details-body { padding: 0; display: block !important; }
+    .card { box-shadow: none; border-color: #ccc; break-inside: avoid; }
+    body { background: #fff; padding-bottom: 0; }
+  }
+
+  @media (min-width: 640px) {
+    main { padding: 24px; }
+    .prices { gap: 12px; }
+    .price-box .val { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img id="logo-img" src="ZenderHub_Color.png" alt="ZenderHub" onerror="this.style.display='none'; document.getElementById('logo-fb').style.display='block';" />
+    <div id="logo-fb" class="fallback" style="display:none;">Zender<span>Hub</span></div>
+  </div>
+  <button id="admin-btn" aria-label="Admin">
+    <span id="admin-icon">🔒</span>
+    <span id="admin-label">Admin</span>
+  </button>
+</header>
+<main id="app" aria-live="polite"></main>
+<nav class="tabbar" role="tablist">
+  <button data-module="A" class="active" role="tab"><span class="ico">📱</span>Cotizar</button>
+  <button data-module="B" role="tab"><span class="ico">📊</span>Portfolio</button>
+  <button data-module="C" role="tab"><span class="ico">⚖️</span>Tarifas</button>
+</nav>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   ZenderHub Cotizador v2 — fórmulas y constantes calibradas con data real.
+   Fuentes: costos-reales.md · tarifas-actuales.json · beckett-benchmark.json
+   ════════════════════════════════════════════════════════════════════════ */
+
+// PIN de acceso al módulo admin. Cambiá acá si querés otro PIN.
+const ADMIN_PIN = "0707";
+
+// ──────────────── CONSTANTES DEL MODELO ────────────────
+const MODEL = {
+  // Costos fijos (costos-reales.md §2.3)
+  fijos_miami:      34438,
+  fijos_bogota:     6854,
+  fijos_total:      41292,
+  gap_breakeven:    1886,                 // $41,292 - $39,406 Beckett
+
+  // Costos variables por orden — corrección founder aplicada.
+  // MO Miami NO entra (ya está en Professional Services 1099 del founder).
+  costo_var_miami_rfid_on:  0.45,         // packing 0.33 + RFID 0.095 + ship 0.02
+  costo_var_miami_rfid_off: 0.35,         // packing 0.33 + ship 0.02
+  costo_var_bogota_rfid_on: 0.76,         // packing 0.33 + MO Bogotá 0.31 + RFID 0.095 + ship 0.02
+  costo_var_bogota_rfid_off:0.66,         // packing 0.33 + MO Bogotá 0.31 + ship 0.02
+  costo_var_returns_miami:  0.65,         // midpoint rango $0.50-$0.80 §4
+
+  // Tarifas actuales (tarifas-actuales.json)
+  tarifa_receiving: 0.60,
+  tarifa_picking:   0.94,
+  tarifa_packing:   1.92,
+  tarifa_returns:   3.00,
+  rfid_tarifa_cobrada: 0.20,
+  rfid_costo_promedio: 0.295,
+  rfid_perdida_por_tag: 0.095,
+
+  // Beckett benchmark (beckett-benchmark.json)
+  beckett_ordenes_mes:        9106,
+  beckett_productos_por_orden: 1.49,
+  beckett_skus_recibidos_mes: 12000,
+  beckett_devoluciones_mes:   1277,
+  beckett_tasa_devolucion:    0.12,
+  beckett_revenue_real:       39406,
+  beckett_miami_share:        0.5165,
+  beckett_bogota_share:       0.4835,
+  beckett_ratio_receiving:    0.72,
+  beckett_valor_retail:       5385345,
+  beckett_roi_retail:         87,
+
+  // Capacidad Miami (benchmark + utilización 0.65)
+  beckett_miami_ordenes:      4705,       // 9,106 × 0.5165
+  miami_ordenes_capacidad_max: 7238,      // 4,705 / 0.65
+};
+
+// Tarifas piso y techo para sliders Módulo A (service mode)
+const TARIFF_RANGES = {
+  r:  { min: 0.30, max: 1.50, step: 0.05, def: 0.60, unit: "/SKU recibido" },
+  pi: { min: 0.50, max: 2.00, step: 0.05, def: 0.94, unit: "/producto pickeado" },
+  pa: { min: 1.00, max: 3.50, step: 0.05, def: 1.92, unit: "/orden" },
+  re: { min: 1.50, max: 6.00, step: 0.10, def: 3.00, unit: "/devolución" },
+};
+
+// ──────────────── ESTADO GLOBAL (en memoria, se comparte entre tabs) ────────────────
+const state = {
+  module: 'A',
+  adminAuthed: false,
+
+  // Módulo A — Cotizador
+  quoter: {
+    site:       'miami',
+    rfid:       true,
+    orders:     3500,
+    ppo:        1.49,
+    srcvOverride: null,         // si null, se auto-calcula como orders × 0.72
+    rrPct:      0.12,
+    priceMode:  'service',      // 'total' o 'service'
+    totalPrice: 13000,
+    tariffs:    { r: 0.55, pi: 0.85, pa: 1.80, re: 3.00 },
+    negSlider:  null,           // si !=null, override del precio_prospecto calculado
+    mixtoShareMiami: 0.52,
+  },
+
+  // Módulo C — Simulador de tarifas Beckett
+  simulator: {
+    r: 0.60, pi: 0.94, pa: 1.92, re: 3.00,
+  },
+
+  // Política de márgenes (exponible en Módulo D)
+  policy: {
+    margen_propuesto: 0.20,     // 20% sobre costo total = Precio Propuesto
+    margen_ideal:     0.40,     // 40% sobre costo total = Precio Ideal
+    participacion_gap: 1.0,     // cliente 2 absorbe 100% del gap por default
+  },
+
+  // PIN entry
+  pinEntry: '',
+  pinError: false,
+};
+
+// ──────────────── FORMATEO ────────────────
+const fmt = {
+  usd: (n) => "$" + Math.round(n).toLocaleString('en-US'),
+  usd2: (n) => "$" + (Math.round(n*100)/100).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+  num: (n) => Math.round(n).toLocaleString('en-US'),
+  pct: (n) => (n*100).toFixed(1) + "%",
+  pctInt: (n) => Math.round(n*100) + "%",
+  pctSigned: (n) => (n >= 0 ? "+" : "") + (n*100).toFixed(1) + "%",
+  usdSigned: (n) => (n >= 0 ? "+" : "-") + "$" + Math.abs(Math.round(n)).toLocaleString('en-US'),
+};
+
+// ──────────────── CÁLCULOS — funciones puras ────────────────
+function calcQuoter() {
+  const q = state.quoter;
+  const p = state.policy;
+
+  const orders = Math.max(0, q.orders);
+  const prods  = orders * q.ppo;
+  const srcv   = q.srcvOverride != null ? q.srcvOverride : orders * 0.72;
+  const devs   = orders * q.rrPct;
+  const picks  = prods;
+
+  const shareMiami = q.site === 'miami' ? 1.0
+                   : q.site === 'bogota' ? 0.0
+                   : q.mixtoShareMiami;
+
+  const miamiCost  = q.rfid ? MODEL.costo_var_miami_rfid_on  : MODEL.costo_var_miami_rfid_off;
+  const bogotaCost = q.rfid ? MODEL.costo_var_bogota_rfid_on : MODEL.costo_var_bogota_rfid_off;
+  const costPerOrder = shareMiami * miamiCost + (1 - shareMiami) * bogotaCost;
+
+  const costoVarProc    = orders * costPerOrder;
+  const costoVarReturns = devs * MODEL.costo_var_returns_miami * shareMiami;
+  const costoVarTotal   = costoVarProc + costoVarReturns;
+
+  const asignacionGap = MODEL.gap_breakeven * p.participacion_gap;
+  const costoTotal    = costoVarTotal + asignacionGap;
+
+  const precioMinimo    = costoTotal;
+  const precioPropuesto = costoTotal * (1 + p.margen_propuesto);
+  const precioIdeal     = costoTotal * (1 + p.margen_ideal);
+
+  // Revenue a tarifa lista (para comparar oferta prospecto vs lista)
+  const revLista = srcv  * MODEL.tarifa_receiving
+                 + picks * MODEL.tarifa_picking
+                 + orders * MODEL.tarifa_packing
+                 + devs  * MODEL.tarifa_returns * shareMiami;
+
+  // Revenue a tarifas del prospecto (si modo por servicio)
+  const revProspectoServicios = srcv * q.tariffs.r
+                              + picks * q.tariffs.pi
+                              + orders * q.tariffs.pa
+                              + devs * q.tariffs.re * shareMiami;
+
+  // Precio del prospecto final (prioridades: slider neg > input mode)
+  let precioProspecto;
+  if (q.negSlider != null) {
+    precioProspecto = q.negSlider;
+  } else if (q.priceMode === 'total') {
+    precioProspecto = q.totalPrice;
+  } else {
+    precioProspecto = revProspectoServicios;
+  }
+  precioProspecto = Math.max(0, precioProspecto);
+
+  const margen       = precioProspecto - costoTotal;
+  const margenPct    = costoTotal > 0 ? margen / costoTotal : 0;
+  const vsLista      = revLista > 0 ? (precioProspecto / revLista) - 1 : 0;
+
+  let semaforo;
+  if (precioProspecto >= precioIdeal)       semaforo = 'verde';
+  else if (precioProspecto >= precioMinimo) semaforo = 'amarillo';
+  else                                       semaforo = 'rojo';
+
+  // Capacidad Miami
+  const nuevosMiami = orders * shareMiami;
+  const totalMiami  = MODEL.beckett_miami_ordenes + nuevosMiami;
+  const utilMiami   = totalMiami / MODEL.miami_ordenes_capacidad_max;
+  const capState    = utilMiami > 0.95 ? 'bad' : utilMiami > 0.85 ? 'warn' : 'ok';
+
+  return {
+    orders, prods, srcv, devs, picks, shareMiami,
+    costPerOrder, costoVarProc, costoVarReturns, costoVarTotal, asignacionGap, costoTotal,
+    precioMinimo, precioPropuesto, precioIdeal, precioProspecto,
+    revLista, vsLista, margen, margenPct, semaforo,
+    nuevosMiami, totalMiami, utilMiami, capState,
+  };
+}
+
+function calcPortfolio() {
+  const q = calcQuoter();
+
+  // Beckett actual
+  const beckettRev = MODEL.beckett_revenue_real;
+  // Costo variable Beckett (prorrateado por split Miami/Bogotá)
+  const beckettCostVarProc =
+    MODEL.beckett_ordenes_mes * MODEL.beckett_miami_share * MODEL.costo_var_miami_rfid_on +
+    MODEL.beckett_ordenes_mes * MODEL.beckett_bogota_share * MODEL.costo_var_bogota_rfid_on;
+  const beckettCostVarReturns = MODEL.beckett_devoluciones_mes * MODEL.costo_var_returns_miami;
+  const beckettCostVar = beckettCostVarProc + beckettCostVarReturns;
+  const beckettMargen = beckettRev - beckettCostVar - MODEL.fijos_total;
+
+  // Combinado con Cliente 2
+  const c2Rev = q.precioProspecto;
+  const c2CostVar = q.costoVarTotal;
+
+  const totalRev    = beckettRev + c2Rev;
+  const totalCostVar= beckettCostVar + c2CostVar;
+  const totalMargen = totalRev - totalCostVar - MODEL.fijos_total;
+  const fijosCubSolo = beckettRev / MODEL.fijos_total;
+  const fijosCubComb = totalRev   / MODEL.fijos_total;
+
+  // Miami util
+  const miamiAct     = MODEL.beckett_miami_ordenes;
+  const miamiTotal   = miamiAct + q.orders * q.shareMiami;
+  const utilActual   = miamiAct   / MODEL.miami_ordenes_capacidad_max;
+  const utilTotal    = miamiTotal / MODEL.miami_ordenes_capacidad_max;
+
+  // Revenue por servicio (Beckett × lista + cliente2 a sus tarifas)
+  const beckettRevPorSrv = {
+    receiving: MODEL.beckett_skus_recibidos_mes * MODEL.tarifa_receiving,
+    picking:   MODEL.beckett_ordenes_mes * MODEL.beckett_productos_por_orden * MODEL.tarifa_picking,
+    packing:   MODEL.beckett_ordenes_mes * MODEL.tarifa_packing,
+    returns:   MODEL.beckett_devoluciones_mes * MODEL.tarifa_returns,
+  };
+  // Cliente 2 revenue por servicio (solo si mode service). Si mode total, prorratear por shares típicos.
+  const qr = state.quoter;
+  let c2RevPorSrv;
+  if (qr.priceMode === 'service' && qr.negSlider == null) {
+    c2RevPorSrv = {
+      receiving: q.srcv   * qr.tariffs.r,
+      picking:   q.picks  * qr.tariffs.pi,
+      packing:   q.orders * qr.tariffs.pa,
+      returns:   q.devs   * qr.tariffs.re * q.shareMiami,
+    };
+  } else {
+    // Prorratear por mix típico ecommerce del benchmark
+    c2RevPorSrv = {
+      receiving: c2Rev * 0.18,
+      picking:   c2Rev * 0.29,
+      packing:   c2Rev * 0.44,
+      returns:   c2Rev * 0.09,
+    };
+  }
+
+  return {
+    beckettRev, beckettCostVar, beckettMargen,
+    c2Rev, c2CostVar,
+    totalRev, totalCostVar, totalMargen,
+    fijosCubSolo, fijosCubComb,
+    utilActual, utilTotal, miamiTotal,
+    beckettRevPorSrv, c2RevPorSrv,
+    quoterShareMiami: q.shareMiami,
+  };
+}
+
+function calcSimulator() {
+  const s = state.simulator;
+
+  const revActualLista =
+      MODEL.beckett_skus_recibidos_mes * MODEL.tarifa_receiving
+    + MODEL.beckett_ordenes_mes * MODEL.beckett_productos_por_orden * MODEL.tarifa_picking
+    + MODEL.beckett_ordenes_mes * MODEL.tarifa_packing
+    + MODEL.beckett_devoluciones_mes * MODEL.tarifa_returns;
+
+  const revNuevoLista =
+      MODEL.beckett_skus_recibidos_mes * s.r
+    + MODEL.beckett_ordenes_mes * MODEL.beckett_productos_por_orden * s.pi
+    + MODEL.beckett_ordenes_mes * s.pa
+    + MODEL.beckett_devoluciones_mes * s.re;
+
+  const delta       = revNuevoLista - revActualLista;
+  const deltaAnual  = delta * 12;
+  const aumentoPct  = MODEL.beckett_revenue_real > 0 ? delta / MODEL.beckett_revenue_real : 0;
+
+  const roiActual = MODEL.beckett_roi_retail;
+  const returnsFeeAnual = MODEL.beckett_devoluciones_mes * s.re * 12;
+  const roiNuevo = returnsFeeAnual > 0 ? MODEL.beckett_valor_retail / returnsFeeAnual : 0;
+
+  let reaccion;
+  if (aumentoPct <= 0.05) reaccion = 'verde';
+  else if (aumentoPct <= 0.15) reaccion = 'amarillo';
+  else reaccion = 'rojo';
+
+  return {
+    revActualLista, revNuevoLista, delta, deltaAnual, aumentoPct,
+    roiActual, roiNuevo, reaccion,
+  };
+}
+
+// ──────────────── RENDER ROUTER ────────────────
+function render() {
+  const app = document.getElementById('app');
+  switch (state.module) {
+    case 'A': renderQuoter(app);   break;
+    case 'B': renderPortfolio(app); break;
+    case 'C': renderSimulator(app); break;
+    case 'D': renderAdmin(app);     break;
+  }
+  // Pinta estado tab bar
+  document.querySelectorAll('.tabbar button').forEach(b => {
+    b.classList.toggle('active', b.dataset.module === state.module && state.module !== 'D');
+  });
+  // Estado botón admin
+  const ab = document.getElementById('admin-btn');
+  ab.classList.toggle('authed', state.adminAuthed && state.module === 'D');
+  document.getElementById('admin-icon').textContent = state.adminAuthed ? '🔓' : '🔒';
+  document.getElementById('admin-label').textContent = state.module === 'D' ? 'Salir' : 'Admin';
+}
+
+// ──────────────── MÓDULO A — COTIZADOR ────────────────
+function renderQuoter(root) {
+  const c = calcQuoter();
+  const q = state.quoter;
+
+  const negMin = Math.max(0, c.precioMinimo * 0.8);
+  const negMax = c.precioIdeal * 1.2;
+
+  const fraseSemaforo = (() => {
+    if (c.semaforo === 'verde')
+      return `Cerralo. Te deja <strong>${fmt.usd(c.margen)}/mes</strong> limpio (${fmt.pct(c.margenPct)} sobre costo).`;
+    if (c.semaforo === 'amarillo')
+      return `Negociable. Te deja <strong>${fmt.usd(c.margen)}/mes</strong>. Aspirá al ideal: <strong>${fmt.usd(c.precioIdeal)}</strong>.`;
+    return `No lo tomes. Te pierde <strong>${fmt.usd(Math.abs(c.margen))}/mes</strong>. Piso mínimo: <strong>${fmt.usd(c.precioMinimo)}</strong>.`;
+  })();
+
+  const estadoSemaforo = { verde: 'Aceptar', amarillo: 'Negociar', rojo: 'Rechazar' }[c.semaforo];
+
+  root.innerHTML = `
+    <section class="card">
+      <h2>Cotizador Cliente Nuevo</h2>
+      <p class="card-sub">Prospecto con foco Miami · calibrado con data real Beckett.</p>
+
+      <div class="field">
+        <label>Sitio del fulfillment</label>
+        <div class="segmented" id="seg-site">
+          <button data-v="miami"  class="${q.site==='miami'?'active':''}">Miami</button>
+          <button data-v="bogota" class="${q.site==='bogota'?'active':''}">Bogotá</button>
+          <button data-v="mixto"  class="${q.site==='mixto'?'active':''}">Mixto</button>
+        </div>
+        ${q.site === 'mixto' ? `
+          <div style="margin-top:10px;">
+            <label>% Miami en mix
+              <span class="hint">(default Beckett: 52%)</span></label>
+            ${sliderNum('mixto-share', q.mixtoShareMiami*100, 0, 100, 1, '%')}
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="field">
+        <label>Tecnología RFID</label>
+        <div class="segmented accent" id="seg-rfid">
+          <button data-v="1" class="${q.rfid?'active':''}">ON</button>
+          <button data-v="0" class="${!q.rfid?'active':''}">OFF</button>
+        </div>
+        ${!q.rfid ? `<div class="warn-inline">⚠ Recomendado ON: diferenciador vs. competencia.</div>` : ''}
+      </div>
+
+      <div class="field">
+        <label>Órdenes estimadas / mes</label>
+        ${sliderNum('orders', q.orders, 500, 20000, 100)}
+      </div>
+
+      <div class="field">
+        <label>Productos por orden <span class="hint">(default Beckett: 1.49)</span></label>
+        ${sliderNum('ppo', q.ppo, 1.0, 4.0, 0.01)}
+      </div>
+
+      <div class="field">
+        <label>SKUs recibidos / mes <span class="hint">(default: órdenes × 0.72)</span></label>
+        ${sliderNum('srcv', c.srcv, 100, 40000, 100)}
+      </div>
+
+      <div class="field">
+        <label>% devoluciones <span class="hint">(default Beckett: 12%)</span></label>
+        ${sliderNum('rr', q.rrPct*100, 0, 30, 0.5, '%')}
+      </div>
+
+      <div class="field">
+        <label>Precio del prospecto</label>
+        <div class="radio-row" id="price-mode">
+          <label class="${q.priceMode==='total'?'active':''}">
+            <input type="radio" name="pm" value="total" ${q.priceMode==='total'?'checked':''}/>
+            Total mensual
+          </label>
+          <label class="${q.priceMode==='service'?'active':''}">
+            <input type="radio" name="pm" value="service" ${q.priceMode==='service'?'checked':''}/>
+            Por servicio
+          </label>
+        </div>
+      </div>
+
+      ${q.priceMode === 'total' ? `
+        <div class="field">
+          <label>Monto total mensual (USD)</label>
+          ${sliderNum('total-price', q.totalPrice, 0, Math.max(40000, c.precioIdeal*1.5), 50, null, '$')}
+        </div>
+      ` : `
+        <div class="field">
+          <label>Receiving (tarifa actual $0.60)</label>
+          ${sliderNum('t-r', q.tariffs.r, TARIFF_RANGES.r.min, TARIFF_RANGES.r.max, TARIFF_RANGES.r.step, null, '$')}
+        </div>
+        <div class="field">
+          <label>Picking (tarifa actual $0.94)</label>
+          ${sliderNum('t-pi', q.tariffs.pi, TARIFF_RANGES.pi.min, TARIFF_RANGES.pi.max, TARIFF_RANGES.pi.step, null, '$')}
+        </div>
+        <div class="field">
+          <label>Packing (tarifa actual $1.92)</label>
+          ${sliderNum('t-pa', q.tariffs.pa, TARIFF_RANGES.pa.min, TARIFF_RANGES.pa.max, TARIFF_RANGES.pa.step, null, '$')}
+        </div>
+        <div class="field">
+          <label>Returns (tarifa actual $3.00) ${c.shareMiami < 0.01 ? '— N/A en Bogotá' : ''}</label>
+          ${sliderNum('t-re', q.tariffs.re, TARIFF_RANGES.re.min, TARIFF_RANGES.re.max, TARIFF_RANGES.re.step, null, '$')}
+        </div>
+      `}
+    </section>
+
+    <section class="card">
+      <div class="semaforo ${c.semaforo}">
+        <div class="status">${c.semaforo === 'verde' ? '✓' : c.semaforo === 'amarillo' ? '⚠' : '✗'} ${estadoSemaforo.toUpperCase()}</div>
+        <div class="title">${fmt.usd(c.precioProspecto)}<span style="font-size:14px;opacity:0.75;">/mes</span></div>
+        <div class="frase">${fraseSemaforo}</div>
+      </div>
+
+      <h3 style="margin-top:4px;">Precios sugeridos</h3>
+      <div class="prices">
+        <div class="price-box ${c.semaforo==='rojo'?'':''}">
+          <div class="lbl">Mínimo</div>
+          <div class="val">${fmt.usd(c.precioMinimo)}</div>
+        </div>
+        <div class="price-box primary">
+          <div class="lbl">Propuesto ⭐</div>
+          <div class="val">${fmt.usd(c.precioPropuesto)}</div>
+        </div>
+        <div class="price-box">
+          <div class="lbl">Ideal</div>
+          <div class="val">${fmt.usd(c.precioIdeal)}</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Ajustá el precio en vivo</label>
+        ${sliderNum('neg', c.precioProspecto, negMin, negMax, 10, null, '$', 'neg-slider')}
+        ${q.negSlider != null ? `<button id="neg-reset" class="warn-inline" style="margin-top:6px;background:none;color:var(--cyan);font-weight:600;cursor:pointer;">↺ Volver al precio calculado</button>` : ''}
+      </div>
+
+      <div class="capbar">
+        <div class="cap-head">
+          <span class="name">Capacidad Miami (con cliente 2)</span>
+          <span class="pct">${fmt.pctInt(c.utilMiami)}</span>
+        </div>
+        <div class="cap-track">
+          <div class="cap-fill ${c.capState}" style="width:${Math.min(100, c.utilMiami*100)}%"></div>
+        </div>
+        <div class="cap-sub">
+          ${fmt.num(c.totalMiami)} órdenes/mes de ${fmt.num(MODEL.miami_ordenes_capacidad_max)} máx. teóricas
+          · Beckett hoy: ${fmt.num(MODEL.beckett_miami_ordenes)} · Cliente 2: ${fmt.num(c.nuevosMiami)}
+          ${c.capState === 'warn' ? ' · ⚠ Se acerca al techo' : ''}
+          ${c.capState === 'bad'  ? ' · 🔴 Requiere contratar' : ''}
+        </div>
+      </div>
+
+      <details>
+        <summary>Ver desglose completo</summary>
+        <div class="details-body">
+          <div class="kv-row"><span class="k">Volumen órdenes/mes</span><span class="v">${fmt.num(c.orders)}</span></div>
+          <div class="kv-row"><span class="k">Productos/mes</span><span class="v">${fmt.num(c.prods)}</span></div>
+          <div class="kv-row"><span class="k">SKUs recibidos/mes</span><span class="v">${fmt.num(c.srcv)}</span></div>
+          <div class="kv-row"><span class="k">Devoluciones/mes</span><span class="v">${fmt.num(c.devs)}</span></div>
+          <hr style="border:none;border-top:1px dashed var(--border); margin:8px 0;"/>
+          <div class="kv-row"><span class="k">Costo variable procesamiento</span><span class="v">${fmt.usd(c.costoVarProc)}</span></div>
+          <div class="kv-row"><span class="k">Costo variable returns</span><span class="v">${fmt.usd(c.costoVarReturns)}</span></div>
+          <div class="kv-row"><span class="k">Asignación gap break-even</span><span class="v">${fmt.usd(c.asignacionGap)}</span></div>
+          <div class="kv-row"><span class="k"><strong>Costo total</strong></span><span class="v">${fmt.usd(c.costoTotal)}</span></div>
+          <hr style="border:none;border-top:1px dashed var(--border); margin:8px 0;"/>
+          <div class="kv-row"><span class="k">Revenue a tarifa lista</span><span class="v">${fmt.usd(c.revLista)}</span></div>
+          <div class="kv-row"><span class="k">Precio del prospecto</span><span class="v">${fmt.usd(c.precioProspecto)}</span></div>
+          <div class="kv-row"><span class="k">Prospecto vs tarifa lista</span>
+            <span class="v" style="color:${c.vsLista<0?'var(--red)':c.vsLista>0.05?'var(--green)':'var(--amber)'}">
+              ${fmt.pctSigned(c.vsLista)} ${c.vsLista<0?'(descuento)':c.vsLista>0?'(premium)':''}
+            </span>
+          </div>
+          <div class="kv-row"><span class="k">Margen $ / mes</span>
+            <span class="v" style="color:${c.margen<0?'var(--red)':'var(--green)'}">${fmt.usdSigned(c.margen)}</span>
+          </div>
+          <div class="kv-row"><span class="k">Margen % sobre costo</span>
+            <span class="v" style="color:${c.margen<0?'var(--red)':'var(--green)'}">${fmt.pctSigned(c.margenPct)}</span>
+          </div>
+          <div class="kv-row"><span class="k">Costo variable por orden</span><span class="v">${fmt.usd2(c.costPerOrder)}</span></div>
+          <div class="kv-row"><span class="k">RFID</span><span class="v">${q.rfid ? 'ON ⚠ pierde $0.095/tag' : 'OFF'}</span></div>
+        </div>
+      </details>
+    </section>
+  `;
+
+  wireQuoter();
+}
+
+// Helper que pinta un slider + input numérico sincronizado bidireccional.
+function sliderNum(id, value, min, max, step, suffix, prefix, dataKey) {
+  const val = (step < 0.1) ? Number(value).toFixed(2) : Math.round(value * 100) / 100;
+  const sfx = suffix ? suffix : '';
+  const pfxOpen = prefix ? `<div class="num-prefix" data-prefix="${prefix}">` : '';
+  const pfxClose = prefix ? `</div>` : '';
+  return `
+    <div class="slider-row">
+      <input type="range" id="sl-${id}" data-key="${dataKey||id}" min="${min}" max="${max}" step="${step}" value="${value}" />
+      ${pfxOpen}<input type="number" class="num-input" id="num-${id}" data-key="${dataKey||id}" min="${min}" max="${max}" step="${step}" value="${val}" />${pfxClose}
+    </div>
+    ${sfx ? `<div style="text-align:right;font-size:11px;color:var(--muted);margin-top:2px;">${sfx}</div>` : ''}
+  `;
+}
+
+// Wiring del módulo A
+function wireQuoter() {
+  // Bidirectional sync slider↔numeric
+  function bindPair(id, onChange) {
+    const sl = document.getElementById('sl-'+id);
+    const nb = document.getElementById('num-'+id);
+    if (!sl || !nb) return;
+    sl.addEventListener('input', e => {
+      const v = parseFloat(e.target.value);
+      nb.value = (sl.step < 0.1) ? v.toFixed(2) : v;
+      onChange(v);
+    });
+    nb.addEventListener('input', e => {
+      const v = parseFloat(e.target.value);
+      if (!isNaN(v)) { sl.value = v; onChange(v); }
+    });
+  }
+  bindPair('orders', v => { state.quoter.orders = v; state.quoter.negSlider = null; render(); });
+  bindPair('ppo',    v => { state.quoter.ppo = v; state.quoter.negSlider = null; render(); });
+  bindPair('srcv',   v => { state.quoter.srcvOverride = v; state.quoter.negSlider = null; render(); });
+  bindPair('rr',     v => { state.quoter.rrPct = v/100; state.quoter.negSlider = null; render(); });
+  bindPair('mixto-share', v => { state.quoter.mixtoShareMiami = v/100; state.quoter.negSlider = null; render(); });
+  bindPair('total-price', v => { state.quoter.totalPrice = v; state.quoter.negSlider = null; render(); });
+  bindPair('t-r',  v => { state.quoter.tariffs.r  = v; state.quoter.negSlider = null; render(); });
+  bindPair('t-pi', v => { state.quoter.tariffs.pi = v; state.quoter.negSlider = null; render(); });
+  bindPair('t-pa', v => { state.quoter.tariffs.pa = v; state.quoter.negSlider = null; render(); });
+  bindPair('t-re', v => { state.quoter.tariffs.re = v; state.quoter.negSlider = null; render(); });
+  bindPair('neg',  v => { state.quoter.negSlider = v; render(); });
+
+  // Segmented controls
+  document.querySelectorAll('#seg-site button').forEach(b => {
+    b.addEventListener('click', () => {
+      state.quoter.site = b.dataset.v;
+      state.quoter.negSlider = null;
+      render();
+    });
+  });
+  document.querySelectorAll('#seg-rfid button').forEach(b => {
+    b.addEventListener('click', () => {
+      state.quoter.rfid = b.dataset.v === '1';
+      state.quoter.negSlider = null;
+      render();
+    });
+  });
+  document.querySelectorAll('#price-mode input').forEach(r => {
+    r.addEventListener('change', () => {
+      state.quoter.priceMode = r.value;
+      state.quoter.negSlider = null;
+      render();
+    });
+  });
+  const negReset = document.getElementById('neg-reset');
+  if (negReset) negReset.addEventListener('click', () => { state.quoter.negSlider = null; render(); });
+}
+
+// ──────────────── MÓDULO B — PORTFOLIO ────────────────
+function renderPortfolio(root) {
+  const p = calcPortfolio();
+  const solo = p.beckettMargen;
+  const comb = p.totalMargen;
+
+  const srvMax = Math.max(
+    p.beckettRevPorSrv.receiving + p.c2RevPorSrv.receiving,
+    p.beckettRevPorSrv.picking   + p.c2RevPorSrv.picking,
+    p.beckettRevPorSrv.packing   + p.c2RevPorSrv.packing,
+    p.beckettRevPorSrv.returns   + p.c2RevPorSrv.returns
+  );
+  const bar = (name, bk, c2) => {
+    const total = bk + c2;
+    const wBk = srvMax > 0 ? (bk / srvMax * 100) : 0;
+    const wC2 = srvMax > 0 ? (c2 / srvMax * 100) : 0;
+    return `
+      <div class="chart-bar">
+        <div class="lbl"><span class="k">${name}</span><span class="v">${fmt.usd(total)}/mes</span></div>
+        <div class="track">
+          <div class="seg-beckett" style="width:${wBk}%"></div>
+          <div class="seg-c2" style="width:${wC2}%"></div>
+        </div>
+      </div>
+    `;
+  };
+
+  const cierraElGap = p.fijosCubComb >= 1.0;
+
+  root.innerHTML = `
+    <section class="card">
+      <h2>Portfolio con Cliente 2</h2>
+      <p class="card-sub">Hereda los inputs del Módulo A. Compará el impacto real.</p>
+
+      <table class="pf-table">
+        <thead>
+          <tr><th></th><th style="text-align:right;">Solo Beckett</th><th style="text-align:right;">Con Cliente 2</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">Revenue mensual</td>
+              <td class="right">${fmt.usd(p.beckettRev)}</td>
+              <td class="right">${fmt.usd(p.totalRev)}</td></tr>
+          <tr><td class="label">Fijos cubiertos</td>
+              <td class="right">${fmt.pctInt(p.fijosCubSolo)}</td>
+              <td class="right ${p.fijosCubComb>=1?'delta-positive':''}">${fmt.pctInt(p.fijosCubComb)}</td></tr>
+          <tr><td class="label">Margen neto/mes</td>
+              <td class="right ${solo<0?'delta-negative':'delta-positive'}">${fmt.usdSigned(solo)}</td>
+              <td class="right ${comb<0?'delta-negative':'delta-positive'}">${fmt.usdSigned(comb)}</td></tr>
+          <tr><td class="label">Utilización Miami</td>
+              <td class="right">${fmt.pctInt(p.utilActual)}</td>
+              <td class="right">${fmt.pctInt(p.utilTotal)}</td></tr>
+        </tbody>
+      </table>
+
+      <div class="${cierraElGap?'reaccion verde':'reaccion rojo'}">
+        <span class="ico">${cierraElGap?'✅':'🔴'}</span>
+        <span>
+          ${cierraElGap
+            ? `Cliente 2 cierra el gap y deja <strong>${fmt.usd(comb)}/mes</strong> limpios.`
+            : `Aún sin cubrir fijos. Falta <strong>${fmt.usd(Math.abs(comb))}/mes</strong>.`}
+        </span>
+      </div>
+
+      <h3 style="margin-top:16px;">Revenue por servicio (mensual)</h3>
+      <p class="card-sub" style="margin-bottom:12px;">
+        <span style="display:inline-block;width:12px;height:12px;background:var(--navy);border-radius:2px;vertical-align:middle;"></span> Beckett ·
+        <span style="display:inline-block;width:12px;height:12px;background:var(--cyan);border-radius:2px;vertical-align:middle;"></span> Cliente 2
+      </p>
+      ${bar('Receiving', p.beckettRevPorSrv.receiving, p.c2RevPorSrv.receiving)}
+      ${bar('Picking',   p.beckettRevPorSrv.picking,   p.c2RevPorSrv.picking)}
+      ${bar('Packing',   p.beckettRevPorSrv.packing,   p.c2RevPorSrv.packing)}
+      ${bar('Returns',   p.beckettRevPorSrv.returns,   p.c2RevPorSrv.returns)}
+    </section>
+
+    <section class="card" style="background: #F4FBFE; border-color: var(--cyan);">
+      <h3 style="color:var(--navy);">💡 ¿Querés cambiar los inputs del Cliente 2?</h3>
+      <p class="card-sub">Volvé a la pestaña <strong>Cotizar</strong>. El estado se mantiene entre tabs.</p>
+    </section>
+  `;
+}
+
+// ──────────────── MÓDULO C — SIMULADOR TARIFAS ────────────────
+function renderSimulator(root) {
+  const s = state.simulator;
+  const calc = calcSimulator();
+
+  root.innerHTML = `
+    <section class="card">
+      <h2>Simulador Tarifas Beckett</h2>
+      <p class="card-sub">Probá ajustes antes de la reunión. Volúmenes reales: ${fmt.num(MODEL.beckett_ordenes_mes)} órdenes, ${fmt.num(MODEL.beckett_devoluciones_mes)} devs/mes.</p>
+
+      <div class="preset-list">
+        <button data-preset="returns5" class="recommended">
+          📈 Subir solo Returns a $5
+          <span class="badge-reco">RECOMENDADO</span>
+        </button>
+        <button data-preset="infl">💹 Ajuste inflacionario +5% a todos</button>
+        <button data-preset="reset">↺ Reset a tarifas actuales</button>
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-head"><span class="k">Receiving <span style="color:var(--muted);font-weight:400;">(actual $0.60)</span></span></div>
+        ${sliderNum('sim-r', s.r, TARIFF_RANGES.r.min, TARIFF_RANGES.r.max, TARIFF_RANGES.r.step, null, '$')}
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-head"><span class="k">Picking <span style="color:var(--muted);font-weight:400;">(actual $0.94)</span></span></div>
+        ${sliderNum('sim-pi', s.pi, TARIFF_RANGES.pi.min, TARIFF_RANGES.pi.max, TARIFF_RANGES.pi.step, null, '$')}
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-head"><span class="k">Packing <span style="color:var(--muted);font-weight:400;">(actual $1.92)</span></span></div>
+        ${sliderNum('sim-pa', s.pa, TARIFF_RANGES.pa.min, TARIFF_RANGES.pa.max, TARIFF_RANGES.pa.step, null, '$')}
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-head"><span class="k">Returns <span class="flag">🟢 HEADROOM</span> <span style="color:var(--muted);font-weight:400;">(actual $3.00)</span></span></div>
+        ${sliderNum('sim-re', s.re, TARIFF_RANGES.re.min, TARIFF_RANGES.re.max, TARIFF_RANGES.re.step, null, '$')}
+        <div class="sim-tooltip">
+          💡 ROI cliente = <strong>87x retail</strong> ($5.38M recuperados vs $61K cobrados). Hay margen comercial para subir a $5-6 sin perder al cliente.
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Impacto</h3>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <div class="lbl">Revenue nuevo</div>
+          <div class="val">${fmt.usd(calc.revNuevoLista)}</div>
+          <div class="sub">vs ${fmt.usd(calc.revActualLista)} actual (lista)</div>
+        </div>
+        <div class="metric-box">
+          <div class="lbl">Δ mensual</div>
+          <div class="val ${calc.delta>=0?'pos':'neg'}">${fmt.usdSigned(calc.delta)}</div>
+          <div class="sub">${fmt.pctSigned(calc.aumentoPct)} sobre facturación</div>
+        </div>
+        <div class="metric-box">
+          <div class="lbl">Δ anual</div>
+          <div class="val ${calc.deltaAnual>=0?'pos':'neg'}">${fmt.usdSigned(calc.deltaAnual)}</div>
+          <div class="sub">proyectado 12 meses</div>
+        </div>
+        <div class="metric-box">
+          <div class="lbl">ROI Returns nuevo</div>
+          <div class="val">${calc.roiNuevo.toFixed(0)}x</div>
+          <div class="sub">vs ${calc.roiActual}x actual</div>
+        </div>
+      </div>
+
+      <div class="reaccion ${calc.reaccion}">
+        <span class="ico">${calc.reaccion==='verde'?'✅':calc.reaccion==='amarillo'?'⚠️':'🔴'}</span>
+        <span>
+          ${calc.reaccion==='verde'
+            ? `<strong>Reacción cliente: OK.</strong> Subida de ${fmt.pct(calc.aumentoPct)} es asimilable.`
+            : calc.reaccion==='amarillo'
+            ? `<strong>Reacción dura pero defendible.</strong> ${fmt.pct(calc.aumentoPct)} requiere argumentar con ROI 87x.`
+            : `<strong>Riesgo alto de churn.</strong> ${fmt.pct(calc.aumentoPct)} es mucho. Fragmentar en fases.`}
+        </span>
+      </div>
+    </section>
+  `;
+
+  // Wire sliders
+  function bindSim(id, key) {
+    const sl = document.getElementById('sl-'+id);
+    const nb = document.getElementById('num-'+id);
+    if (!sl || !nb) return;
+    sl.addEventListener('input', e => {
+      const v = parseFloat(e.target.value);
+      nb.value = v.toFixed(2);
+      state.simulator[key] = v; render();
+    });
+    nb.addEventListener('input', e => {
+      const v = parseFloat(e.target.value);
+      if (!isNaN(v)) { sl.value = v; state.simulator[key] = v; render(); }
+    });
+  }
+  bindSim('sim-r', 'r');
+  bindSim('sim-pi','pi');
+  bindSim('sim-pa','pa');
+  bindSim('sim-re','re');
+
+  // Presets
+  document.querySelectorAll('[data-preset]').forEach(b => {
+    b.addEventListener('click', () => {
+      const p = b.dataset.preset;
+      if (p === 'returns5') state.simulator = { r:0.60, pi:0.94, pa:1.92, re:5.00 };
+      if (p === 'infl')     state.simulator = { r:0.63, pi:0.99, pa:2.02, re:3.15 };
+      if (p === 'reset')    state.simulator = { r:0.60, pi:0.94, pa:1.92, re:3.00 };
+      render();
+    });
+  });
+}
+
+// ──────────────── MÓDULO D — HEALTH CHECK (PIN 0707) ────────────────
+function renderAdmin(root) {
+  if (!state.adminAuthed) {
+    renderPinPad(root);
+    return;
+  }
+
+  const rev    = MODEL.beckett_revenue_real;
+  const fijos  = MODEL.fijos_total;
+  const gap    = rev - fijos;  // negativo = gap
+
+  // Oportunidades cuantificadas (ordenadas por impacto económico)
+  const oppReturnsUpside = MODEL.beckett_devoluciones_mes * (5.00 - 3.00) * 12;       // $30,648
+  const perdidaRfidAnual = MODEL.beckett_skus_recibidos_mes * MODEL.rfid_perdida_por_tag * 12; // $13,680
+  const oppBogotaLow  = 40000, oppBogotaHigh = 80000;
+
+  const p = state.policy;
+
+  root.innerHTML = `
+    <section class="card dark">
+      <h2>Health Check ZenderHub</h2>
+      <p class="card-sub">Estado actual del negocio · abril 2026</p>
+
+      <div class="metric-grid">
+        <div class="metric-box" style="background:rgba(255,255,255,0.08); border-color:transparent;">
+          <div class="lbl" style="color:rgba(255,255,255,0.7);">Revenue/mes</div>
+          <div class="val" style="color:#fff;">${fmt.usd(rev)}</div>
+          <div class="sub" style="color:rgba(255,255,255,0.6);">Beckett Simonon</div>
+        </div>
+        <div class="metric-box" style="background:rgba(255,255,255,0.08); border-color:transparent;">
+          <div class="lbl" style="color:rgba(255,255,255,0.7);">Fijos/mes</div>
+          <div class="val" style="color:#fff;">${fmt.usd(fijos)}</div>
+          <div class="sub" style="color:rgba(255,255,255,0.6);">Miami + Bogotá</div>
+        </div>
+      </div>
+      <div class="metric-box" style="background:${gap<0?'rgba(230,57,70,0.2)':'rgba(18,184,134,0.2)'}; border-color:transparent;">
+        <div class="lbl" style="color:rgba(255,255,255,0.8);">Gap mensual</div>
+        <div class="val" style="color:${gap<0?'#FCA5A5':'#6EE7B7'};">${fmt.usdSigned(gap)}</div>
+        <div class="sub" style="color:rgba(255,255,255,0.75);">${gap<0?'Cliente 2 = no opcional':'Cubriendo fijos'}</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Top 3 oportunidades detectadas</h3>
+      <p class="card-sub">Ordenadas por impacto económico anual.</p>
+
+      <div class="opp high">
+        <div class="ico">🟠</div>
+        <div class="body">
+          <div class="title">#1 · Returns subvaluado</div>
+          <div class="num">+${fmt.usd(oppReturnsUpside)}/año</div>
+          <div class="desc">ROI cliente <strong>87x retail</strong> ($5.38M recuperados). Headroom para subir $3 → $5 sin perder al cliente. Usá la pestaña <strong>Tarifas</strong> para preparar la conversación.</div>
+        </div>
+      </div>
+
+      <div class="opp crit">
+        <div class="ico">🔴</div>
+        <div class="body">
+          <div class="title">#2 · RFID pierde plata</div>
+          <div class="num">−${fmt.usd(perdidaRfidAnual)}/año</div>
+          <div class="desc">Cobrás <strong>$0.20/tag</strong>, el costo real es <strong>$0.295</strong>. Pérdida: $0.095 × 12,000 SKUs × 12 meses. Opciones: (a) renegociar tag a $0.35, (b) que el cliente traiga sus propios tags, (c) ofrecer RFID como add-on opcional.</div>
+        </div>
+      </div>
+
+      <div class="opp med">
+        <div class="ico">🟡</div>
+        <div class="body">
+          <div class="title">#3 · Bogotá sin Returns</div>
+          <div class="num">+${fmt.usd(oppBogotaLow)} a ${fmt.usd(oppBogotaHigh)}/año</div>
+          <div class="desc">Mercado LATAM sin competencia real de logística inversa con RFID propio. Upside estimado a 12-18 meses si se lanza servicio Returns en Bogotá.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Alertas críticas</h3>
+      ${gap < 0 ? `<div class="alert">⚠ Sin cliente 2, no cubrís fijos. Brecha ${fmt.usd(Math.abs(gap))}/mes.</div>` : ''}
+      <div class="alert" style="background:var(--amber-bg);color:#92400E;border-left-color:var(--amber);">
+        ⚠ RFID ON default en cotizaciones está subsidiando al cliente. Validar tarifa antes de cerrar cliente 2.
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Política de márgenes (ajuste avanzado)</h3>
+      <p class="card-sub">Afecta los precios Propuesto e Ideal del Módulo A.</p>
+
+      <div class="field">
+        <label>Margen Propuesto <span class="hint">(sobre costo total)</span></label>
+        ${sliderNum('pol-prop', p.margen_propuesto*100, 0, 50, 1, '%')}
+      </div>
+
+      <div class="field">
+        <label>Margen Ideal <span class="hint">(sobre costo total)</span></label>
+        ${sliderNum('pol-ideal', p.margen_ideal*100, 10, 100, 1, '%')}
+      </div>
+
+      <div class="field">
+        <label>Participación cliente 2 en gap <span class="hint">(1.0 = absorbe todo)</span></label>
+        ${sliderNum('pol-gap', p.participacion_gap, 0, 2, 0.05)}
+      </div>
+    </section>
+
+    <section class="card">
+      <button class="btn-primary" onclick="window.print()">📥 Exportar reporte ejecutivo (imprimir / PDF)</button>
+    </section>
+  `;
+
+  // Wire policy sliders
+  function bindPol(id, key, div) {
+    const sl = document.getElementById('sl-'+id);
+    const nb = document.getElementById('num-'+id);
+    if (!sl || !nb) return;
+    sl.addEventListener('input', e => {
+      const v = parseFloat(e.target.value);
+      nb.value = (sl.step < 0.1) ? v.toFixed(2) : v;
+      state.policy[key] = v / div; render();
+    });
+    nb.addEventListener('input', e => {
+      const v = parseFloat(e.target.value);
+      if (!isNaN(v)) { sl.value = v; state.policy[key] = v / div; render(); }
+    });
+  }
+  bindPol('pol-prop', 'margen_propuesto', 100);
+  bindPol('pol-ideal','margen_ideal', 100);
+  bindPol('pol-gap',  'participacion_gap', 1);
+}
+
+function renderPinPad(root) {
+  const pin = state.pinEntry;
+  root.innerHTML = `
+    <section class="card">
+      <div class="pin-wrap">
+        <h2>🔒 Admin</h2>
+        <p style="color:var(--muted); margin-bottom:24px;">Ingresá el PIN de 4 dígitos.</p>
+        <div class="pin-dots ${state.pinError?'error':''}">
+          ${[0,1,2,3].map(i => `<div class="pin-dot ${pin.length > i ? 'filled' : ''} ${state.pinError?'error':''}">${pin[i] ? '•' : ''}</div>`).join('')}
+        </div>
+        <div class="pin-grid">
+          ${[1,2,3,4,5,6,7,8,9].map(n => `<button data-pin="${n}">${n}</button>`).join('')}
+          <button class="action" data-pin="clear">Borrar</button>
+          <button data-pin="0">0</button>
+          <button class="action" data-pin="back">← Volver</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.querySelectorAll('[data-pin]').forEach(b => {
+    b.addEventListener('click', () => {
+      const v = b.dataset.pin;
+      state.pinError = false;
+      if (v === 'clear') {
+        state.pinEntry = '';
+      } else if (v === 'back') {
+        state.module = 'A'; state.pinEntry = '';
+      } else if (state.pinEntry.length < 4) {
+        state.pinEntry += v;
+        if (state.pinEntry.length === 4) {
+          if (state.pinEntry === ADMIN_PIN) {
+            state.adminAuthed = true;
+            state.pinEntry = '';
+          } else {
+            state.pinError = true;
+            setTimeout(() => { state.pinEntry = ''; state.pinError = false; render(); }, 700);
+          }
+        }
+      }
+      render();
+    });
+  });
+}
+
+// ──────────────── TAB BAR + ADMIN BTN ────────────────
+document.querySelectorAll('.tabbar button').forEach(b => {
+  b.addEventListener('click', () => {
+    state.module = b.dataset.module;
+    render();
+  });
+});
+
+document.getElementById('admin-btn').addEventListener('click', () => {
+  if (state.module === 'D') {
+    // salir del admin
+    state.module = 'A';
+  } else {
+    state.module = 'D';
+  }
+  render();
+});
+
+// ──────────────── INIT ────────────────
+render();
+</script>
+</body>
+</html>
