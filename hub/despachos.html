@@ -718,6 +718,28 @@
                 </div>
             </div>
         </div>
+
+        <div class="card">
+            <div class="card-hdr">
+                <span class="step-tag">SYNC</span>
+                <span class="card-title">Sincronizar Casilleros</span>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-g" id="btnSync" onclick="syncCasilleros()">
+                    <div class="spinner" id="sp3"></div>
+                    <span id="t3">🔄 &nbsp;Sincronizar Casilleros CR</span>
+                </button>
+                <div class="result-panel" id="res3">
+                    <div class="result-inner">
+                        <div class="result-bar">
+                            <div class="rdot loading" id="d3"></div>
+                            <span class="rlabel" id="l3">Sincronizando...</span>
+                        </div>
+                        <div class="rbody" id="b3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="overlay" id="pinModal">
@@ -899,7 +921,40 @@
             setLoad(2, false);
         }
     }
-    
+
+    async function syncCasilleros() {
+        const btn = document.getElementById('btnSync');
+        const sp = document.getElementById('sp3');
+        const tx = document.getElementById('t3');
+        btn.disabled = true;
+        sp.style.display = 'block';
+        tx.textContent = 'Sincronizando...';
+        showRes(3, 'loading', 'Leyendo hoja CASILLERO...', '<span class="dim">Conectando con Google Sheets y PostgreSQL...</span>');
+        try {
+            const url = env === 'prod'
+                ? 'https://hub.zenderbox.com/webhook/sync-casilleros-cr'
+                : 'https://hub.zenderbox.com/webhook-test/sync-casilleros-cr';
+            const res = await fetch(url, { method: 'GET' });
+            const json = await res.json();
+            if (!res.ok || json.error)
+                throw new Error(json.message || `HTTP ${res.status}`);
+            const n = json.sincronizados ?? 0;
+            const html = [
+                sl('✅', 'Casilleros sincronizados', n, n > 0 ? 'ok' : 'dim'),
+                sl('📊', 'Destino', 'PostgreSQL casilleros', 'ok'),
+                '<hr class="divider">',
+                `<span class="dim" style="font-size:10px">${new Date().toLocaleTimeString('es-CR')}</span>`
+            ].join('');
+            showRes(3, 'ok', `Completado · ${n} casilleros`, html);
+        } catch (e) {
+            showRes(3, 'err', 'Error', `<span class="err">${e.message}</span>`);
+        } finally {
+            btn.disabled = false;
+            sp.style.display = 'none';
+            tx.textContent = '🔄  Sincronizar Casilleros CR';
+        }
+    }
+
 async function enviarSQ() {
   const n = 'btnSQ', sp = 'sp2', tx = 't2', rs = 'res2', d = 'd2', l = 'l2', b = 'b2';
   document.getElementById(n).disabled = true;
