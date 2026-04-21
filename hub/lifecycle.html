@@ -428,8 +428,15 @@
       letter-spacing: 0.3px;
       font-weight: 600;
     }
+    .chart-box {
+      position: relative;
+      height: 180px;
+      width: 100%;
+    }
+    .chart-box.tall { height: 200px; }
+    .chart-box.short { height: 110px; }
 
-    canvas { max-width: 100%; }
+    canvas { max-width: 100%; display: block; }
 
     /* ===== LISTS ===== */
     .list-scroll {
@@ -1003,15 +1010,15 @@
         <div class="charts-3">
           <div class="chart-wrap">
             <h4>📝 Nuevos registros</h4>
-            <canvas id="chart-reg" height="150"></canvas>
+            <div class="chart-box"><canvas id="chart-reg"></canvas></div>
           </div>
           <div class="chart-wrap">
             <h4>🎯 Activaciones</h4>
-            <canvas id="chart-act" height="150"></canvas>
+            <div class="chart-box"><canvas id="chart-act"></canvas></div>
           </div>
           <div class="chart-wrap">
             <h4>🏆 Deals ganados (WON)</h4>
-            <canvas id="chart-won" height="150"></canvas>
+            <div class="chart-box"><canvas id="chart-won"></canvas></div>
           </div>
         </div>
       `;
