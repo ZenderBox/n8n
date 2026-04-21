@@ -573,14 +573,15 @@
     // CONFIG — Webhooks n8n
     // =========================================================
     const WEBHOOK_BASE = 'https://hub.zenderbox.com/webhook/';
+    const DASHBOARD_ENDPOINT = 'marketing-dashboard';
     const SECTIONS = [
-      { id: 'salud',      endpoint: 'marketing-salud',      render: renderSalud },
-      { id: 'embudo',     endpoint: 'marketing-embudo',     render: renderEmbudo },
-      { id: 'comercial',  endpoint: 'marketing-comercial',  render: renderComercial },
-      { id: 'split',      endpoint: 'marketing-split',      render: renderSplit },
-      { id: 'problemas',  endpoint: 'marketing-problemas',  render: renderProblemas },
-      { id: 'tendencias', endpoint: 'marketing-tendencias', render: renderTendencias },
-      { id: 'tecnico',    endpoint: 'marketing-tecnico',    render: renderTecnico },
+      { id: 'salud',      seccion: 'salud',      render: renderSalud },
+      { id: 'embudo',     seccion: 'embudo',     render: renderEmbudo },
+      { id: 'comercial',  seccion: 'comercial',  render: renderComercial },
+      { id: 'split',      seccion: 'split',      render: renderSplit },
+      { id: 'problemas',  seccion: 'problemas',  render: renderProblemas },
+      { id: 'tendencias', seccion: 'tendencias', render: renderTendencias },
+      { id: 'tecnico',    seccion: 'tecnico',    render: renderTecnico },
     ];
     const REFRESH_MS = 60_000;
 
@@ -674,7 +675,9 @@
       const started = Date.now();
       try {
         const agencia = (window.getAgencia ? getAgencia() : 'CR');
-        const url = WEBHOOK_BASE + section.endpoint + '?agencia=' + encodeURIComponent(agencia);
+        const url = WEBHOOK_BASE + DASHBOARD_ENDPOINT
+          + '?seccion=' + encodeURIComponent(section.seccion)
+          + '&agencia=' + encodeURIComponent(agencia);
         const res = await fetch(url, { method: 'GET', cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const raw = await res.text();
