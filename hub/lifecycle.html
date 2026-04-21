@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Marketing Lifecycle · ZenderBox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* =========================================================
+       ZenderBox Brand Identity — Dashboard Design System
+       Principales:  #CCD32A (lima)  ·  #009CC9 (azul)
+       Gradiente:    linear-gradient(20deg, #009CC9 0%, #CCD32A 100%)
+       Secundarios:  #081F3A (azul marino)  ·  #2D2D2D (gris oscuro)
+       ========================================================= */
+    :root {
+      /* Brand */
+      --brand-lima: #CCD32A;
+      --brand-azul: #009CC9;
+      --brand-marino: #081F3A;
+      --brand-gris: #2D2D2D;
+      --brand-gradient: linear-gradient(20deg, #009CC9 0%, #CCD32A 100%);
+      --brand-gradient-soft: linear-gradient(20deg, rgba(0,156,201,0.12) 0%, rgba(204,211,42,0.12) 100%);
+
+      /* Surfaces (deriv. de azul marino) */
+      --bg: #05111f;
+      --bg-surface: #081F3A;
+      --bg-card: #0b2240;
+      --bg-card-hover: #0d2748;
+      --border: #0f3058;
+      --border-strong: #1a4070;
+
+      /* Text */
+      --text: #e8f0f8;
+      --text-muted: #8aaac8;
+      --text-dim: #5a7a9a;
+
+      /* Semantic (derivados del sistema) */
+      --accent: var(--brand-lima);
+      --info: var(--brand-azul);
+      --accent-soft: rgba(204,211,42,0.12);
+      --info-soft: rgba(0,156,201,0.12);
+      --ok: #30c48c;
+      --warn: #f5a623;
+      --danger: #e85c5c;
+
+      --font: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'Space Mono', 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .main {
+      margin-left: 220px;
+      padding: 28px 36px 72px;
+      max-width: 1640px;
+    }
+
+    /* ===== HEADER con wordmark ZenderBox ===== */
+    .page-header {
+      position: relative;
+      padding: 8px 0 24px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .page-header::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 2px;
+      background: var(--brand-gradient);
+      border-radius: 2px;
+      opacity: 0.85;
+    }
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-icon {
+      width: 40px; height: 40px;
+      background: var(--brand-gradient);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font);
+      font-weight: 700;
+      font-size: 22px;
+      color: #fff;
+      letter-spacing: -1px;
+      box-shadow: 0 4px 14px rgba(0,156,201,0.25);
+    }
+    .brand-text .wordmark {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      line-height: 1;
+    }
+    .brand-text .wordmark .zender { color: var(--brand-azul); }
+    .brand-text .wordmark .box    { color: var(--brand-lima); }
+    .brand-text .wordmark .sep    { color: var(--text-dim); font-weight: 400; margin: 0 8px; }
+    .brand-text .wordmark .page   { color: var(--text); font-weight: 500; }
+    .brand-text .sub {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .health-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .health-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 0 3px rgba(48,196,140,0.2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .health-dot.warn { background: var(--warn); box-shadow: 0 0 0 3px rgba(245,166,35,0.2); }
+    .health-dot.danger { background: var(--danger); box-shadow: 0 0 0 3px rgba(232,92,92,0.2); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .last-updated {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .btn {
+      background: var(--brand-gradient);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0,156,201,0.25);
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,156,201,0.35); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    .btn.spinning .ico { animation: spin 0.8s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* ===== CARDS ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 22px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 22px 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 230px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--brand-gradient);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .card:hover::before { opacity: 1; }
+    .card.span-6 { grid-column: span 6; }
+    .card.span-12 { grid-column: span 12; }
+    @media (max-width: 1100px) {
+      .card.span-6 { grid-column: span 12; }
+      .main { margin-left: 0; padding: 18px; }
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      color: var(--text);
+    }
+    .card-title .emo { font-size: 18px; }
+    .card-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .meta-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+    }
+    .meta-dot.ok { background: var(--ok); }
+    .meta-dot.warn { background: var(--warn); }
+    .meta-dot.err { background: var(--danger); }
+    .card-body { flex: 1; position: relative; }
+
+    /* ===== KPI TILES ===== */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 13px 15px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--border-strong);
+    }
+    .kpi.accent::after { background: var(--brand-gradient); }
+    .kpi.info::after { background: var(--brand-azul); }
+    .kpi.ok::after { background: var(--ok); }
+    .kpi.warn::after { background: var(--warn); }
+    .kpi.danger::after { background: var(--danger); }
+    .kpi .label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .kpi .value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      font-family: var(--mono);
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+    .kpi .value.lima { color: var(--brand-lima); }
+    .kpi .value.azul { color: var(--brand-azul); }
+    .kpi .value.ok { color: var(--ok); }
+    .kpi .value.warn { color: var(--warn); }
+    .kpi .value.danger { color: var(--danger); }
+    .kpi .sub {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      font-family: var(--mono);
+    }
+
+    /* ===== TABLES ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+    th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(15,48,88,0.45);
+      color: var(--text-muted);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { color: var(--text); }
+    td.mono { font-family: var(--mono); font-size: 11.5px; }
+    td.num { text-align: right; color: var(--text); font-family: var(--mono); }
+    td.accent { color: var(--brand-lima); font-weight: 600; }
+    td.info { color: var(--brand-azul); font-weight: 600; }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      font-weight: 700;
+    }
+    .badge-lima { background: var(--accent-soft); color: var(--brand-lima); border-color: rgba(204,211,42,0.3); }
+    .badge-azul { background: var(--info-soft); color: var(--brand-azul); border-color: rgba(0,156,201,0.3); }
+    .badge-ok { background: rgba(48,196,140,0.15); color: var(--ok); border-color: rgba(48,196,140,0.3); }
+    .badge-warn { background: rgba(245,166,35,0.15); color: var(--warn); border-color: rgba(245,166,35,0.3); }
+    .badge-danger { background: rgba(232,92,92,0.15); color: var(--danger); border-color: rgba(232,92,92,0.3); }
+
+    /* ===== STATES ===== */
+    .state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 42px 12px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-align: center;
+      min-height: 170px;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--brand-lima);
+      border-right-color: var(--brand-azul);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin-bottom: 14px;
+    }
+    .state.empty .ico { font-size: 28px; margin-bottom: 8px; opacity: 0.4; }
+    .state.error { color: var(--danger); }
+    .state.error .ico { font-size: 22px; margin-bottom: 8px; }
+
+    /* ===== SPLIT (CR / COL) ===== */
+    .split-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .split-block {
+      padding: 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .split-block.cr { border-top: 3px solid var(--brand-azul); }
+    .split-block.col { border-top: 3px solid var(--brand-lima); }
+    .split-block h4 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 14px;
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== SECTION 6 CHARTS ===== */
+    .charts-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 900px) {
+      .charts-3 { grid-template-columns: 1fr; }
+      .split-2 { grid-template-columns: 1fr; }
+    }
+    .chart-wrap {
+      padding: 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .chart-wrap h4 {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      letter-spacing: 0.3px;
+      font-weight: 600;
+    }
+
+    canvas { max-width: 100%; }
+
+    /* ===== LISTS ===== */
+    .list-scroll {
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .list-scroll::-webkit-scrollbar { width: 6px; }
+    .list-scroll::-webkit-scrollbar-track { background: transparent; }
+    .list-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .list-scroll::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+    .row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 11px;
+      border-bottom: 1px solid rgba(15,48,88,0.45);
+      font-size: 12.5px;
+    }
+    .row-item:last-child { border-bottom: none; }
+    .row-item .label { color: var(--text-muted); font-family: var(--mono); font-size: 11px; }
+    .row-item .value { color: var(--text); font-family: var(--mono); font-size: 12px; }
+
+    .subtitle {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subtitle::before {
+      content: '';
+      width: 3px;
+      height: 12px;
+      background: var(--brand-gradient);
+      border-radius: 2px;
+    }
+
+    .empty-inline {
+      color: var(--text-dim);
+      font-size: 11px;
+      padding: 10px 0;
+      font-family: var(--mono);
+    }
+  </style>
+</head>
+<body>
+  <div id="wms-sidebar"></div>
+
+  <div class="main">
+    <div class="page-header">
+      <div class="brand-mark">
+        <div class="brand-icon">Z</div>
+        <div class="brand-text">
+          <div class="wordmark">
+            <span class="zender">Zender</span><span class="box">Box</span>
+            <span class="sep">/</span>
+            <span class="page">Marketing Lifecycle</span>
+          </div>
+          <div class="sub">Dashboard operativo · 7 vistas · auto-refresh 60s</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="health-pill">
+          <span class="health-dot" id="health-dot"></span>
+          <span id="health-label">7/7 endpoints</span>
+        </span>
+        <span class="last-updated" id="last-updated">—</span>
+        <button class="btn" id="btn-refresh" onclick="refreshAll()">
+          <span class="ico">🔄</span>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card span-6" data-section="salud">
+        <div class="card-header">
+          <div class="card-title"><span class="emo">🟢</span> Salud del sistema</div>
+          <div class="card-meta"><span class="meta-dot" id="dot-salud"></span><span id="meta-salud">—</span></div>
+        </div>
+        <div class="card-body" id="body-salud"></div>
+      </div>
+
+      <div class="card span-6" data-section="embudo">
+        <div class="card-header">
+          <div class="card-title"><span class="emo">📊</span> Embudo de activación</div>
+          <div class="card-meta"><span class="meta-dot" id="dot-embudo"></span><span id="meta-embudo">—</span></div>
+        </div>
+        <div class="card-body" id="body-embudo"></div>
+      </div>
+
+      <div class="card span-12" data-section="comercial">
+        <div class="card-header">
+          <div class="card-title"><span class="emo">💰</span> Pulso comercial</div>
+          <div class="card-meta"><span class="meta-dot" id="dot-comercial"></span><span id="meta-comercial">—</span></div>
+        </div>
+        <div class="card-body" id="body-comercial"></div>
+      </div>
+
+      <div class="card span-6" data-section="split">
+        <div class="card-header">
+          <div class="card-title"><span class="emo">🌎</span> Split CR vs COL</div>
+          <div class="card-meta"><span class="meta-dot" id="dot-split"></span><span id="meta-split">—</span></div>
+        </div>
+        <div class="card-body" id="body-split"></div>
+      </div>
+
+      <div class="card span-6" data-section="problemas">
+        <div class="card-header">
+          <div class="card-title"><span class="emo">⚠️</span> Problemas</div>
+          <div class="card-meta"><span class="meta-dot" id="dot-problemas"></span><span id="meta-problemas">—</span></div>
+        </div>
+        <div class="card-body" id="body-problemas"></div>
+      </div>
+
+      <div class="card span-12" data-section="tendencias">
+        <div class="card-header">
+          <div class="card-title"><span class="emo">📅</span> Tendencias (últimos 30 días)</div>
+          <div class="card-meta"><span class="meta-dot" id="dot-tendencias"></span><span id="meta-tendencias">—</span></div>
+        </div>
+        <div class="card-body" id="body-tendencias"></div>
+      </div>
+
+      <div class="card span-12" data-section="tecnico">
+        <div class="card-header">
+          <div class="card-title"><span class="emo">🔧</span> Info técnica</div>
+          <div class="card-meta"><span class="meta-dot" id="dot-tecnico"></span><span id="meta-tecnico">—</span></div>
+        </div>
+        <div class="card-body" id="body-tecnico"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================
+    // CONFIG — Webhooks n8n
+    // =========================================================
+    const WEBHOOK_BASE = 'https://hub.zenderbox.com/webhook/';
+    const SECTIONS = [
+      { id: 'salud',      endpoint: 'marketing-salud',      render: renderSalud },
+      { id: 'embudo',     endpoint: 'marketing-embudo',     render: renderEmbudo },
+      { id: 'comercial',  endpoint: 'marketing-comercial',  render: renderComercial },
+      { id: 'split',      endpoint: 'marketing-split',      render: renderSplit },
+      { id: 'problemas',  endpoint: 'marketing-problemas',  render: renderProblemas },
+      { id: 'tendencias', endpoint: 'marketing-tendencias', render: renderTendencias },
+      { id: 'tecnico',    endpoint: 'marketing-tecnico',    render: renderTecnico },
+    ];
+    const REFRESH_MS = 60_000;
+
+    // Paleta de marca para charts
+    const BRAND = {
+      lima: '#CCD32A',
+      azul: '#009CC9',
+      marino: '#081F3A',
+      gris: '#2D2D2D',
+      ok: '#30c48c',
+      warn: '#f5a623',
+      danger: '#e85c5c',
+      textMuted: '#8aaac8',
+      textDim: '#5a7a9a',
+      border: 'rgba(15,48,88,0.45)',
+    };
+
+    const charts = {};
+    const sectionStatus = {};  // { salud: 'ok' | 'warn' | 'err' }
+
+    // =========================================================
+    // UTILS
+    // =========================================================
+    function fmtNum(n) {
+      if (n === null || n === undefined || isNaN(n)) return '—';
+      return new Intl.NumberFormat('en-US').format(n);
+    }
+    function fmtPct(n, decimals = 1) {
+      if (n === null || n === undefined || isNaN(n)) return '—';
+      return Number(n).toFixed(decimals) + '%';
+    }
+    function fmtMoney(n) {
+      if (n === null || n === undefined || isNaN(n)) return '—';
+      return '$' + new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
+    }
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString('es-CO', { timeZone: 'America/Bogota', hour12: false });
+      } catch { return iso; }
+    }
+    function fmtRelative(iso) {
+      if (!iso) return '—';
+      const t = new Date(iso).getTime();
+      if (isNaN(t)) return '—';
+      const mins = Math.floor((Date.now() - t) / 60000);
+      if (mins < 1) return 'ahora';
+      if (mins < 60) return `hace ${mins} min`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `hace ${hrs}h`;
+      return `hace ${Math.floor(hrs / 24)}d`;
+    }
+    function pctClass(pct) {
+      if (pct >= 95) return 'ok';
+      if (pct >= 80) return 'warn';
+      return 'danger';
+    }
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function setState(bodyId, kind, msg) {
+      const el = document.getElementById(bodyId);
+      if (!el) return;
+      if (kind === 'loading')
+        el.innerHTML = '<div class="state"><div class="spinner"></div><div>Cargando…</div></div>';
+      else if (kind === 'empty')
+        el.innerHTML = `<div class="state empty"><div class="ico">∅</div><div>${escapeHtml(msg || 'Sin datos')}</div></div>`;
+      else if (kind === 'error')
+        el.innerHTML = `<div class="state error"><div class="ico">⚠</div><div>${escapeHtml(msg || 'Error cargando datos')}</div></div>`;
+    }
+    function isEmpty(data) {
+      if (data === null || data === undefined) return true;
+      if (Array.isArray(data) && data.length === 0) return true;
+      if (typeof data === 'object' && Object.keys(data).length === 0) return true;
+      return false;
+    }
+
+    // =========================================================
+    // FETCH
+    // =========================================================
+    async function fetchSection(section) {
+      const bodyId = 'body-' + section.id;
+      const metaId = 'meta-' + section.id;
+      const dotId  = 'dot-' + section.id;
+      setState(bodyId, 'loading');
+      document.getElementById(dotId).className = 'meta-dot';
+      const started = Date.now();
+      try {
+        const agencia = (window.getAgencia ? getAgencia() : 'CR');
+        const url = WEBHOOK_BASE + section.endpoint + '?agencia=' + encodeURIComponent(agencia);
+        const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const raw = await res.text();
+        let data;
+        try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+        if (Array.isArray(data) && data.length === 1 && typeof data[0] === 'object') data = data[0];
+        if (isEmpty(data)) {
+          setState(bodyId, 'empty');
+          sectionStatus[section.id] = 'warn';
+          document.getElementById(dotId).className = 'meta-dot warn';
+        } else {
+          section.render(data, bodyId);
+          sectionStatus[section.id] = 'ok';
+          document.getElementById(dotId).className = 'meta-dot ok';
+        }
+        const ms = Date.now() - started;
+        document.getElementById(metaId).textContent = `${ms}ms`;
+      } catch (e) {
+        setState(bodyId, 'error', e.message || String(e));
+        document.getElementById(metaId).textContent = 'ERROR';
+        sectionStatus[section.id] = 'err';
+        document.getElementById(dotId).className = 'meta-dot err';
+      }
+      updateGlobalHealth();
+    }
+
+    function updateGlobalHealth() {
+      const total = SECTIONS.length;
+      const ok = Object.values(sectionStatus).filter(s => s === 'ok').length;
+      const err = Object.values(sectionStatus).filter(s => s === 'err').length;
+      const dot = document.getElementById('health-dot');
+      const lbl = document.getElementById('health-label');
+      if (err >= 3) { dot.className = 'health-dot danger'; }
+      else if (err > 0 || ok < total) { dot.className = 'health-dot warn'; }
+      else { dot.className = 'health-dot'; }
+      lbl.textContent = `${ok}/${total} endpoints`;
+    }
+
+    async function refreshAll() {
+      const btn = document.getElementById('btn-refresh');
+      btn.classList.add('spinning');
+      btn.disabled = true;
+      await Promise.all(SECTIONS.map(s => fetchSection(s)));
+      document.getElementById('last-updated').textContent =
+        'Último refresh: ' + new Date().toLocaleTimeString('es-CO', { timeZone: 'America/Bogota' });
+      btn.classList.remove('spinning');
+      btn.disabled = false;
+    }
+
+    setInterval(refreshAll, REFRESH_MS);
+    window.addEventListener('wms:agencia', refreshAll);
+    document.addEventListener('DOMContentLoaded', refreshAll);
+
+    // =========================================================
+    // RENDERERS
+    // =========================================================
+
+    // Sección 1 — Salud
+    // Shape: { casilleros_nuevos_hoy, sincronizados_hoy, sync_pct,
+    //          guias_hoy: { whr, finales }, pendientes_atascados,
+    //          flujos: [{ nombre, ultima_corrida }] }
+    function renderSalud(d, bodyId) {
+      const el = document.getElementById(bodyId);
+      const sync = d.sync_pct ?? 0;
+      const whr = d.guias_hoy?.whr ?? 0;
+      const fin = d.guias_hoy?.finales ?? 0;
+      const pend = d.pendientes_atascados ?? 0;
+      const pendClass = pend > 10 ? 'danger' : (pend > 0 ? 'warn' : 'ok');
+
+      let html = `
+        <div class="kpi-row">
+          <div class="kpi accent"><div class="label">Nuevos hoy</div><div class="value lima">${fmtNum(d.casilleros_nuevos_hoy)}</div></div>
+          <div class="kpi ${pctClass(sync)}"><div class="label">Sync Bitrix</div>
+            <div class="value ${pctClass(sync)}">${fmtNum(d.sincronizados_hoy)}</div>
+            <div class="sub">${fmtPct(sync)} de ${fmtNum(d.casilleros_nuevos_hoy)}</div>
+          </div>
+          <div class="kpi info"><div class="label">Guías hoy</div>
+            <div class="value azul">${fmtNum(whr + fin)}</div>
+            <div class="sub">${fmtNum(whr)} WHR · ${fmtNum(fin)} fin</div>
+          </div>
+          <div class="kpi ${pendClass}"><div class="label">Atascados</div>
+            <div class="value ${pendClass}">${fmtNum(pend)}</div>
+            <div class="sub">intentos &gt; 0</div>
+          </div>
+        </div>
+      `;
+
+      if (Array.isArray(d.flujos) && d.flujos.length) {
+        html += '<div class="subtitle">Última corrida de cada flujo</div>';
+        html += '<table><thead><tr><th>Flujo</th><th>Última corrida</th><th>Hace</th></tr></thead><tbody>';
+        d.flujos.forEach(f => {
+          const stale = f.ultima_corrida ? (Date.now() - new Date(f.ultima_corrida).getTime()) / 60000 : null;
+          const badge = stale === null ? '<span class="badge badge-danger">nunca</span>'
+            : stale > 120 ? '<span class="badge badge-warn">stale</span>'
+            : '<span class="badge badge-ok">ok</span>';
+          html += `<tr>
+            <td>${escapeHtml(f.nombre)} ${badge}</td>
+            <td class="mono">${fmtDate(f.ultima_corrida)}</td>
+            <td class="mono">${fmtRelative(f.ultima_corrida)}</td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+      }
+      el.innerHTML = html;
+    }
+
+    // Sección 2 — Embudo
+    function renderEmbudo(d, bodyId) {
+      const el = document.getElementById(bodyId);
+      const pe = d.senales_hoy?.primer_envio || [];
+      const fi = d.senales_hoy?.fidelizado || [];
+      const serie = d.activaciones_por_dia || [];
+
+      let html = `
+        <div class="kpi-row">
+          <div class="kpi info"><div class="label">Registros 7d</div><div class="value azul">${fmtNum(d.registros_7d)}</div>
+            <div class="sub">${fmtNum(d.activados_7d)} activaron</div></div>
+          <div class="kpi accent"><div class="label">Activación D7</div><div class="value lima">${fmtPct(d.activacion_d7_pct)}</div></div>
+          <div class="kpi accent"><div class="label">Activación D15</div><div class="value lima">${fmtPct(d.activacion_d15_pct)}</div></div>
+          <div class="kpi accent"><div class="label">Activación D30</div><div class="value lima">${fmtPct(d.activacion_d30_pct)}</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px">
+          <div>
+            <div class="subtitle">🎯 Primer envío hoy (${pe.length})</div>
+            <div class="list-scroll">${
+              pe.length
+                ? pe.map(x => `<div class="row-item"><span class="label" style="color:var(--brand-azul);font-weight:600">${escapeHtml(x.casillero)}</span><span class="value">${escapeHtml(x.nombre || '')}</span></div>`).join('')
+                : '<div class="empty-inline">Ninguna hoy</div>'
+            }</div>
+          </div>
+          <div>
+            <div class="subtitle">⭐ Fidelizados hoy (${fi.length})</div>
+            <div class="list-scroll">${
+              fi.length
+                ? fi.map(x => `<div class="row-item"><span class="label" style="color:var(--brand-lima);font-weight:600">${escapeHtml(x.casillero)}</span><span class="value">${escapeHtml(x.nombre || '')}</span></div>`).join('')
+                : '<div class="empty-inline">Ninguna hoy</div>'
+            }</div>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <div class="subtitle">Activaciones · últimos 14 días</div>
+          <div class="chart-wrap"><canvas id="chart-embudo" height="70"></canvas></div>
+        </div>
+      `;
+      el.innerHTML = html;
+
+      if (serie.length) {
+        if (charts.embudo) charts.embudo.destroy();
+        const ctx = document.getElementById('chart-embudo');
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 160);
+        gradient.addColorStop(0, 'rgba(204,211,42,0.9)');
+        gradient.addColorStop(1, 'rgba(0,156,201,0.5)');
+        charts.embudo = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: serie.map(x => x.fecha),
+            datasets: [{
+              label: 'Activaciones',
+              data: serie.map(x => x.count),
+              backgroundColor: gradient,
+              borderColor: BRAND.lima,
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: chartOpts({ hideLegend: true })
+        });
+      }
+    }
+
+    // Sección 3 — Comercial
+    function renderComercial(d, bodyId) {
+      const el = document.getElementById(bodyId);
+      const top = d.top_clientes || [];
+      const tiers = d.tiers || {};
+      const riesgo = d.riesgo_churn || [];
+      const churn = d.churned || [];
+
+      el.innerHTML = `
+        <div style="display:grid;grid-template-columns: 1.3fr 0.9fr 1fr 1fr; gap:18px">
+          <div>
+            <div class="subtitle">🏆 Top 10 · últimos 30 días</div>
+            <div class="list-scroll">
+              ${top.length ? '<table><thead><tr><th>Cliente</th><th style="text-align:right">WHR</th><th style="text-align:right">Pagado</th></tr></thead><tbody>' +
+                top.slice(0, 10).map(c => `<tr>
+                  <td><span class="accent">${escapeHtml(c.casillero)}</span><br><span style="font-size:10.5px;color:var(--text-dim)">${escapeHtml(c.nombre || '')}</span></td>
+                  <td class="num">${fmtNum(c.whr)}</td>
+                  <td class="num">${fmtMoney(c.total_pagado)}</td>
+                </tr>`).join('') + '</tbody></table>'
+              : '<div class="empty-inline">Sin datos</div>'}
+            </div>
+          </div>
+          <div>
+            <div class="subtitle">Distribución tiers</div>
+            <div class="chart-wrap"><canvas id="chart-tiers" height="170"></canvas></div>
+          </div>
+          <div>
+            <div class="subtitle">⚠️ En riesgo (60-90d)</div>
+            <div class="list-scroll">
+              ${riesgo.length ? riesgo.map(c => `<div class="row-item">
+                <span class="label">${escapeHtml(c.casillero)}</span>
+                <span class="value"><span class="badge badge-warn">${fmtNum(c.dias_sin_envio)}d</span></span>
+              </div>`).join('')
+              : '<div class="empty-inline">Ninguno</div>'}
+            </div>
+          </div>
+          <div>
+            <div class="subtitle">💀 Churned (&gt;90d)</div>
+            <div class="list-scroll">
+              ${churn.length ? churn.map(c => `<div class="row-item">
+                <span class="label">${escapeHtml(c.casillero)}</span>
+                <span class="value"><span class="badge badge-danger">${fmtNum(c.dias_sin_envio)}d</span></span>
+              </div>`).join('')
+              : '<div class="empty-inline">Ninguno</div>'}
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (charts.tiers) charts.tiers.destroy();
+      const tierOrder = ['tier1', 'tier2', 'tier3', 'nunca_activo'];
+      const tierLabels = { tier1: 'Tier 1', tier2: 'Tier 2', tier3: 'Tier 3', nunca_activo: 'Nunca activo' };
+      // Gradiente de marca: tier1 (lima) → tier2 (lima suave) → tier3 (azul) → nunca (marino)
+      const tierColors = [BRAND.lima, '#9ab35a', BRAND.azul, '#3e5a7a'];
+      const data = tierOrder.map(k => tiers[k] || 0);
+      if (data.some(v => v > 0)) {
+        const ctx = document.getElementById('chart-tiers');
+        charts.tiers = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: tierOrder.map(k => tierLabels[k]),
+            datasets: [{ data, backgroundColor: tierColors, borderColor: BRAND.marino, borderWidth: 3 }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom',
+                labels: { color: BRAND.textMuted, font: { size: 10, family: 'IBM Plex Sans' }, padding: 8, boxWidth: 10 }
+              },
+              tooltip: tooltipOpts()
+            },
+            cutout: '62%'
+          }
+        });
+      }
+    }
+
+    // Sección 4 — Split CR / COL
+    function renderSplit(d, bodyId) {
+      const el = document.getElementById(bodyId);
+      const block = (key, flag, title) => {
+        const s = d[key] || {};
+        return `
+          <div class="split-block ${key}">
+            <h4>${flag} ${title}</h4>
+            <div class="kpi accent"><div class="label">Activaciones hoy</div><div class="value lima">${fmtNum(s.activaciones_hoy)}</div></div>
+            <div class="kpi ${pctClass(s.sync_pct ?? 0)}" style="margin-top:10px"><div class="label">Sync Bitrix</div>
+              <div class="value ${pctClass(s.sync_pct ?? 0)}">${fmtPct(s.sync_pct)}</div>
+            </div>
+            <div class="kpi info" style="margin-top:10px"><div class="label">Deals creados hoy</div><div class="value azul">${fmtNum(s.deals_creados_hoy)}</div></div>
+          </div>`;
+      };
+      el.innerHTML = `<div class="split-2">${block('cr', '🇨🇷', 'Costa Rica')}${block('col', '🇨🇴', 'Colombia')}</div>`;
+    }
+
+    // Sección 5 — Problemas
+    function renderProblemas(d, bodyId) {
+      const el = document.getElementById(bodyId);
+      const errs = d.top_errores || [];
+      const intentos = d.casilleros_con_intentos || [];
+      const dups = d.deals_duplicados || [];
+      const nn = d.nn_sin_resolver_48h || [];
+
+      el.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div class="subtitle">Top errores 7d</div>
+            <div class="list-scroll">${
+              errs.length ? errs.map(e => `<div class="row-item">
+                <span class="label">${escapeHtml(e.tipo)}</span>
+                <span class="value"><span class="badge badge-danger">${fmtNum(e.count)}</span></span>
+              </div>`).join('') : '<div class="empty-inline">Ninguno</div>'
+            }</div>
+          </div>
+          <div>
+            <div class="subtitle">Casilleros con &gt;3 intentos</div>
+            <div class="list-scroll">${
+              intentos.length ? intentos.map(c => `<div class="row-item" style="flex-direction:column;align-items:flex-start;gap:4px">
+                <div style="display:flex;justify-content:space-between;width:100%">
+                  <span style="color:var(--brand-lima);font-family:var(--mono);font-size:11px;font-weight:600">${escapeHtml(c.casillero)}</span>
+                  <span class="badge badge-warn">${fmtNum(c.intentos)} int.</span>
+                </div>
+                <span style="font-size:10px;color:var(--text-dim)">${escapeHtml((c.error || '').slice(0, 80))}</span>
+              </div>`).join('') : '<div class="empty-inline">Ninguno</div>'
+            }</div>
+          </div>
+          <div>
+            <div class="subtitle">Deals duplicados</div>
+            <div class="list-scroll">${
+              dups.length ? dups.map(c => `<div class="row-item">
+                <span class="label">${escapeHtml(c.casillero)}</span>
+                <span class="value"><span class="badge badge-warn">${fmtNum(c.count)} deals</span></span>
+              </div>`).join('') : '<div class="empty-inline">Ninguno</div>'
+            }</div>
+          </div>
+          <div>
+            <div class="subtitle">NN sin resolver (&gt;48h)</div>
+            <div class="list-scroll">${
+              nn.length ? nn.map(x => `<div class="row-item">
+                <span class="label">${escapeHtml(x.guia)}</span>
+                <span class="value" style="font-size:10.5px">${fmtRelative(x.fecha)}</span>
+              </div>`).join('') : '<div class="empty-inline">Ninguno</div>'
+            }</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Sección 6 — Tendencias
+    function renderTendencias(d, bodyId) {
+      const el = document.getElementById(bodyId);
+      el.innerHTML = `
+        <div class="charts-3">
+          <div class="chart-wrap">
+            <h4>📝 Nuevos registros</h4>
+            <canvas id="chart-reg" height="150"></canvas>
+          </div>
+          <div class="chart-wrap">
+            <h4>🎯 Activaciones</h4>
+            <canvas id="chart-act" height="150"></canvas>
+          </div>
+          <div class="chart-wrap">
+            <h4>🏆 Deals ganados (WON)</h4>
+            <canvas id="chart-won" height="150"></canvas>
+          </div>
+        </div>
+      `;
+      const specs = [
+        { id: 'chart-reg', key: 'reg', data: d.registros_por_dia,    color: BRAND.azul },
+        { id: 'chart-act', key: 'act', data: d.activaciones_por_dia, color: BRAND.lima },
+        { id: 'chart-won', key: 'won', data: d.deals_won_por_dia,    color: BRAND.ok   },
+      ];
+      specs.forEach(spec => {
+        if (charts[spec.key]) charts[spec.key].destroy();
+        if (!Array.isArray(spec.data) || !spec.data.length) return;
+        const ctx = document.getElementById(spec.id);
+        const ctx2d = ctx.getContext('2d');
+        const grad = ctx2d.createLinearGradient(0, 0, 0, 160);
+        grad.addColorStop(0, spec.color + 'AA');
+        grad.addColorStop(1, spec.color + '11');
+        charts[spec.key] = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: spec.data.map(x => x.fecha),
+            datasets: [{
+              data: spec.data.map(x => x.count),
+              borderColor: spec.color,
+              backgroundColor: grad,
+              fill: true,
+              tension: 0.35,
+              pointRadius: 2.5,
+              pointBackgroundColor: spec.color,
+              pointBorderColor: BRAND.marino,
+              borderWidth: 2
+            }]
+          },
+          options: chartOpts({ hideLegend: true })
+        });
+      });
+    }
+
+    // Sección 7 — Info técnica
+    function renderTecnico(d, bodyId) {
+      const el = document.getElementById(bodyId);
+      const ult = d.ultima_fila_reporte_casilleros || {};
+      const sen = d.ultima_senal || {};
+      const evs = d.eventos_ultima_hora || [];
+
+      el.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:18px">
+          <div class="kpi info">
+            <div class="label">Última fila reporte_casilleros</div>
+            <div class="value azul" style="font-size:15px">${escapeHtml(ult.guia || '—')}</div>
+            <div class="sub">${fmtDate(ult.fecha)}</div>
+            <div class="sub" style="color:var(--text-dim)">${fmtRelative(ult.fecha)}</div>
+          </div>
+          <div class="kpi accent">
+            <div class="label">Última señal disparada</div>
+            <div class="value lima" style="font-size:15px">${escapeHtml(sen.casillero || '—')}</div>
+            <div class="sub">${escapeHtml(sen.tipo || '')}</div>
+            <div class="sub" style="color:var(--text-dim)">${fmtRelative(sen.at)}</div>
+          </div>
+          <div>
+            <div class="subtitle">Eventos última hora (${evs.length})</div>
+            <div class="list-scroll">${
+              evs.length ? '<table><thead><tr><th>Cuándo</th><th>Casillero</th><th>Evento</th></tr></thead><tbody>' +
+                evs.map(e => `<tr>
+                  <td class="mono">${fmtRelative(e.created_at)}</td>
+                  <td class="mono accent">${escapeHtml(e.casillero || '')}</td>
+                  <td class="mono" style="font-size:10.5px">${escapeHtml(e.tipo_evento || '')}</td>
+                </tr>`).join('') + '</tbody></table>'
+              : '<div class="empty-inline">Sin eventos</div>'
+            }</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================
+    // CHART OPTIONS con paleta de marca
+    // =========================================================
+    function tooltipOpts() {
+      return {
+        backgroundColor: BRAND.marino,
+        borderColor: BRAND.azul,
+        borderWidth: 1,
+        titleColor: '#fff',
+        bodyColor: BRAND.textMuted,
+        titleFont: { size: 11, family: 'IBM Plex Sans', weight: '600' },
+        bodyFont: { size: 11, family: 'Space Mono' },
+        padding: 10,
+        cornerRadius: 6
+      };
+    }
+    function chartOpts({ hideLegend } = {}) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: !hideLegend, labels: { color: BRAND.textMuted, font: { size: 10, family: 'IBM Plex Sans' } } },
+          tooltip: tooltipOpts()
+        },
+        scales: {
+          x: {
+            ticks: { color: BRAND.textDim, font: { size: 9, family: 'Space Mono' } },
+            grid: { color: BRAND.border, drawBorder: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: BRAND.textDim, font: { size: 9, family: 'Space Mono' }, precision: 0 },
+            grid: { color: BRAND.border, drawBorder: false }
+          }
+        }
+      };
+    }
+  </script>
+
+  <script src="../sidebar.js"></script>
+</body>
+</html>
