@@ -40,6 +40,14 @@ const WMS_NAV = [
     ]
   },
   {
+    section: 'MARKETING',
+    collapsible: true,
+    id: 'marketing-section',
+    items: [
+      { icon: '📊', label: 'Lifecycle',         href: 'lifecycle.html', id: 'lifecycle' },
+    ]
+  },
+  {
     section: 'COBROS',
     collapsible: true,
     id: 'cobros-section',
