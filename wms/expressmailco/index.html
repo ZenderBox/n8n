@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Express Mail Co — Rastrear Paquete</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1A1AE6;
+    --blue-dark: #1010B0;
+    --blue-light: #3D3DFF;
+    --red: #CC0000;
+    --red-light: #FF2020;
+    --white: #FFFFFF;
+    --gray-100: #F4F5F9;
+    --gray-200: #E8E9F0;
+    --gray-400: #9A9BB0;
+    --gray-700: #3D3E55;
+    --gray-900: #1A1B2E;
+    --success: #00C851;
+    --warning: #FF8800;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: var(--gray-100); color: var(--gray-900); min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--blue-dark); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 16px rgba(16,16,176,0.4); }
+  .header-inner { max-width: 720px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; gap: 14px; }
+  .logo-circle { width: 44px; height: 44px; background: linear-gradient(135deg, var(--blue-light), var(--blue-dark)); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2); }
+  .logo-circle svg { width: 24px; height: 24px; fill: white; }
+  .brand-name { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: white; line-height: 1; }
+  .brand-name span { color: var(--red-light); }
+  .brand-sub { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .powered { margin-left: auto; font-size: 10px; color: rgba(255,255,255,0.25); }
+
+  /* HERO */
+  .hero { background: linear-gradient(160deg, var(--blue-dark) 0%, var(--blue) 60%, var(--blue-light) 100%); padding: 36px 20px 48px; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; background: var(--red); border-radius: 50%; opacity: 0.08; }
+  .hero-inner { max-width: 720px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; color: white; margin-bottom: 6px; }
+  .hero p { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; }
+  .search-box { display: flex; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .search-box input { flex: 1; border: none; outline: none; padding: 16px 18px; font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 500; color: var(--gray-900); }
+  .search-box input::placeholder { color: var(--gray-400); }
+  .search-btn { background: var(--red); color: white; border: none; padding: 0 24px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+  .search-btn:hover { background: var(--red-light); }
+
+  /* MAIN */
+  .main { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--gray-400); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .loading { display: none; text-align: center; padding: 48px 20px; }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--gray-200); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { color: var(--gray-400); font-size: 14px; }
+  .result { display: none; animation: fadeUp 0.4s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CARDS */
+  .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-400); margin-bottom: 14px; }
+
+  /* GUIA HEADER */
+  .guia-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .guia-num { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800; color: var(--blue); }
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--gray-100); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: var(--gray-700); }
+  .status-badge.entregado { background: #E6F9EE; color: #007A30; }
+  .status-badge.transito  { background: #E6EEFF; color: var(--blue); }
+  .status-badge.alerta    { background: #FFF3E0; color: var(--warning); }
+  .guia-meta { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; }
+  .meta-item { font-size: 13px; color: var(--gray-400); }
+  .meta-item strong { color: var(--gray-700); display: block; font-size: 14px; margin-top: 2px; }
+
+  /* STEPPER */
+  .stepper { display: flex; align-items: center; overflow-x: auto; gap: 0; }
+  .step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 50px; position: relative; }
+  .step:not(:last-child)::after { content: ''; position: absolute; top: 16px; left: 50%; width: 100%; height: 2px; background: var(--gray-200); z-index: 0; }
+  .step.done:not(:last-child)::after { background: var(--blue); }
+  .step-dot { width: 32px; height: 32px; border-radius: 50%; background: var(--gray-200); display: flex; align-items: center; justify-content: center; font-size: 13px; position: relative; z-index: 1; transition: all 0.3s; }
+  .step.done .step-dot { background: var(--blue); color: white; }
+  .step.active .step-dot { background: var(--blue); color: white; box-shadow: 0 0 0 4px rgba(26,26,230,0.2); }
+  .step-label { font-size: 10px; color: var(--gray-400); text-align: center; margin-top: 6px; line-height: 1.2; font-weight: 600; }
+  .step.done .step-label, .step.active .step-label { color: var(--blue); }
+
+  /* FOTO */
+  .foto-pkg { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; filter: grayscale(100%); }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; }
+  .tl-item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--gray-100); }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-200); flex-shrink: 0; margin-top: 5px; }
+  .tl-dot.first { background: var(--blue); }
+  .tl-text { font-size: 13px; color: var(--gray-700); line-height: 1.4; }
+  .tl-date { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* PAGO */
+  .pago-card { background: linear-gradient(135deg, #1A1AE6 0%, #1010B0 100%); border-radius: 16px; padding: 20px; margin-bottom: 16px; color: white; box-shadow: 0 4px 20px rgba(26,26,230,0.3); }
+  .pago-card .amount { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; margin: 8px 0; }
+  .pago-card p { font-size: 13px; opacity: 0.8; margin-bottom: 16px; }
+  .pago-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-epayco { flex: 1; min-width: 140px; background: var(--red); color: white; border: none; border-radius: 10px; padding: 13px 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .btn-epayco:hover { background: var(--red-light); transform: translateY(-1px); }
+  .btn-transfer { flex: 1; min-width: 140px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 13px 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .btn-transfer:hover { background: rgba(255,255,255,0.25); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 540px; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: var(--gray-200); border-radius: 2px; margin: 0 auto 20px; }
+  .modal h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px; }
+  .modal p.sub { font-size: 13px; color: var(--gray-400); margin-bottom: 20px; }
+  .bank-info { background: var(--gray-100); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+  .bank-name { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
+  .bank-row { display: flex; justify-content: space-between; padding: 4px 0; }
+  .bank-row span { font-size: 13px; color: var(--gray-400); }
+  .bank-row strong { font-size: 14px; color: var(--gray-900); }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-400); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .form-group input { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 12px 14px; font-family: 'Barlow', sans-serif; font-size: 14px; color: var(--gray-900); outline: none; transition: border 0.2s; }
+  .form-group input:focus { border-color: var(--blue); }
+  .upload-area { border: 2px dashed var(--gray-200); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .upload-area:hover { border-color: var(--blue); background: rgba(26,26,230,0.02); }
+  .upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-area .icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-area p { font-size: 13px; color: var(--gray-400); }
+  .upload-area.has-file { border-color: var(--success); background: rgba(0,200,81,0.04); }
+  .upload-area.has-file p { color: var(--success); font-weight: 600; }
+  .btn-submit { width: 100%; background: var(--blue); color: white; border: none; border-radius: 12px; padding: 16px; font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
+  .btn-submit:hover { background: var(--blue-light); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-close-modal { background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; width: 100%; padding: 12px; margin-top: 4px; }
+  .success-msg { display: none; text-align: center; padding: 20px 0; }
+  .success-msg .icon { font-size: 52px; margin-bottom: 12px; }
+  .success-msg h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--gray-900); margin-bottom: 6px; }
+  .success-msg p { font-size: 14px; color: var(--gray-400); }
+
+  /* ERROR */
+  .error-card { background: white; border-radius: 16px; padding: 32px 20px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .error-card .icon { font-size: 40px; margin-bottom: 12px; }
+  .error-card h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
+  .error-card p { font-size: 14px; color: var(--gray-400); }
+
+  /* ENTREGA */
+  .entrega-fotos { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .entrega-fotos img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+  .entrega-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; font-size: 13px; }
+  .entrega-row .label { color: var(--gray-400); min-width: 90px; }
+  .entrega-row .val { color: var(--gray-700); font-weight: 500; }
+
+  /* RATING */
+  .rating-category { margin-bottom: 16px; }
+  .rating-category label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
+  .stars { display: flex; gap: 4px; }
+  .star { font-size: 24px; cursor: pointer; transition: transform 0.1s; color: var(--gray-200); }
+  .star.active { color: #FFB800; }
+  .star:hover { transform: scale(1.2); }
+  .rating-comment { width: 100%; border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 12px; font-family: 'Barlow', sans-serif; font-size: 14px; resize: none; outline: none; margin-top: 12px; transition: border 0.2s; }
+  .rating-comment:focus { border-color: var(--blue); }
+  .btn-rating { width: 100%; background: var(--blue); color: white; border: none; border-radius: 10px; padding: 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: all 0.2s; }
+  .btn-rating:hover { background: var(--blue-light); }
+  .google-review { display: none; background: #E6EEFF; border-radius: 12px; padding: 16px; text-align: center; margin-top: 12px; }
+  .google-review p { font-size: 13px; color: var(--blue); margin-bottom: 10px; font-weight: 500; }
+  .google-review .discount { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--red); letter-spacing: 2px; }
+  .google-review a { display: block; background: var(--blue); color: white; text-decoration: none; border-radius: 8px; padding: 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; margin-top: 10px; }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 26px; }
+    .pago-btns { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-circle">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">EXPRESS <span>MAIL CO</span></div>
+      <div class="brand-sub">Envíos internacionales</div>
+    </div>
+    <div class="powered">powered by ZenderBox</div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1>Rastrea tu paquete</h1>
+    <p>Ingresa tu número de guía o tracking</p>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Ej: BOG0011263248 · 1Z999AA1..." autocomplete="off" spellcheck="false">
+      <button class="search-btn" onclick="buscar()">RASTREAR</button>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+  <div class="empty-state" id="emptyState">
+    <div class="icon">📦</div>
+    <p>Ingresa tu número de guía para ver el estado de tu paquete</p>
+  </div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Buscando tu paquete...</p>
+  </div>
+  <div class="result" id="result"></div>
+</main>
+
+<!-- MODAL TRANSFERENCIA -->
+<div class="modal-overlay" id="modalTransfer">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="modalContent">
+      <h3>Pagar por transferencia</h3>
+      <p class="sub">Realiza tu pago y sube el comprobante</p>
+      <div class="bank-info">
+        <div class="bank-name">🏦 Bancolombia</div>
+        <div class="bank-row"><span>Tipo de cuenta</span><strong>Ahorros</strong></div>
+        <div class="bank-row"><span>Número</span><strong>192929929929</strong></div>
+        <div class="bank-row"><span>Titular</span><strong>Express Mail Co</strong></div>
+        <div class="bank-row"><span>NIT</span><strong>900.000.000-0</strong></div>
+      </div>
+      <div class="form-group">
+        <label>Tu nombre completo</label>
+        <input type="text" id="tfNombre" placeholder="Juan Pérez">
+      </div>
+      <div class="form-group">
+        <label>Número de guía</label>
+        <input type="text" id="tfGuia" placeholder="BOG0011263248">
+      </div>
+      <div class="form-group">
+        <label>Comprobante de pago</label>
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="handleFile(this)">
+          <div class="icon">📎</div>
+          <p id="uploadText">Toca para subir foto del comprobante</p>
+        </div>
+      </div>
+      <button class="btn-submit" id="btnEnviar" onclick="enviarTransferencia()">ENVIAR COMPROBANTE</button>
+      <button class="btn-close-modal" onclick="cerrarModal()">Cancelar</button>
+    </div>
+    <div class="success-msg" id="successMsg">
+      <div class="icon">✅</div>
+      <h4>¡Comprobante enviado!</h4>
+      <p>Tu pago fue recibido y está siendo verificado.<br>Te contactaremos pronto.</p>
+      <button class="btn-submit" style="margin-top:20px" onclick="cerrarModal()">CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.epayco.co/checkout.js"></script>
+<script>
+const CONFIG = {
+  agencia:         'expressmailco',
+  nombre:          'Express Mail Co',
+  webhook:         'https://hub.zenderbox.com/webhook/rastreo-wms',
+  webhookTransfer: 'https://hub.zenderbox.com/webhook/transferencias',
+  epaycoKey:       '8bcec5477475f9de196ca4c6f05acf6d',
+  responseBase:    'https://zenderbox.github.io/n8n/wms/expressmailco/'
+};
+
+let currentGuia = '', currentMonto = 0, currentMoneda = 'COP', selectedFile = null;
+const ratings = [0, 0, 0, 0];
+
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(window.location.search);
+  const g = p.get('guia') || p.get('q') || p.get('n');
+  if (g) { document.getElementById('searchInput').value = g; buscar(); }
+});
+
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+async function buscar() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  currentGuia = q;
+  show('loading');
+  try {
+    const res = await fetch(`${CONFIG.webhook}?q=${encodeURIComponent(q)}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    renderResult(data);
+  } catch(e) {
+    renderError('No se pudo conectar al servidor. Intenta de nuevo.');
+  }
+}
+
+function renderResult(data) {
+  if (!data || data.error || (!data.guia && !data.status)) {
+    renderError('No encontramos información para este número. Verifica que sea correcto.');
+    return;
+  }
+  currentMonto  = data.pago?.monto  || 0;
+  currentMoneda = data.pago?.moneda || 'COP';
+  let html = '';
+
+  // GUÍA
+  const sc = getStatusClass(data.status || '');
+  html += `<div class="card">
+    <div class="guia-header">
+      <div>
+        <div style="font-size:12px;color:var(--gray-400);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Guía</div>
+        <div class="guia-num">${data.guia || currentGuia}</div>
+      </div>
+      <span class="status-badge ${sc}">${getEmoji(data.status||'')} ${data.status||'En proceso'}</span>
+    </div>
+    <div class="guia-meta">
+      ${data.origen  ? `<div class="meta-item">Origen<strong>${data.origen}</strong></div>` : ''}
+      ${data.destino ? `<div class="meta-item">Destino<strong>${data.destino}</strong></div>` : ''}
+    </div>
+  </div>`;
+
+  // STEPPER
+  if (data.stepper?.length) {
+    html += `<div class="card"><div class="card-title">Progreso</div><div class="stepper">`;
+    data.stepper.forEach((s, i) => {
+      const c = s.done ? 'done' : s.active ? 'active' : '';
+      html += `<div class="step ${c}"><div class="step-dot">${s.done ? '✓' : i+1}</div><div class="step-label">${s.label}</div></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // FOTO
+  if (data.foto) {
+    html += `<div class="card"><div class="card-title">📷 Foto en bodega Miami</div>
+      <img src="${data.foto}" class="foto-pkg" alt="Foto" onerror="this.parentElement.style.display='none'"></div>`;
+  }
+
+  // PAGO
+  if (data.tiene_pago && currentMonto > 0) {
+    const fmt = currentMoneda === 'USD' ? `$${currentMonto} USD` : `$${Number(currentMonto).toLocaleString('es-CO')} COP`;
+    html += `<div class="pago-card">
+      <div style="font-size:12px;opacity:0.7;letter-spacing:1px;text-transform:uppercase;font-weight:600">Pago pendiente</div>
+      <div class="amount">${fmt}</div>
+      <p>Elige cómo quieres pagar tu despacho</p>
+      <div class="pago-btns">
+        <button class="btn-epayco" onclick="pagarEpayco()">💳 Pagar con tarjeta</button>
+        <button class="btn-transfer" onclick="abrirModal()">🏦 Transferencia</button>
+      </div>
+    </div>`;
+  }
+
+  // ENTREGA SMARTQUICK
+  if (data.smartquick) {
+    const sq = data.smartquick;
+    html += `<div class="card"><div class="card-title">🚚 Entrega</div>`;
+    if (sq.fotos?.length) {
+      html += `<div class="entrega-fotos">`;
+      sq.fotos.forEach(f => { html += `<img src="${f}" onerror="this.remove()">`; });
+      html += `</div>`;
+    }
+    if (sq.conductor) html += `<div class="entrega-row"><span class="label">Conductor</span><span class="val">${sq.conductor}</span></div>`;
+    if (sq.estado)    html += `<div class="entrega-row"><span class="label">Estado</span><span class="val">${sq.estado}</span></div>`;
+    if (sq.ciudad)    html += `<div class="entrega-row"><span class="label">Ciudad</span><span class="val">${sq.ciudad}</span></div>`;
+    if (sq.lat && sq.lng) html += `<div class="entrega-row"><span class="label">Ubicación</span><span class="val"><a href="https://maps.google.com/?q=${sq.lat},${sq.lng}" target="_blank" style="color:var(--blue)">Ver en mapa 📍</a></span></div>`;
+    html += `</div>`;
+  }
+
+  // TIMELINE
+  if (data.eventos?.length) {
+    html += `<div class="card"><div class="card-title">📋 Historial</div><div class="timeline">`;
+    data.eventos.forEach((ev, i) => {
+      html += `<div class="tl-item">
+        <div class="tl-dot ${i===0?'first':''}"></div>
+        <div><div class="tl-text">${ev.descripcion||ev.evento||''}</div><div class="tl-date">${ev.fecha||''}</div></div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // RATING
+  if (data.mostrar_rating) {
+    html += `<div class="card"><div class="card-title">⭐ Califica el servicio</div>
+      <div id="ratingSection">
+        ${['Tiempo de entrega','Estado del paquete','Atención al cliente','Experiencia general'].map((cat,i) => `
+          <div class="rating-category">
+            <label>${cat}</label>
+            <div class="stars" id="stars_${i}">
+              ${[1,2,3,4,5].map(n=>`<span class="star" onclick="setStar(${i},${n})" data-v="${n}">★</span>`).join('')}
+            </div>
+          </div>`).join('')}
+        <textarea class="rating-comment" id="ratingComment" rows="3" placeholder="¿Algún comentario?"></textarea>
+        <button class="btn-rating" onclick="enviarRating('${data.guia||currentGuia}','${data.pais||''}')">ENVIAR CALIFICACIÓN</button>
+        <div class="google-review" id="googleReview">
+          <p>¡Gracias! Como cliente 5 estrellas tienes un descuento:</p>
+          <div class="discount">GRACIAS10</div>
+          <a href="https://g.page/r/XXXXXX/review" target="_blank">⭐ Dejar reseña en Google</a>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('result').innerHTML = html;
+  document.getElementById('tfGuia').value = data.guia || currentGuia;
+  show('result');
+}
+
+function setStar(cat, val) {
+  ratings[cat] = val;
+  document.querySelectorAll(`#stars_${cat} .star`).forEach(s => {
+    s.classList.toggle('active', parseInt(s.dataset.v) <= val);
+  });
+}
+
+async function enviarRating(guia, pais) {
+  const comment = document.getElementById('ratingComment')?.value || '';
+  const filled = ratings.filter(r => r > 0);
+  const avg = filled.length ? filled.reduce((a,b)=>a+b,0)/filled.length : 0;
+  try {
+    await fetch('https://hub.zenderbox.com/webhook/rastreo-rating', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ guia, pais, agencia: CONFIG.agencia,
+        rating_tiempo: ratings[0], rating_estado: ratings[1],
+        rating_atencion: ratings[2], rating_general: ratings[3],
+        comentario: comment, promedio: avg })
+    });
+  } catch(e) {}
+  const section = document.getElementById('ratingSection');
+  if (pais === 'CO' && avg >= 4.5) {
+    document.getElementById('googleReview').style.display = 'block';
+    section.querySelectorAll('.rating-category,.rating-comment,.btn-rating').forEach(el => el.style.display='none');
+  } else {
+    section.innerHTML = `<div style="text-align:center;padding:16px;color:var(--success);font-weight:600">✅ ¡Gracias por tu calificación!</div>`;
+  }
+}
+
+function pagarEpayco() {
+  const handler = ePayco.checkout.configure({ key: CONFIG.epaycoKey, test: false });
+  handler.open({
+    name: CONFIG.nombre, description: currentGuia,
+    currency: currentMoneda, amount: currentMonto,
+    tax_base: '0', tax: '0', country: 'co', lang: 'es', external: 'false',
+    confirmation: 'https://store1.zenderbox.com/app/rastreo/DetallePAGOEpayco.asp',
+    response: `${CONFIG.responseBase}?guia=${currentGuia}`
+  });
+}
+
+function abrirModal() {
+  document.getElementById('modalTransfer').classList.add('open');
+  document.getElementById('modalContent').style.display = 'block';
+  document.getElementById('successMsg').style.display = 'none';
+}
+
+function cerrarModal() {
+  document.getElementById('modalTransfer').classList.remove('open');
+  selectedFile = null;
+  document.getElementById('uploadArea').classList.remove('has-file');
+  document.getElementById('uploadText').textContent = 'Toca para subir foto del comprobante';
+  document.getElementById('btnEnviar').disabled = false;
+  document.getElementById('btnEnviar').textContent = 'ENVIAR COMPROBANTE';
+}
+
+document.getElementById('modalTransfer').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
+});
+
+function handleFile(input) {
+  if (input.files?.[0]) {
+    selectedFile = input.files[0];
+    document.getElementById('uploadArea').classList.add('has-file');
+    document.getElementById('uploadText').textContent = `✅ ${selectedFile.name}`;
+  }
+}
+
+async function enviarTransferencia() {
+  const nombre = document.getElementById('tfNombre').value.trim();
+  const guia   = document.getElementById('tfGuia').value.trim();
+  if (!nombre || !guia) { alert('Por favor completa tu nombre y número de guía.'); return; }
+  if (!selectedFile)    { alert('Por favor sube el comprobante de pago.'); return; }
+
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true; btn.textContent = 'ENVIANDO...';
+
+  try {
+    const base64 = await toBase64(selectedFile);
+    await fetch(CONFIG.webhookTransfer, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        agencia: CONFIG.agencia, nombre_agencia: CONFIG.nombre,
+        whatsapp: '17865856806', nombre, guia,
+        archivo_nombre: selectedFile.name, archivo_tipo: selectedFile.type,
+        archivo_base64: base64
+      })
+    });
+    document.getElementById('modalContent').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+  } catch(e) {
+    alert('Error al enviar. Intenta de nuevo.');
+    btn.disabled = false; btn.textContent = 'ENVIAR COMPROBANTE';
+  }
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function show(s) {
+  ['emptyState','loading','result'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = id === s ? 'block' : 'none';
+  });
+}
+
+function renderError(msg) {
+  document.getElementById('result').innerHTML = `
+    <div class="error-card"><div class="icon">🔍</div>
+    <h3>No encontrado</h3><p>${msg}</p></div>`;
+  show('result');
+}
+
+function getStatusClass(s) {
+  s = s.toLowerCase();
+  if (s.includes('entregad') || s.includes('finaliz')) return 'entregado';
+  if (s.includes('alerta') || s.includes('retenid'))   return 'alerta';
+  return 'transito';
+}
+
+function getEmoji(s) {
+  s = s.toLowerCase();
+  if (s.includes('entregad') || s.includes('finaliz')) return '✅';
+  if (s.includes('bodega') || s.includes('inventario')) return '📦';
+  if (s.includes('vuelo') || s.includes('aerolinea')) return '✈️';
+  if (s.includes('reparto') || s.includes('camino'))  return '🚚';
+  if (s.includes('alerta') || s.includes('retenid'))  return '⚠️';
+  return '🔄';
+}
+</script>
+</body>
+</html>
