@@ -777,7 +777,7 @@
             <div class="dot-status" id="dotStatusLimpiar"></div>
         </div>
 
-        <!-- PROGRESS (5 pasos) -->
+        <!-- PROGRESS (6 pasos) -->
         <div class="progress-track">
             <div class="prog-step active" id="prog-0">
                 <div class="prog-circle">1</div>
@@ -821,6 +821,15 @@
                     Exportar
                     <br>
                     Archivo
+                </div>
+            </div>
+            <div class="prog-line" id="line-4"></div>
+            <div class="prog-step" id="prog-5">
+                <div class="prog-circle">6</div>
+                <div class="prog-label">
+                    PDF
+                    <br>
+                    Aduana
                 </div>
             </div>
         </div>
@@ -993,6 +1002,35 @@
             <div class="response-box" id="res4"></div>
             <div class="step-nav">
                 <button class="btn-secondary" onclick="goStep(3)">← Volver</button>
+                <button class="btn-secondary" onclick="goStep(5)" style="color:var(--amber);border-color:rgba(245,166,35,.3);">Continuar a PDF Aduana →</button>
+            </div>
+        </div>
+
+        <!-- STEP 6: PDF Aduana vía webhook n8n -->
+        <div class="step-card" id="card-5">
+            <div class="card-header">
+                <span class="step-badge">STEP 06</span>
+                <span class="card-title">Generar PDF Aduana</span>
+            </div>
+            <p class="card-desc">Sube el XLSX exportado al webhook n8n. El servidor hace login, upload, polling y descarga del PDF internamente.</p>
+            <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px 18px;margin-bottom:14px;">
+                <div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.8;">
+                    <div>Webhook: <span style="color:var(--amber2);">hub.zenderbox.com/webhook/generar-pdf-aduana</span></div>
+                    <div>Flujo: <span style="color:var(--amber2);">n8n hace login → upload → polling → download internamente</span></div>
+                    <div>Credenciales: <span style="color:var(--amber2);">guardadas en n8n (no se piden aquí)</span></div>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="btn-primary" id="btn5" onclick="runStep5()">
+                    <span class="spinner"></span>
+                    <span class="btn-label">☁ Generar PDF Aduana</span>
+                </button>
+            </div>
+            <pre id="zhProgress" style="font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-top:12px;white-space:pre-wrap;min-height:0;"></pre>
+            <div id="zhDownloadArea" style="margin-top:12px;"></div>
+            <div class="response-box" id="res5"></div>
+            <div class="step-nav">
+                <button class="btn-secondary" onclick="goStep(4)">← Volver</button>
                 <button class="btn-secondary" onclick="resetAll()" style="color:var(--red);border-color:rgba(255,77,109,.3);">↺ Nuevo lote</button>
             </div>
         </div>
@@ -1004,8 +1042,10 @@
     <script>
     // ── state ──────────────────────────────────────────────
     let currentStep = 0;
-    const STEPS = ['card-0', 'card-1', 'card-2', 'card-3', 'card-4'];
-    const TOTAL_STEPS = 5;
+    const STEPS = ['card-0', 'card-1', 'card-2', 'card-3', 'card-4', 'card-5'];
+    const TOTAL_STEPS = 6;
+    let lastExportedBlob = null;
+    let lastExportedFilename = null;
 
     const FIXED_PROMTS = `
 <div class="promt-row"><input type="text" value="AIRWAYBILL" id="promt-key-1" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 4060024549" id="promt-val-1"><div style="width:32px;flex-shrink:0;"></div></div>
@@ -1470,6 +1510,8 @@
             if (m)
                 filename = m[1];
             const blob = await res.blob();
+            lastExportedBlob = blob;
+            lastExportedFilename = filename;
             const url = URL.createObjectURL(blob);
             document.getElementById('downloadArea').innerHTML = `<a class="btn-download" href="${url}" download="${filename}">⬇ Descargar ${filename}</a>`;
             showToast('Archivo listo');
@@ -1480,6 +1522,71 @@
         }
         finally {
             setLoading('btn4', false);
+        }
+    }
+
+    // ── STEP 6: Subir XLSX al webhook n8n (que hace el flujo ZenderHub internamente) ────
+    const ZH_WEBHOOK = 'https://hub.zenderbox.com/webhook/generar-pdf-aduana';
+
+    async function runStep5() {
+        if (!lastExportedBlob) {
+            showToast('No hay archivo XLSX exportado. Ejecuta Step 5 primero.', 'error');
+            return;
+        }
+
+        setLoading('btn5', true);
+        document.getElementById('zhProgress').textContent = '';
+        document.getElementById('zhDownloadArea').innerHTML = '';
+        document.getElementById('res5').className = 'response-box';
+
+        const log = (msg) => {
+            const el = document.getElementById('zhProgress');
+            el.textContent += (el.textContent ? '\n' : '') + msg;
+        };
+
+        try {
+            log(`☁ Subiendo ${lastExportedFilename} (${(lastExportedBlob.size/1024).toFixed(1)} KB) al webhook n8n...`);
+            log('   n8n hará login, upload, polling y descarga internamente.');
+            log('   Tiempo esperado: ~10-15s.');
+
+            const fd = new FormData();
+            fd.append('file', lastExportedBlob, lastExportedFilename);
+
+            const res = await fetch(ZH_WEBHOOK, { method: 'POST', body: fd });
+
+            if (!res.ok) {
+                let errText = `HTTP ${res.status}`;
+                try { const eb = await res.text(); if (eb) errText += ` - ${eb.slice(0, 300)}`; } catch (_) {}
+                throw new Error(errText);
+            }
+
+            const contentType = res.headers.get('Content-Type') || '';
+            if (!contentType.includes('pdf')) {
+                const eb = await res.text();
+                throw new Error(`Respuesta inesperada (${contentType}): ${eb.slice(0, 300)}`);
+            }
+
+            const pdfBlob = await res.blob();
+            if (!pdfBlob.size) throw new Error('PDF descargado vacío');
+
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const pdfName = `Resultado_Aduana_${ts}.pdf`;
+
+            document.getElementById('zhDownloadArea').innerHTML =
+                `<a class="btn-download" href="${pdfUrl}" download="${pdfName}">⬇ Descargar ${pdfName}</a>`;
+
+            log(`   ✅ PDF listo (${(pdfBlob.size/1024).toFixed(1)} KB)`);
+            showToast('🎉 PDF generado correctamente');
+            window.open(pdfUrl, '_blank');
+
+        } catch (e) {
+            log(`❌ ${e.message}`);
+            showResponse('res5', false, e.message);
+            showToast('Error: ' + e.message, 'error');
+        }
+        finally {
+            setLoading('btn5', false);
         }
     }
 
@@ -1639,12 +1746,18 @@
         ['fname1', 'fname2'].forEach(id => document.getElementById(id).textContent = '');
         document.getElementById('promts-container').innerHTML = FIXED_PROMTS;
         promtCount = 4;
-        ['res1', 'res2', 'res-vpa', 'res3', 'res4'].forEach(id => {
+        ['res1', 'res2', 'res-vpa', 'res3', 'res4', 'res5'].forEach(id => {
             const el = document.getElementById(id);
             if (el)
                 el.className = 'response-box';
         });
         document.getElementById('downloadArea').innerHTML = '';
+        const zhp = document.getElementById('zhProgress');
+        if (zhp) zhp.textContent = '';
+        const zhd = document.getElementById('zhDownloadArea');
+        if (zhd) zhd.innerHTML = '';
+        lastExportedBlob = null;
+        lastExportedFilename = null;
         goStep(0);
     }
     </script>
