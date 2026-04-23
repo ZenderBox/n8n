@@ -1402,25 +1402,40 @@
                 log(novedades.length ? `  ✓ Aplicado · ${novedades.length} novedad(es)` : '  ✓ Aplicado');
             }
 
-            // 3) Validar PA — abortar si faltantes
-            log('▸ 3/6 · Validando partidas PA...');
+            // 3) Validar PA — esperar a que Google Sheets propague, luego validar con retry
+            log('▸ 3/6 · Validando partidas PA (esperando propagación del sheet)...');
             {
-                const r = await fetch(getUrlPA(), {
-                    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
-                });
-                let data = await readBody(r);
-                if (Array.isArray(data)) data = data[0];
-                if (data && data.json !== undefined) data = data.json;
-                const isOk = data && (data.ok === true || data.ok === 'true');
-                if (!r.ok || !isOk) {
-                    const faltantes = (data && data.faltantes) || [];
-                    const msg = (data && (data.message || data.error)) || 'Partidas faltantes';
+                await new Promise(r => setTimeout(r, 2500));
+                let paData = null, paOk = false;
+                for (let attempt = 1; attempt <= 4; attempt++) {
+                    const r = await fetch(getUrlPA(), {
+                        method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+                    });
+                    let data = await readBody(r);
+                    if (Array.isArray(data)) data = data[0];
+                    if (data && data.json !== undefined) data = data.json;
+                    paData = data;
+                    // Respuesta válida trae el campo "ok" (true o false). Si no lo trae,
+                    // el flujo se cortocircuitó (sheet aún no propaga) → reintentar.
+                    const hasDecision = data && (data.ok === true || data.ok === false
+                        || data.ok === 'true' || data.ok === 'false');
+                    if (hasDecision) {
+                        paOk = (data.ok === true || data.ok === 'true');
+                        break;
+                    }
+                    log(`  ...respuesta vacía del sheet, reintento ${attempt}/4 en 2.5s`);
+                    await new Promise(r => setTimeout(r, 2500));
+                }
+                if (!paOk) {
+                    const faltantes = (paData && paData.faltantes) || [];
+                    const msg = (paData && (paData.message || paData.error))
+                        || 'validar-pa no devolvió respuesta válida después de reintentos';
                     log(`  ✗ ${faltantes.length} partida(s) faltante(s)`);
                     showPAErrorModal(faltantes, msg);
                     showToast('Partidas faltantes en hoja PA', 'error');
                     return; // detener flujo
                 }
-                log('  ✓ Partidas OK');
+                log(`  ✓ Partidas OK${paData && paData.total_lote ? ` (${paData.total_lote} filas)` : ''}`);
             }
 
             // 4) Calcular
