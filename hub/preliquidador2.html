@@ -1257,7 +1257,59 @@
         setEnvUrls(savedEnv);
         const savedMode = localStorage.getItem('zbMode2') || 'manual';
         setMode(savedMode);
+        setupPromtValidators();
     });
+
+    // ── Validación + formato de los 4 PROMT (manual + auto) ─────────
+    function setupPromtValidators() {
+        const markValid   = el => { el.style.borderColor = 'rgba(61,255,160,.4)'; };
+        const markInvalid = el => { el.style.borderColor = 'rgba(255,77,109,.6)'; };
+        const clearMark   = el => { el.style.borderColor = ''; };
+        const validatePattern = (el, regex) => {
+            if (!el.value) { clearMark(el); return true; }
+            const ok = regex.test(el.value);
+            ok ? markValid(el) : markInvalid(el);
+            return ok;
+        };
+
+        // AIRWAYBILL + REGISTRO DIAN → solo dígitos en tiempo real
+        ['promt-val-1','auto-promt-val-1','promt-val-3','auto-promt-val-3'].forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+            el.setAttribute('inputmode', 'numeric');
+            el.addEventListener('input', () => {
+                const clean = el.value.replace(/\D/g, '');
+                if (clean !== el.value) el.value = clean;
+                clean ? markValid(el) : clearMark(el);
+            });
+        });
+
+        // FECHA DIAN → máscara MM/DD/YYYY
+        ['promt-val-2','auto-promt-val-2'].forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+            el.setAttribute('inputmode', 'numeric');
+            el.setAttribute('maxlength', '10');
+            el.addEventListener('input', () => {
+                let v = el.value.replace(/\D/g, '').slice(0, 8);
+                if (v.length > 4)      v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+                else if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+                el.value = v;
+            });
+            el.addEventListener('blur', () => validatePattern(el, /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/));
+        });
+
+        // DATE → M/D/YYYY H:MM:SS AM/PM, valida al blur + uppercase AM/PM
+        ['promt-val-4','auto-promt-val-4'].forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+            el.addEventListener('blur', () => {
+                // Normalizar: uppercase AM/PM, normalizar espacios
+                if (el.value) {
+                    el.value = el.value.trim().replace(/\s+/g, ' ')
+                        .replace(/\s*(am|pm)\s*$/i, m => ' ' + m.trim().toUpperCase());
+                }
+                validatePattern(el, /^(0?[1-9]|1[0-2])\/(0?[1-9]|[12]\d|3[01])\/\d{4}\s+(0?[1-9]|1[0-2]):[0-5]\d:[0-5]\d\s+(AM|PM)$/);
+            });
+        });
+    }
 
     // ── MODE toggle (Manual / Auto) ─────────────────────────
     let currentMode = 'manual';
