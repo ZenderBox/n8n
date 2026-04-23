@@ -1438,14 +1438,29 @@
                 log(`  ✓ Partidas OK${paData && paData.total_lote ? ` (${paData.total_lote} filas)` : ''}`);
             }
 
-            // 4) Calcular
+            // 4) Calcular — detectar falla silenciosa (n8n devuelve 200 con body vacío cuando el Code node truena)
             log('▸ 4/6 · Calculando impuestos...');
             {
                 const r = await fetch(getUrl(), {
                     method: 'POST', headers: {'Content-Type':'application/json'},
                     body: JSON.stringify({ accion: 'calcular' })
                 });
-                if (!r.ok) throw new Error(`Calcular falló (HTTP ${r.status})`);
+                const text = await r.text();
+                if (!r.ok) throw new Error(`Calcular falló (HTTP ${r.status}): ${text.slice(0,200)}`);
+                if (!text || !text.trim()) {
+                    throw new Error(
+                        'El paso CALCULAR falló silenciosamente en n8n (body vacío).\n' +
+                        'Causa típica: filas con "Base impuestos" vacía/inválida para rows con FOB > 200.\n' +
+                        'Abre el workflow "Preliquidador - P.A" → Executions → la última con ERROR → ' +
+                        'nodo "S3 - Calcular Impuestos" para ver los números de fila exactos.'
+                    );
+                }
+                let data = null;
+                try { data = JSON.parse(text); } catch {}
+                if (data && data.ok === false) {
+                    const list = Array.isArray(data.errors) ? data.errors.join('\n  • ') : '';
+                    throw new Error(`Calcular: ${data.error || 'error'}\n  • ${list}`);
+                }
                 log('  ✓ Impuestos calculados');
             }
 
