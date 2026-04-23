@@ -1260,55 +1260,67 @@
         setupPromtValidators();
     });
 
-    // ── Validación + formato de los 4 PROMT (manual + auto) ─────────
+    // ── Validación de los 4 PROMT — NO transforma el input, solo marca rojo/verde
+    //    y bloquea "Ejecutar Todo" si alguno no cumple.
+    const PROMT_RULES = [
+        { idManual: 'promt-val-1', idAuto: 'auto-promt-val-1', label: 'AIRWAYBILL',
+          regex: /^\d{10,11}$/ },
+        { idManual: 'promt-val-2', idAuto: 'auto-promt-val-2', label: 'FECHA DIAN',
+          regex: /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/ },
+        { idManual: 'promt-val-3', idAuto: 'auto-promt-val-3', label: 'REGISTRO DIAN',
+          regex: /^\d+$/ },
+        { idManual: 'promt-val-4', idAuto: 'auto-promt-val-4', label: 'DATE',
+          regex: /^(0?[1-9]|1[0-2])\/(0?[1-9]|[12]\d|3[01])\/\d{4}\s+(0?[1-9]|1[0-2]):[0-5]\d:[0-5]\d\s+(AM|PM)$/i }
+    ];
+
+    function validatePromt(el, regex) {
+        if (!el) return false;
+        if (!el.value) { el.style.borderColor = ''; return false; }
+        const ok = regex.test(el.value);
+        el.style.borderColor = ok ? 'rgba(61,255,160,.5)' : 'rgba(255,77,109,.7)';
+        return ok;
+    }
+
     function setupPromtValidators() {
-        const markValid   = el => { el.style.borderColor = 'rgba(61,255,160,.4)'; };
-        const markInvalid = el => { el.style.borderColor = 'rgba(255,77,109,.6)'; };
-        const clearMark   = el => { el.style.borderColor = ''; };
-        const validatePattern = (el, regex) => {
-            if (!el.value) { clearMark(el); return true; }
-            const ok = regex.test(el.value);
-            ok ? markValid(el) : markInvalid(el);
-            return ok;
-        };
-
-        // AIRWAYBILL + REGISTRO DIAN → solo dígitos en tiempo real
-        ['promt-val-1','auto-promt-val-1','promt-val-3','auto-promt-val-3'].forEach(id => {
-            const el = document.getElementById(id); if (!el) return;
-            el.setAttribute('inputmode', 'numeric');
-            el.addEventListener('input', () => {
-                const clean = el.value.replace(/\D/g, '');
-                if (clean !== el.value) el.value = clean;
-                clean ? markValid(el) : clearMark(el);
+        PROMT_RULES.forEach(rule => {
+            [rule.idManual, rule.idAuto].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const handler = () => { validatePromt(el, rule.regex); updateAutoBtnState(); };
+                el.addEventListener('input', handler);
+                el.addEventListener('blur', handler);
             });
         });
-
-        // FECHA DIAN → máscara MM/DD/YYYY
-        ['promt-val-2','auto-promt-val-2'].forEach(id => {
-            const el = document.getElementById(id); if (!el) return;
-            el.setAttribute('inputmode', 'numeric');
-            el.setAttribute('maxlength', '10');
-            el.addEventListener('input', () => {
-                let v = el.value.replace(/\D/g, '').slice(0, 8);
-                if (v.length > 4)      v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
-                else if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
-                el.value = v;
-            });
-            el.addEventListener('blur', () => validatePattern(el, /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/));
+        // También disparar cuando cambien files o agencia en AUTO
+        ['auto-agencia'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateAutoBtnState);
         });
-
-        // DATE → M/D/YYYY H:MM:SS AM/PM, valida al blur + uppercase AM/PM
-        ['promt-val-4','auto-promt-val-4'].forEach(id => {
-            const el = document.getElementById(id); if (!el) return;
-            el.addEventListener('blur', () => {
-                // Normalizar: uppercase AM/PM, normalizar espacios
-                if (el.value) {
-                    el.value = el.value.trim().replace(/\s+/g, ' ')
-                        .replace(/\s*(am|pm)\s*$/i, m => ' ' + m.trim().toUpperCase());
-                }
-                validatePattern(el, /^(0?[1-9]|1[0-2])\/(0?[1-9]|[12]\d|3[01])\/\d{4}\s+(0?[1-9]|1[0-2]):[0-5]\d:[0-5]\d\s+(AM|PM)$/);
-            });
+        ['auto-file1','auto-file2'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', updateAutoBtnState);
         });
+        updateAutoBtnState();
+    }
+
+    function updateAutoBtnState() {
+        const btn = document.getElementById('autoBtn');
+        if (!btn) return;
+        const agenciaEl = document.getElementById('auto-agencia');
+        const f1El = document.getElementById('auto-file1');
+        const f2El = document.getElementById('auto-file2');
+        const agencia = agenciaEl ? agenciaEl.value.trim() : '';
+        const f1 = f1El && f1El.files ? f1El.files[0] : null;
+        const f2 = f2El && f2El.files ? f2El.files[0] : null;
+        const promtsOk = PROMT_RULES.every(r => {
+            const el = document.getElementById(r.idAuto);
+            return el && r.regex.test(el.value);
+        });
+        const canRun = Boolean(agencia && f1 && f2 && promtsOk);
+        btn.disabled = !canRun;
+        btn.style.opacity = canRun ? '' : '0.45';
+        btn.style.cursor  = canRun ? '' : 'not-allowed';
+        btn.title = canRun ? '' : 'Completa todos los campos en el formato correcto';
     }
 
     // ── MODE toggle (Manual / Auto) ─────────────────────────
