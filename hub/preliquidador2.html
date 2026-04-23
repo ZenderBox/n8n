@@ -1438,28 +1438,41 @@
                 log(`  ✓ Partidas OK${paData && paData.total_lote ? ` (${paData.total_lote} filas)` : ''}`);
             }
 
-            // 4) Calcular — detectar falla silenciosa (n8n devuelve 200 con body vacío cuando el Code node truena)
-            log('▸ 4/6 · Calculando impuestos...');
+            // 4) Calcular — con delay + retry porque Google Sheets puede tardar en propagar
+            //    los campos que subir-preliquidado acaba de escribir (Base impuestos, etc.)
+            log('▸ 4/6 · Calculando impuestos (esperando que el sheet propague)...');
             {
-                const r = await fetch(getUrl(), {
-                    method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ accion: 'calcular' })
-                });
-                const text = await r.text();
-                if (!r.ok) throw new Error(`Calcular falló (HTTP ${r.status}): ${text.slice(0,200)}`);
-                if (!text || !text.trim()) {
-                    throw new Error(
-                        'El paso CALCULAR falló silenciosamente en n8n (body vacío).\n' +
-                        'Causa típica: filas con "Base impuestos" vacía/inválida para rows con FOB > 200.\n' +
-                        'Abre el workflow "Preliquidador - P.A" → Executions → la última con ERROR → ' +
-                        'nodo "S3 - Calcular Impuestos" para ver los números de fila exactos.'
-                    );
+                await new Promise(r => setTimeout(r, 3000));
+                let calcOk = false;
+                for (let attempt = 1; attempt <= 4; attempt++) {
+                    const r = await fetch(getUrl(), {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ accion: 'calcular' })
+                    });
+                    const text = await r.text();
+                    if (!r.ok) throw new Error(`Calcular falló (HTTP ${r.status}): ${text.slice(0,200)}`);
+                    let data = null;
+                    try { if (text && text.trim()) data = JSON.parse(text); } catch {}
+                    // Error estructurado de n8n → no reintentar, es un issue de data real
+                    if (data && data.ok === false) {
+                        const list = Array.isArray(data.errors) ? data.errors.join('\n  • ') : '';
+                        throw new Error(`Calcular: ${data.error || 'error'}\n  • ${list}`);
+                    }
+                    // Respuesta con contenido útil → éxito
+                    if (text && text.trim()) {
+                        calcOk = true;
+                        break;
+                    }
+                    // Body vacío → calcular cortó por VALIDACIÓN FALLIDA (sheet aún no propaga)
+                    log(`  ...respuesta vacía (sheet no propagó), reintento ${attempt}/4 en 3s`);
+                    await new Promise(r => setTimeout(r, 3000));
                 }
-                let data = null;
-                try { data = JSON.parse(text); } catch {}
-                if (data && data.ok === false) {
-                    const list = Array.isArray(data.errors) ? data.errors.join('\n  • ') : '';
-                    throw new Error(`Calcular: ${data.error || 'error'}\n  • ${list}`);
+                if (!calcOk) {
+                    throw new Error(
+                        'CALCULAR falló silenciosamente después de 4 reintentos con delay.\n' +
+                        'Causa probable: filas con "Base impuestos" vacía/inválida para rows con FOB > 200.\n' +
+                        'Revisa la última ejecución en n8n (S3 - Calcular Impuestos) para ver las filas exactas.'
+                    );
                 }
                 log('  ✓ Impuestos calculados');
             }
