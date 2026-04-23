@@ -761,6 +761,16 @@
             <span id="envLabel" style="font-family:var(--mono);font-size:10px;color:var(--muted);"></span>
         </div>
 
+        <!-- MODE TOGGLE -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Modo</span>
+            <div id="modeToggle" style="display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:6px;overflow:hidden;cursor:pointer;user-select:none;">
+                <div id="modeManualBtn" onclick="setMode('manual')" style="padding:6px 18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;transition:all .2s;">MANUAL</div>
+                <div id="modeAutoBtn" onclick="setMode('auto')" style="padding:6px 18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;transition:all .2s;">AUTO</div>
+            </div>
+            <span id="modeLabel" style="font-family:var(--mono);font-size:10px;color:var(--muted);"></span>
+        </div>
+
         <div class="config-bar">
             <label>Webhook Principal</label>
             <input type="url" id="webhookUrl" readonly style="opacity:.7;cursor:default;">
@@ -775,6 +785,56 @@
             <label>Webhook Limpiar</label>
             <input type="url" id="webhookLimpiar" readonly style="opacity:.7;cursor:default;">
             <div class="dot-status" id="dotStatusLimpiar"></div>
+        </div>
+
+        <!-- AUTO MODE CARD (solo visible cuando modo = AUTO) -->
+        <div class="step-card auto-only" id="cardAuto" style="display:none;">
+            <div class="card-header">
+                <span class="step-badge" style="background:rgba(77,166,255,.12);color:#4da6ff;border-color:rgba(77,166,255,.3);">AUTO</span>
+                <span class="card-title">🚀 Ejecutar Todo el Flujo</span>
+            </div>
+            <p class="card-desc">Sube ambos archivos y dale a un solo botón — el sistema corre los 6 pasos y descarga el PDF final directo a tu carpeta Downloads.</p>
+            <div class="field">
+                <label>Agencia *</label>
+                <input type="text" id="auto-agencia" placeholder="Nombre exacto según hoja Variables">
+            </div>
+            <div class="field">
+                <label>Archivo Original (.xlsx) *</label>
+                <div class="dropzone" id="auto-drop1" ondragover="doDragOver(event,'auto-drop1')" ondragleave="doDragLeave('auto-drop1')" ondrop="doDrop(event,'auto-drop1','auto-file1')">
+                    <input type="file" id="auto-file1" accept=".xlsx,.xls" onchange="onFileChange('auto-file1','auto-drop1')">
+                    <div class="drop-icon">📂</div>
+                    <div class="drop-text"><strong>Arrastra el ORIGINAL aquí</strong><br>o haz clic para seleccionar · .xlsx</div>
+                    <div class="drop-filename" id="auto-fname1"></div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Archivo Preliquidado (.xlsx) *</label>
+                <div class="dropzone" id="auto-drop2" ondragover="doDragOver(event,'auto-drop2')" ondragleave="doDragLeave('auto-drop2')" ondrop="doDrop(event,'auto-drop2','auto-file2')">
+                    <input type="file" id="auto-file2" accept=".xlsx,.xls" onchange="onFileChange('auto-file2','auto-drop2')">
+                    <div class="drop-icon">📂</div>
+                    <div class="drop-text"><strong>Arrastra el PRELIQUIDADO aquí</strong><br>o haz clic para seleccionar · .xlsx</div>
+                    <div class="drop-filename" id="auto-fname2"></div>
+                </div>
+            </div>
+            <div class="promts-section">
+                <div class="promts-title">Valores PROMT</div>
+                <div id="auto-promts-container">
+                    <div class="promt-row"><input type="text" value="AIRWAYBILL" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 4060024549" id="auto-promt-val-1"><div style="width:32px;flex-shrink:0;"></div></div>
+                    <div class="promt-row"><input type="text" value="FECHA DIAN" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 02/28/2026" id="auto-promt-val-2"><div style="width:32px;flex-shrink:0;"></div></div>
+                    <div class="promt-row"><input type="text" value="REGISTRO DIAN" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 1165750167" id="auto-promt-val-3"><div style="width:32px;flex-shrink:0;"></div></div>
+                    <div class="promt-row"><input type="text" value="DATE" readonly style="opacity:.5;cursor:default;"><input type="text" placeholder="ej: 2/28/2026 6:00:00 PM" id="auto-promt-val-4"><div style="width:32px;flex-shrink:0;"></div></div>
+                </div>
+            </div>
+            <button class="btn-primary" id="autoBtn" onclick="runAuto()" style="margin-top:18px;">
+                <span class="spinner"></span>
+                <span class="btn-label">🚀 Ejecutar Todo</span>
+            </button>
+            <pre id="autoLog" style="font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-top:14px;white-space:pre-wrap;min-height:0;display:none;"></pre>
+            <div id="autoDownload" style="margin-top:12px;"></div>
+            <div class="response-box" id="auto-res"></div>
+            <div class="step-nav" style="margin-top:18px;">
+                <button class="btn-secondary" onclick="resetAll()" style="color:var(--red);border-color:rgba(255,77,109,.3);">↺ Nuevo lote</button>
+            </div>
         </div>
 
         <!-- PROGRESS (6 pasos) -->
@@ -1195,7 +1255,201 @@
     window.addEventListener('DOMContentLoaded', () => {
         const savedEnv = localStorage.getItem('zbEnv2') || 'test';
         setEnvUrls(savedEnv);
+        const savedMode = localStorage.getItem('zbMode2') || 'manual';
+        setMode(savedMode);
     });
+
+    // ── MODE toggle (Manual / Auto) ─────────────────────────
+    let currentMode = 'manual';
+    function setMode(mode) {
+        currentMode = mode;
+        const isAuto = mode === 'auto';
+        // Mostrar/ocultar manual vs auto
+        document.getElementById('cardAuto').style.display = isAuto ? 'block' : 'none';
+        document.querySelectorAll('.step-card:not(.auto-only)').forEach(el => {
+            el.style.display = isAuto ? 'none' : '';
+        });
+        document.querySelector('.progress-track').style.display = isAuto ? 'none' : 'flex';
+        // Toggle visual
+        const manualBg = !isAuto ? 'var(--amber)' : 'transparent';
+        const autoBg  = isAuto ? '#4da6ff' : 'transparent';
+        const manualCol = !isAuto ? 'var(--bg)' : 'var(--muted)';
+        const autoCol   = isAuto ? 'var(--bg)' : 'var(--muted)';
+        document.getElementById('modeManualBtn').style.background = manualBg;
+        document.getElementById('modeManualBtn').style.color = manualCol;
+        document.getElementById('modeAutoBtn').style.background = autoBg;
+        document.getElementById('modeAutoBtn').style.color = autoCol;
+        document.getElementById('modeLabel').textContent = isAuto ? 'Un click → PDF en Downloads' : 'Flujo guiado paso a paso';
+        document.getElementById('modeLabel').style.color = isAuto ? '#4da6ff' : 'var(--muted)';
+        localStorage.setItem('zbMode2', mode);
+        if (!isAuto) goStep(0);
+    }
+
+    // ── AUTO: ejecuta los 6 pasos en secuencia y auto-descarga PDF ────
+    async function runAuto() {
+        if (!assertUrl(getUrl()) || !assertUrl(getUrlPA())) return;
+
+        const agencia = document.getElementById('auto-agencia').value.trim();
+        const fileOrig = document.getElementById('auto-file1').files[0];
+        const filePre  = document.getElementById('auto-file2').files[0];
+        if (!agencia)  { showToast('Ingresa la agencia', 'error'); return; }
+        if (!fileOrig) { showToast('Selecciona el archivo ORIGINAL', 'error'); return; }
+        if (!filePre)  { showToast('Selecciona el archivo PRELIQUIDADO', 'error'); return; }
+
+        const promts = {
+            'promt_AIRWAYBILL':      document.getElementById('auto-promt-val-1').value.trim(),
+            'promt_FECHA DIAN':      document.getElementById('auto-promt-val-2').value.trim(),
+            'promt_REGISTRO DIAN':   document.getElementById('auto-promt-val-3').value.trim(),
+            'promt_DATE':            document.getElementById('auto-promt-val-4').value.trim()
+        };
+
+        const logEl = document.getElementById('autoLog');
+        logEl.style.display = 'block';
+        logEl.textContent = '';
+        document.getElementById('autoDownload').innerHTML = '';
+        document.getElementById('auto-res').className = 'response-box';
+        const log = (m) => { logEl.textContent += (logEl.textContent ? '\n' : '') + m; logEl.scrollTop = 1e9; };
+
+        setLoading('autoBtn', true);
+        try {
+            // 1) Subir ORIGINAL
+            log('▸ 1/6 · Subiendo ORIGINAL...');
+            {
+                const fd = new FormData();
+                fd.append('file', fileOrig);
+                fd.append('agencia', agencia);
+                fd.append('accion', 'subir-original');
+                Object.entries(promts).forEach(([k, v]) => fd.append(k, v));
+                const r = await fetch(getUrl(), { method: 'POST', body: fd });
+                if (!r.ok) throw new Error(`Subir ORIGINAL falló (HTTP ${r.status})`);
+                log('  ✓ Original cargado');
+            }
+
+            // 2) Subir PRELIQUIDADO
+            log('▸ 2/6 · Aplicando PRELIQUIDADO...');
+            {
+                const fd = new FormData();
+                fd.append('file', filePre);
+                fd.append('accion', 'subir-preliquidado');
+                const r = await fetch(getUrl(), { method: 'POST', body: fd });
+                if (!r.ok) throw new Error(`Subir PRELIQUIDADO falló (HTTP ${r.status})`);
+                const data = await readBody(r);
+                const novedades = (data && data.novedades) || [];
+                log(novedades.length ? `  ✓ Aplicado · ${novedades.length} novedad(es)` : '  ✓ Aplicado');
+            }
+
+            // 3) Validar PA — abortar si faltantes
+            log('▸ 3/6 · Validando partidas PA...');
+            {
+                const r = await fetch(getUrlPA(), {
+                    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+                });
+                let data = await readBody(r);
+                if (Array.isArray(data)) data = data[0];
+                if (data && data.json !== undefined) data = data.json;
+                const isOk = data && (data.ok === true || data.ok === 'true');
+                if (!r.ok || !isOk) {
+                    const faltantes = (data && data.faltantes) || [];
+                    const msg = (data && (data.message || data.error)) || 'Partidas faltantes';
+                    log(`  ✗ ${faltantes.length} partida(s) faltante(s)`);
+                    showPAErrorModal(faltantes, msg);
+                    showToast('Partidas faltantes en hoja PA', 'error');
+                    return; // detener flujo
+                }
+                log('  ✓ Partidas OK');
+            }
+
+            // 4) Calcular
+            log('▸ 4/6 · Calculando impuestos...');
+            {
+                const r = await fetch(getUrl(), {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ accion: 'calcular' })
+                });
+                if (!r.ok) throw new Error(`Calcular falló (HTTP ${r.status})`);
+                log('  ✓ Impuestos calculados');
+            }
+
+            // 5) Exportar XLSX
+            log('▸ 5/6 · Exportando XLSX...');
+            let exportedBlob, exportedName = 'Export_ZenderBox.xlsx';
+            {
+                const r = await fetch(getUrl(), {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ accion: 'exportar' })
+                });
+                const ct = r.headers.get('Content-Type') || '';
+                if (!r.ok) throw new Error(`Exportar falló (HTTP ${r.status})`);
+                if (ct.includes('application/json') || ct.includes('text/')) {
+                    const body = await readBody(r);
+                    throw new Error('El servidor no devolvió XLSX: ' + (typeof body === 'string' ? body.slice(0,200) : JSON.stringify(body).slice(0,200)));
+                }
+                const m = (r.headers.get('Content-Disposition') || '').match(/filename="?([^"]+)"?/);
+                if (m) exportedName = m[1];
+                exportedBlob = await r.blob();
+                log(`  ✓ XLSX listo (${(exportedBlob.size/1024).toFixed(1)} KB)`);
+            }
+
+            // 6) ZenderHub webhook → PDF
+            log('▸ 6/6 · Generando PDF Aduana (n8n hace login/upload/polling/download, ~10-15s)...');
+            {
+                const fd = new FormData();
+                fd.append('file', exportedBlob, exportedName);
+                const r = await fetch(ZH_WEBHOOK, { method: 'POST', body: fd });
+                if (!r.ok) {
+                    let msg = `HTTP ${r.status}`;
+                    try { const t = await r.text(); if (t) msg += ' - ' + t.slice(0, 300); } catch(_){}
+                    throw new Error(msg);
+                }
+                const ct = r.headers.get('Content-Type') || '';
+                if (!ct.includes('pdf')) {
+                    const t = await r.text();
+                    throw new Error(`Respuesta inesperada (${ct}): ${t.slice(0,200)}`);
+                }
+                const pdfBlob = await r.blob();
+                if (!pdfBlob.size) throw new Error('PDF vacío');
+                const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+                const pdfName = `Resultado_Aduana_${ts}.pdf`;
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                // Auto-descarga silenciosa a ~/Downloads
+                const a = document.createElement('a');
+                a.href = pdfUrl; a.download = pdfName;
+                document.body.appendChild(a); a.click(); a.remove();
+                log(`  ✓ PDF descargado (${(pdfBlob.size/1024).toFixed(1)} KB) → ${pdfName}`);
+                document.getElementById('autoDownload').innerHTML =
+                    `<a class="btn-download" href="${pdfUrl}" download="${pdfName}">⬇ Descargar de nuevo: ${pdfName}</a>`;
+                showDownloadedModal(pdfName, pdfBlob.size);
+                showToast('📄 PDF descargado a Downloads');
+            }
+        } catch (e) {
+            log('✗ ' + e.message);
+            showResponse('auto-res', false, e.message);
+            showToast('Error: ' + e.message, 'error');
+        } finally {
+            setLoading('autoBtn', false);
+        }
+    }
+
+    // ── Aviso visual de descarga ────────────────────────────
+    function showDownloadedModal(filename, sizeBytes) {
+        let modal = document.getElementById('dlModal');
+        if (modal) modal.remove();
+        modal = document.createElement('div');
+        modal.id = 'dlModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+        modal.innerHTML = `
+    <div style="background:#111318;border:2px solid #3dffa0;border-radius:12px;padding:32px;max-width:420px;width:100%;box-shadow:0 0 60px rgba(61,255,160,.22);text-align:center;">
+      <div style="font-size:44px;margin-bottom:10px;">📄</div>
+      <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:#3dffa0;margin-bottom:8px;">PDF Descargado</div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:#8a9099;margin-bottom:4px;">${filename}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-bottom:22px;">${(sizeBytes/1024).toFixed(1)} KB · guardado en tu carpeta <span style="color:#ffcc66;">Downloads</span></div>
+      <button onclick="document.getElementById('dlModal').remove()" style="width:100%;padding:13px;background:#3dffa0;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">
+        Entendido
+      </button>
+    </div>`;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    }
 
     // ── step navigation ─────────────────────────────────────
     function goStep(n) {
