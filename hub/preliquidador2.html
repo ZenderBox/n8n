@@ -834,8 +834,9 @@
                     <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('auto-agencia','damak')">damak</button>
                     <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('auto-agencia','jl')">jl</button>
                     <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('auto-agencia','movi')">movi</button>
+                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('auto-agencia','casillero')">casillero</button>
                 </div>
-                <input type="text" id="auto-agencia" placeholder="damak · jl · movi">
+                <input type="text" id="auto-agencia" placeholder="damak · jl · movi · casillero">
             </div>
             <div class="field">
                 <label>Archivo Original (.xlsx) *</label>
@@ -946,8 +947,9 @@
                     <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('agencia','damak')">damak</button>
                     <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('agencia','jl')">jl</button>
                     <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('agencia','movi')">movi</button>
+                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('agencia','casillero')">casillero</button>
                 </div>
-                <input type="text" id="agencia" placeholder="damak · jl · movi">
+                <input type="text" id="agencia" placeholder="damak · jl · movi · casillero">
             </div>
             <div class="field">
                 <label>Archivo Original (.xlsx) *</label>
@@ -1307,7 +1309,7 @@
 
     // ── Chips de agencia + whitelist ────────────────────────
     // Lista de agencias válidas (debe coincidir con hoja Variables)
-    const AGENCIAS_VALIDAS = ['damak', 'jl', 'movi'];
+    const AGENCIAS_VALIDAS = ['damak', 'jl', 'movi', 'casillero'];
 
     function isAgenciaValida(v) {
         return AGENCIAS_VALIDAS.includes((v || '').trim().toLowerCase());
@@ -1413,7 +1415,7 @@
         btn.style.opacity = canRun ? '' : '0.45';
         btn.style.cursor  = canRun ? '' : 'not-allowed';
         if (!agencia) btn.title = 'Selecciona o escribe la agencia';
-        else if (!agenciaOk) btn.title = `Agencia "${agencia}" no está en la lista (damak, jl, movi)`;
+        else if (!agenciaOk) btn.title = `Agencia "${agencia}" no está en la lista (${AGENCIAS_VALIDAS.join(', ')})`;
         else if (!f1 || !f2) btn.title = 'Carga ambos archivos (Original y Preliquidado)';
         else if (!promtsOk) btn.title = 'Completa los 4 PROMT en el formato correcto';
         else btn.title = '';
