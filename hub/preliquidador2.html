@@ -2011,63 +2011,90 @@
         return items;
     }
 
+    function buildConceptoString(guia, arancel, iva) {
+        const parts = [];
+        if (iva > 0)     parts.push('iva');
+        if (arancel > 0) parts.push('arancel');
+        const cargas = parts.join(' + ') || '—';
+        return `Tributos Aduaneros / ${cargas} /${guia}/ Tarifa ENEXCOL`;
+    }
+
+    function formatSummaryTSV(items) {
+        const lines = ['Guia\tArancel\tIVA\tTotal\tCONCEPTO\tCODIGO'];
+        items.forEach(it => {
+            const concepto = buildConceptoString(it.guia, it.arancel, it.iva);
+            const codigo   = it.reajuste ? 'REAJUSTE' : String(it.partidaCode);
+            lines.push([
+                it.guia,
+                Math.round(it.arancel),
+                Math.round(it.iva),
+                Math.round(it.total),
+                concepto,
+                codigo
+            ].join('\t'));
+        });
+        return lines.join('\n');
+    }
+
     function showSummaryModal(items) {
-        const fmt = n => Number(n || 0).toLocaleString('es-CO', { maximumFractionDigits: 2 });
+        const fmt = n => Number(n || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 });
         const totals = items.reduce((a, it) => ({
             arancel: a.arancel + it.arancel, iva: a.iva + it.iva, total: a.total + it.total
         }), { arancel: 0, iva: 0, total: 0 });
-        const rows = items.map(it => `
-            <tr style="border-bottom:1px solid #1a1d24;">
-                <td style="padding:6px 8px;color:#e8eaf0;">${it.guia}</td>
-                <td style="padding:6px 8px;text-align:right;color:#ffcc66;">${fmt(it.arancel)}</td>
-                <td style="padding:6px 8px;text-align:right;color:#ffcc66;">${fmt(it.iva)}</td>
-                <td style="padding:6px 8px;text-align:right;color:#3dffa0;font-weight:700;">${fmt(it.total)}</td>
-                <td style="padding:6px 8px;text-align:center;color:${it.reajuste ? '#f5a623' : '#3a3f4a'};font-weight:${it.reajuste ? 700 : 400};">${it.reajuste || '—'}</td>
-                <td style="padding:6px 8px;text-align:center;font-weight:700;color:${it.partidaCode === 14 ? '#3dffa0' : '#ff9d4d'};">${it.partidaCode}</td>
-            </tr>
-        `).join('');
+        const tsv = formatSummaryTSV(items);
+
         let m = document.getElementById('summaryModal');
         if (m) m.remove();
         m = document.createElement('div');
         m.id = 'summaryModal';
         m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:301;display:flex;align-items:flex-start;justify-content:center;padding:32px 24px;overflow-y:auto;';
         m.innerHTML = `
-    <div style="background:#111318;border:2px solid #3dffa0;border-radius:12px;padding:24px;max-width:820px;width:100%;max-height:calc(100vh - 64px);overflow-y:auto;box-shadow:0 0 60px rgba(61,255,160,.18);">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+    <div style="background:#111318;border:2px solid #3dffa0;border-radius:12px;padding:24px;max-width:880px;width:100%;max-height:calc(100vh - 64px);overflow-y:auto;box-shadow:0 0 60px rgba(61,255,160,.18);">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
         <span style="font-size:30px;">📊</span>
-        <div>
-          <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:#3dffa0;">Resumen del Lote</div>
-          <div style="font-family:'Space Mono',monospace;font-size:11px;color:#5a6070;">${items.length} guía(s) con impuestos > 0 · Partida 14 = match Original/Preliq · 12 = mismatch</div>
+        <div style="flex:1;">
+          <div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:#3dffa0;">Resumen del Lote — listo para pegar en correo</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:#5a6070;">
+            ${items.length} guía(s) con impuestos &gt; 0 · TOTAL Arancel: <span style="color:#ffcc66;">${fmt(totals.arancel)}</span> · IVA: <span style="color:#ffcc66;">${fmt(totals.iva)}</span> · Total: <span style="color:#3dffa0;">${fmt(totals.total)}</span>
+          </div>
         </div>
+        <button id="summaryCopyBtn" style="padding:8px 14px;background:#3dffa0;color:#0a0c0f;border:none;border-radius:6px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>
       </div>
-      <div style="overflow-x:auto;background:#0a0c0f;border-radius:8px;padding:6px;">
-        <table style="width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:11px;">
-          <thead style="border-bottom:2px solid #2a2f3a;">
-            <tr style="color:#8a9099;text-transform:uppercase;font-size:9px;letter-spacing:.08em;">
-              <th style="padding:10px 8px;text-align:left;">Guía</th>
-              <th style="padding:10px 8px;text-align:right;">Arancel</th>
-              <th style="padding:10px 8px;text-align:right;">IVA</th>
-              <th style="padding:10px 8px;text-align:right;">Total</th>
-              <th style="padding:10px 8px;text-align:center;">Reajuste</th>
-              <th style="padding:10px 8px;text-align:center;">Partida</th>
-            </tr>
-          </thead>
-          <tbody>${rows || '<tr><td colspan=6 style="padding:24px;text-align:center;color:#5a6070;">Sin guías con impuestos &gt; 0</td></tr>'}</tbody>
-          ${items.length ? `<tfoot style="border-top:2px solid #2a2f3a;">
-            <tr style="font-weight:700;">
-              <td style="padding:12px 8px;color:#e8eaf0;">TOTAL (${items.length})</td>
-              <td style="padding:12px 8px;text-align:right;color:#ffcc66;">${fmt(totals.arancel)}</td>
-              <td style="padding:12px 8px;text-align:right;color:#ffcc66;">${fmt(totals.iva)}</td>
-              <td style="padding:12px 8px;text-align:right;color:#3dffa0;">${fmt(totals.total)}</td>
-              <td colspan="2"></td>
-            </tr>
-          </tfoot>` : ''}
-        </table>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-bottom:6px;">
+        Tab-separated · pega en Gmail/Outlook y se convierte automáticamente en tabla
       </div>
-      <button onclick="document.getElementById('summaryModal').remove()" style="margin-top:18px;width:100%;padding:13px;background:#3dffa0;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Cerrar</button>
+      <textarea id="summaryTSV" readonly style="width:100%;height:340px;background:#0a0c0f;border:1px solid #2a2f3a;border-radius:8px;padding:14px;font-family:'Space Mono',monospace;font-size:11px;color:#e8eaf0;line-height:1.7;outline:none;resize:vertical;white-space:pre;overflow:auto;"></textarea>
+      <button id="summaryCloseBtn" style="margin-top:14px;width:100%;padding:13px;background:transparent;color:#5a6070;border:1px solid #2a2f3a;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cerrar</button>
     </div>`;
         document.body.appendChild(m);
+        const ta = m.querySelector('#summaryTSV');
+        ta.value = tsv;
+        const copyBtn = m.querySelector('#summaryCopyBtn');
+        copyBtn.onclick = async () => {
+            let copied = false;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(tsv);
+                    copied = true;
+                }
+            } catch (_) {}
+            if (!copied) {
+                try { ta.focus(); ta.select(); copied = document.execCommand('copy'); } catch (_) {}
+            }
+            if (copied) {
+                copyBtn.textContent = '✓ Copiado';
+                copyBtn.style.background = '#ffcc66';
+            } else {
+                copyBtn.textContent = '⚠ Cmd+C';
+                copyBtn.style.background = '#f5a623';
+                ta.focus(); ta.select();
+            }
+            setTimeout(() => { copyBtn.textContent = '📋 Copiar'; copyBtn.style.background = '#3dffa0'; }, 2200);
+        };
+        m.querySelector('#summaryCloseBtn').onclick = () => m.remove();
         m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+        // Auto-seleccionar el contenido al click en la textarea para copy fácil manual
+        ta.addEventListener('focus', () => ta.select());
     }
 
     // Helper: ejecuta el flujo completo de validación. Resuelve true si puede continuar.
