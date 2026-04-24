@@ -2046,12 +2046,54 @@
         return lines.join('\n');
     }
 
+    function formatSummaryHTML(items) {
+        const esc = s => String(s == null ? '' : s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        const cell = (v, opts={}) => {
+            const align = opts.align || 'left';
+            return `<td style="border:1px solid #999;padding:4px 8px;text-align:${align};font-family:Arial,sans-serif;font-size:12px;">${esc(v)}</td>`;
+        };
+        const head = (label, opts={}) => {
+            const align = opts.align || 'left';
+            return `<th style="border:1px solid #999;padding:6px 8px;text-align:${align};background:#f0f0f0;font-family:Arial,sans-serif;font-size:12px;">${esc(label)}</th>`;
+        };
+        const rows = items.map(it => {
+            const concepto = buildConceptoString(it.guia, it.arancel, it.iva);
+            const codigo   = it.reajuste ? 'REAJUSTE' : String(it.partidaCode);
+            return `<tr>${cell(it.guia)}${cell(Math.round(it.arancel),{align:'right'})}${cell(Math.round(it.iva),{align:'right'})}${cell(Math.round(it.total),{align:'right'})}${cell(concepto)}${cell(codigo,{align:'center'})}</tr>`;
+        }).join('');
+        return `<table border="1" cellspacing="0" cellpadding="0" style="border-collapse:collapse;border:1px solid #999;"><thead><tr>${head('Guia')}${head('Arancel',{align:'right'})}${head('IVA',{align:'right'})}${head('Total',{align:'right'})}${head('CONCEPTO')}${head('CODIGO',{align:'center'})}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    async function copyRichSummary(html, text) {
+        // Path 1: ClipboardItem con HTML + text — Gmail/Outlook leen el HTML, Excel/Sheets el text
+        try {
+            if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+                const item = new ClipboardItem({
+                    'text/html':  new Blob([html], { type: 'text/html' }),
+                    'text/plain': new Blob([text], { type: 'text/plain' })
+                });
+                await navigator.clipboard.write([item]);
+                return true;
+            }
+        } catch (_) {}
+        // Path 2: solo text/plain
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            }
+        } catch (_) {}
+        return false;
+    }
+
     function showSummaryModal(items) {
         const fmt = n => Number(n || 0).toLocaleString('es-CO', { maximumFractionDigits: 0 });
         const totals = items.reduce((a, it) => ({
             arancel: a.arancel + it.arancel, iva: a.iva + it.iva, total: a.total + it.total
         }), { arancel: 0, iva: 0, total: 0 });
-        const tsv = formatSummaryTSV(items);
+        const tsv  = formatSummaryTSV(items);
+        const html = formatSummaryHTML(items);
 
         let m = document.getElementById('summaryModal');
         if (m) m.remove();
@@ -2081,18 +2123,13 @@
         ta.value = tsv;
         const copyBtn = m.querySelector('#summaryCopyBtn');
         copyBtn.onclick = async () => {
-            let copied = false;
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(tsv);
-                    copied = true;
-                }
-            } catch (_) {}
+            let copied = await copyRichSummary(html, tsv);
             if (!copied) {
+                // Fallback final: select + execCommand sobre el textarea
                 try { ta.focus(); ta.select(); copied = document.execCommand('copy'); } catch (_) {}
             }
             if (copied) {
-                copyBtn.textContent = '✓ Copiado';
+                copyBtn.textContent = '✓ Copiado (HTML + texto)';
                 copyBtn.style.background = '#ffcc66';
             } else {
                 copyBtn.textContent = '⚠ Cmd+C';
