@@ -1678,10 +1678,12 @@
                 log(`  ✓ PDF descargado (${(pdfBlob.size/1024).toFixed(1)} KB) → ${pdfName}`);
                 showDownloadedModal(pdfName, pdfBlob.size);
                 showToast('📄 PDF descargado a Downloads');
-                // Resumen final del lote — guardar items y mostrar botón persistente
+                // Resumen final del lote — parsear el XLSX exportado (con valores calculados del sheet)
+                // y cruzarlo con el preliquidado crudo para TIENE NOVEDAD.
                 let summaryHtml = '';
                 try {
-                    lastSummaryItems = buildSummary(origRows, preqRows);
+                    const exportedRows = await parseXlsxRows(exportedBlob);
+                    lastSummaryItems = buildSummary(exportedRows, preqRows);
                     summaryHtml = `<button type="button" class="btn-download" style="background:#3dffa0;color:#0a0c0f;border:none;cursor:pointer;font-family:Syne,sans-serif;font-weight:700;" onclick="showSummaryModal(lastSummaryItems)">📊 Mostrar resultado (${lastSummaryItems.length})</button>`;
                     setTimeout(() => showSummaryModal(lastSummaryItems), 600);
                 } catch (e) {
@@ -1987,7 +1989,9 @@
         });
     }
 
-    function buildSummary(origRows, preqRows) {
+    // Construye el summary fusionando datos del XLSX EXPORTADO (valores calculados del sheet)
+    // con el PRELIQUIDADO crudo (para TIENE NOVEDAD y POSICION original del preliq).
+    function buildSummary(exportedRows, preqRows) {
         const num = v => {
             const n = parseFloat(String(v == null ? '0' : v).replace(',', '.'));
             return isNaN(n) ? 0 : n;
@@ -1995,31 +1999,33 @@
         const pick = (obj, keys) => {
             for (const k of keys) {
                 if (k in obj) return obj[k];
-                // case/space tolerant
                 const found = Object.keys(obj).find(o => o.toLowerCase().replace(/\s+/g,'') === k.toLowerCase().replace(/\s+/g,''));
                 if (found) return obj[found];
             }
             return undefined;
         };
-        const origByGuia = {};
-        origRows.forEach(r => {
-            const g = normGuia(pick(r, ['numero_guia','GUIA / consignment','GUIA/consignment','GUIA']));
-            if (g) origByGuia[g] = r;
+        // Index preliq crudo por guía — fuente de TIENE NOVEDAD + POSICION (la partida del preliq)
+        const preqByGuia = {};
+        (preqRows || []).forEach(p => {
+            const g = normGuia(pick(p, ['GUIA HIJA']));
+            if (g) preqByGuia[g] = p;
         });
+        // El XLSX exportado es la fuente de verdad de Arancel/IVA/Total (ya calculados en el sheet)
         const items = [];
-        preqRows.forEach(p => {
-            const guia = normGuia(pick(p, ['GUIA HIJA']));
+        exportedRows.forEach(e => {
+            const guia = normGuia(pick(e, ['HAWB','Hawb']));
             if (!guia) return;
-            const arancel = num(pick(p, ['ARANCEL $','ARANCEL$']));
-            const iva     = num(pick(p, ['IVA $','IVA$']));
-            const total   = num(pick(p, ['TOTAL IMPUESTOS','TOTAL IMPUESTOS ']));
+            const arancel = num(pick(e, ['Arancel']));
+            const iva     = num(pick(e, ['IVA']));
+            const total   = num(pick(e, ['Total']));
             if (arancel <= 0 && iva <= 0 && total <= 0) return;
-            const novVal  = String(pick(p, ['TIENE NOVEDAD','TIENE NOVEDAD ']) || '').toLowerCase().trim();
+            const preq    = preqByGuia[guia] || {};
+            const novVal  = String(pick(preq, ['TIENE NOVEDAD','TIENE NOVEDAD ']) || '').toLowerCase().trim();
             const reajuste = ['true','verdadero','sí','si','1'].includes(novVal) ? 'REAJUSTADO' : '';
-            const partidaPreq = String(pick(p, ['POSICION']) || '').trim();
-            const orig = origByGuia[guia];
-            const partidaOrig = orig ? String(pick(orig, ['partida_arancelaria','POSICION ARANCELARIA','POSICIONARANCELARIA']) || '').trim() : '';
-            const partidaCode = (partidaPreq && partidaOrig && partidaPreq === partidaOrig) ? 14 : 12;
+            // partida del sheet exportado (ya normalizada por n8n — puede venir del orig o del preliq si hubo novedad)
+            const partidaExp  = String(pick(e,    ['Posicion arancelaria','POSICION ARANCELARIA']) || '').trim();
+            const partidaPreq = String(pick(preq, ['POSICION']) || '').trim();
+            const partidaCode = (partidaExp && partidaPreq && partidaExp === partidaPreq) ? 14 : 12;
             items.push({ guia, arancel, iva, total, reajuste, partidaCode });
         });
         return items;
