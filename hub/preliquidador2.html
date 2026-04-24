@@ -537,6 +537,39 @@
         color: var(--amber);
     }
 
+    .agencia-chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .agencia-chip {
+        padding: 6px 14px;
+        background: transparent;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .agencia-chip:hover {
+        border-color: var(--amber);
+        color: var(--amber);
+    }
+
+    .agencia-chip.active {
+        background: var(--amber);
+        border-color: var(--amber);
+        color: var(--bg);
+    }
+
     .btn-add-promt {
         font-family: var(--mono);
         font-size: 11px;
@@ -796,7 +829,13 @@
             <p class="card-desc">Sube ambos archivos y dale a un solo botón — el sistema corre los 6 pasos y descarga el PDF final directo a tu carpeta Downloads.</p>
             <div class="field">
                 <label>Agencia *</label>
-                <input type="text" id="auto-agencia" placeholder="Nombre exacto según hoja Variables">
+                <div class="agencia-chips">
+                    <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('auto-agencia','damak')">damak</button>
+                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('auto-agencia','movi')">movi</button>
+                    <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('auto-agencia','jl')">jl</button>
+                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('auto-agencia','casillero')">casillero</button>
+                </div>
+                <input type="text" id="auto-agencia" placeholder="Haz clic en un chip o escribe otra agencia">
             </div>
             <div class="field">
                 <label>Archivo Original (.xlsx) *</label>
@@ -903,7 +942,13 @@
             <p class="card-desc">Sube el archivo ORIGINAL (.xlsx). Define la agencia y completa los valores PROMT requeridos.</p>
             <div class="field">
                 <label>Agencia *</label>
-                <input type="text" id="agencia" placeholder="Nombre exacto según hoja Variables">
+                <div class="agencia-chips">
+                    <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('agencia','damak')">damak</button>
+                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('agencia','movi')">movi</button>
+                    <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('agencia','jl')">jl</button>
+                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('agencia','casillero')">casillero</button>
+                </div>
+                <input type="text" id="agencia" placeholder="Haz clic en un chip o escribe otra agencia">
             </div>
             <div class="field">
                 <label>Archivo Original (.xlsx) *</label>
@@ -1258,7 +1303,35 @@
         const savedMode = localStorage.getItem('zbMode2') || 'manual';
         setMode(savedMode);
         setupPromtValidators();
+        setupAgenciaChips();
     });
+
+    // ── Chips rápidos de agencia (damak / movi / jl / casillero) ────
+    function setAgencia(inputId, value) {
+        const el = document.getElementById(inputId);
+        if (!el) return;
+        el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        syncAgenciaChips(inputId);
+    }
+    function syncAgenciaChips(inputId) {
+        const el = document.getElementById(inputId);
+        if (!el) return;
+        const container = el.closest('.field');
+        if (!container) return;
+        const val = (el.value || '').trim().toLowerCase();
+        container.querySelectorAll('.agencia-chip').forEach(c => {
+            c.classList.toggle('active', c.dataset.val === val);
+        });
+    }
+    function setupAgenciaChips() {
+        ['agencia', 'auto-agencia'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => syncAgenciaChips(id));
+            syncAgenciaChips(id);
+        });
+    }
 
     // ── Validación de los 4 PROMT — NO transforma el input, solo marca rojo/verde
     //    y bloquea "Ejecutar Todo" si alguno no cumple.
