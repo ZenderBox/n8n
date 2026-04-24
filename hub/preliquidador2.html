@@ -831,10 +831,10 @@
             <div class="field">
                 <label>Agencia *</label>
                 <div class="agencia-chips">
-                    <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('auto-agencia','damak')">damak</button>
-                    <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('auto-agencia','jl')">jl</button>
-                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('auto-agencia','movi')">movi</button>
-                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('auto-agencia','casillero')">casillero</button>
+                    <button type="button" class="agencia-chip" data-val="damak" onclick="pickAgencia('auto-agencia','damak')">damak</button>
+                    <button type="button" class="agencia-chip" data-val="jl" onclick="pickAgencia('auto-agencia','jl')">jl</button>
+                    <button type="button" class="agencia-chip" data-val="movi" onclick="pickAgencia('auto-agencia','movi')">movi</button>
+                    <button type="button" class="agencia-chip" data-val="casillero" onclick="pickAgencia('auto-agencia','casillero')">casillero</button>
                 </div>
                 <input type="text" id="auto-agencia" placeholder="damak · jl · movi · casillero">
             </div>
@@ -944,10 +944,10 @@
             <div class="field">
                 <label>Agencia *</label>
                 <div class="agencia-chips">
-                    <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('agencia','damak')">damak</button>
-                    <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('agencia','jl')">jl</button>
-                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('agencia','movi')">movi</button>
-                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('agencia','casillero')">casillero</button>
+                    <button type="button" class="agencia-chip" data-val="damak" onclick="pickAgencia('agencia','damak')">damak</button>
+                    <button type="button" class="agencia-chip" data-val="jl" onclick="pickAgencia('agencia','jl')">jl</button>
+                    <button type="button" class="agencia-chip" data-val="movi" onclick="pickAgencia('agencia','movi')">movi</button>
+                    <button type="button" class="agencia-chip" data-val="casillero" onclick="pickAgencia('agencia','casillero')">casillero</button>
                 </div>
                 <input type="text" id="agencia" placeholder="damak · jl · movi · casillero">
             </div>
@@ -1315,7 +1315,7 @@
         return AGENCIAS_VALIDAS.includes((v || '').trim().toLowerCase());
     }
 
-    function setAgencia(inputId, value) {
+    function pickAgencia(inputId, value) {
         const el = document.getElementById(inputId);
         if (!el) return;
         el.value = value;
