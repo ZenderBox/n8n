@@ -564,10 +564,11 @@
         color: var(--amber);
     }
 
-    .agencia-chip.active {
-        background: var(--amber);
-        border-color: var(--amber);
-        color: var(--bg);
+    .agencia-chip.active,
+    .agencia-chip.active:hover {
+        background: var(--amber) !important;
+        border-color: var(--amber) !important;
+        color: var(--bg) !important;
     }
 
     .btn-add-promt {
@@ -831,11 +832,10 @@
                 <label>Agencia *</label>
                 <div class="agencia-chips">
                     <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('auto-agencia','damak')">damak</button>
-                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('auto-agencia','movi')">movi</button>
                     <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('auto-agencia','jl')">jl</button>
-                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('auto-agencia','casillero')">casillero</button>
+                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('auto-agencia','movi')">movi</button>
                 </div>
-                <input type="text" id="auto-agencia" placeholder="Haz clic en un chip o escribe otra agencia">
+                <input type="text" id="auto-agencia" placeholder="damak · jl · movi">
             </div>
             <div class="field">
                 <label>Archivo Original (.xlsx) *</label>
@@ -944,11 +944,10 @@
                 <label>Agencia *</label>
                 <div class="agencia-chips">
                     <button type="button" class="agencia-chip" data-val="damak" onclick="setAgencia('agencia','damak')">damak</button>
-                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('agencia','movi')">movi</button>
                     <button type="button" class="agencia-chip" data-val="jl" onclick="setAgencia('agencia','jl')">jl</button>
-                    <button type="button" class="agencia-chip" data-val="casillero" onclick="setAgencia('agencia','casillero')">casillero</button>
+                    <button type="button" class="agencia-chip" data-val="movi" onclick="setAgencia('agencia','movi')">movi</button>
                 </div>
-                <input type="text" id="agencia" placeholder="Haz clic en un chip o escribe otra agencia">
+                <input type="text" id="agencia" placeholder="damak · jl · movi">
             </div>
             <div class="field">
                 <label>Archivo Original (.xlsx) *</label>
@@ -1306,7 +1305,14 @@
         setupAgenciaChips();
     });
 
-    // ── Chips rápidos de agencia (damak / movi / jl / casillero) ────
+    // ── Chips de agencia + whitelist ────────────────────────
+    // Lista de agencias válidas (debe coincidir con hoja Variables)
+    const AGENCIAS_VALIDAS = ['damak', 'jl', 'movi'];
+
+    function isAgenciaValida(v) {
+        return AGENCIAS_VALIDAS.includes((v || '').trim().toLowerCase());
+    }
+
     function setAgencia(inputId, value) {
         const el = document.getElementById(inputId);
         if (!el) return;
@@ -1314,16 +1320,28 @@
         el.dispatchEvent(new Event('input', { bubbles: true }));
         syncAgenciaChips(inputId);
     }
+
     function syncAgenciaChips(inputId) {
         const el = document.getElementById(inputId);
         if (!el) return;
         const container = el.closest('.field');
         if (!container) return;
-        const val = (el.value || '').trim().toLowerCase();
+        const raw = (el.value || '').trim();
+        const val = raw.toLowerCase();
         container.querySelectorAll('.agencia-chip').forEach(c => {
             c.classList.toggle('active', c.dataset.val === val);
         });
+        // Borde rojo si hay texto que no está en whitelist, verde si válido, default si vacío
+        if (!raw) {
+            el.style.borderColor = '';
+        } else if (isAgenciaValida(raw)) {
+            el.style.borderColor = 'rgba(61,255,160,.5)';
+        } else {
+            el.style.borderColor = 'rgba(255,77,109,.7)';
+        }
+        updateAutoBtnState();
     }
+
     function setupAgenciaChips() {
         ['agencia', 'auto-agencia'].forEach(id => {
             const el = document.getElementById(id);
@@ -1389,11 +1407,16 @@
             const el = document.getElementById(r.idAuto);
             return el && r.regex.test(el.value);
         });
-        const canRun = Boolean(agencia && f1 && f2 && promtsOk);
+        const agenciaOk = isAgenciaValida(agencia);
+        const canRun = Boolean(agenciaOk && f1 && f2 && promtsOk);
         btn.disabled = !canRun;
         btn.style.opacity = canRun ? '' : '0.45';
         btn.style.cursor  = canRun ? '' : 'not-allowed';
-        btn.title = canRun ? '' : 'Completa todos los campos en el formato correcto';
+        if (!agencia) btn.title = 'Selecciona o escribe la agencia';
+        else if (!agenciaOk) btn.title = `Agencia "${agencia}" no está en la lista (damak, jl, movi)`;
+        else if (!f1 || !f2) btn.title = 'Carga ambos archivos (Original y Preliquidado)';
+        else if (!promtsOk) btn.title = 'Completa los 4 PROMT en el formato correcto';
+        else btn.title = '';
     }
 
     // ── MODE toggle (Manual / Auto) ─────────────────────────
@@ -1430,6 +1453,10 @@
         const fileOrig = document.getElementById('auto-file1').files[0];
         const filePre  = document.getElementById('auto-file2').files[0];
         if (!agencia)  { showToast('Ingresa la agencia', 'error'); return; }
+        if (!isAgenciaValida(agencia)) {
+            showToast(`Agencia "${agencia}" no existe en la hoja Variables. Usa: ${AGENCIAS_VALIDAS.join(', ')}`, 'error');
+            return;
+        }
         if (!fileOrig) { showToast('Selecciona el archivo ORIGINAL', 'error'); return; }
         if (!filePre)  { showToast('Selecciona el archivo PRELIQUIDADO', 'error'); return; }
 
@@ -1780,6 +1807,10 @@
         const file = document.getElementById('file1').files[0];
         if (!agencia) {
             showToast('Ingresa el nombre de la agencia', 'error');
+            return;
+        }
+        if (!isAgenciaValida(agencia)) {
+            showToast(`Agencia "${agencia}" no existe en la hoja Variables. Usa: ${AGENCIAS_VALIDAS.join(', ')}`, 'error');
             return;
         }
         if (!file) {
