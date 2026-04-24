@@ -840,22 +840,16 @@
                 <input type="text" id="auto-agencia" placeholder="damak · jl · movi · casillero">
             </div>
             <div class="field">
-                <label>Archivo Original (.xlsx) *</label>
-                <div class="dropzone" id="auto-drop1" ondragover="doDragOver(event,'auto-drop1')" ondragleave="doDragLeave('auto-drop1')" ondrop="doDrop(event,'auto-drop1','auto-file1')">
-                    <input type="file" id="auto-file1" accept=".xlsx,.xls" onchange="onFileChange('auto-file1','auto-drop1')">
-                    <div class="drop-icon">📂</div>
-                    <div class="drop-text"><strong>Arrastra el ORIGINAL aquí</strong><br>o haz clic para seleccionar · .xlsx</div>
-                    <div class="drop-filename" id="auto-fname1"></div>
+                <label>Archivos (.xlsx) — sube los 2 a la vez, sin importar el orden *</label>
+                <div class="dropzone" id="auto-drop-multi" ondragover="doDragOver(event,'auto-drop-multi')" ondragleave="doDragLeave('auto-drop-multi')" ondrop="doDropMulti(event)">
+                    <input type="file" id="auto-file-multi" accept=".xlsx,.xls" multiple onchange="onMultiFilesChange(this.files)">
+                    <div class="drop-icon">📂📂</div>
+                    <div class="drop-text"><strong>Arrastra ORIGINAL + PRELIQUIDADO aquí</strong><br>o haz clic para seleccionar ambos · .xlsx (auto-detecto cuál es cuál)</div>
+                    <div id="auto-multi-status" style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px;text-align:left;line-height:1.8;"></div>
                 </div>
-            </div>
-            <div class="field">
-                <label>Archivo Preliquidado (.xlsx) *</label>
-                <div class="dropzone" id="auto-drop2" ondragover="doDragOver(event,'auto-drop2')" ondragleave="doDragLeave('auto-drop2')" ondrop="doDrop(event,'auto-drop2','auto-file2')">
-                    <input type="file" id="auto-file2" accept=".xlsx,.xls" onchange="onFileChange('auto-file2','auto-drop2')">
-                    <div class="drop-icon">📂</div>
-                    <div class="drop-text"><strong>Arrastra el PRELIQUIDADO aquí</strong><br>o haz clic para seleccionar · .xlsx</div>
-                    <div class="drop-filename" id="auto-fname2"></div>
-                </div>
+                <!-- Hidden inputs reales que usa runAuto — se llenan tras la auto-detección -->
+                <input type="file" id="auto-file1" accept=".xlsx,.xls" style="display:none">
+                <input type="file" id="auto-file2" accept=".xlsx,.xls" style="display:none">
             </div>
             <div class="promts-section">
                 <div class="promts-title">Valores PROMT</div>
@@ -1829,6 +1823,119 @@
             };
             m.addEventListener('click', e => { if (e.target === m) close(false); });
         });
+    }
+
+    // ── Auto-detección Original vs Preliquidado por headers (drop múltiple) ────
+    function detectFileType(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('No se pudo leer ' + file.name));
+            reader.onload = e => {
+                try {
+                    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    if (!ws || !ws['!ref']) return resolve('unknown');
+                    const range = XLSX.utils.decode_range(ws['!ref']);
+                    const headers = [];
+                    for (let c = range.s.c; c <= range.e.c; c++) {
+                        const cell = ws[XLSX.utils.encode_cell({ r: range.s.r, c })];
+                        if (cell && cell.v != null) headers.push(String(cell.v).toLowerCase().replace(/\s+/g,''));
+                    }
+                    const has = list => list.some(x => headers.includes(x.toLowerCase().replace(/\s+/g,'')));
+                    if (has(['GUIA HIJA','BASE ARANCEL','ARANCEL %','TIENE NOVEDAD'])) return resolve('preliquidado');
+                    if (has(['numero_guia','remitente_nombre_empresa','remitente_email','destinatario_nombre_completo'])) return resolve('original');
+                    resolve('unknown');
+                } catch (err) { reject(err); }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    function assignToHiddenInput(inputId, file) {
+        const input = document.getElementById(inputId);
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function clearHiddenInput(inputId) {
+        const input = document.getElementById(inputId);
+        input.value = '';
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function renderMultiStatus(html) {
+        document.getElementById('auto-multi-status').innerHTML = html;
+    }
+
+    async function onMultiFilesChange(files) {
+        const list = Array.from(files || []);
+        document.getElementById('auto-drop-multi').classList.remove('dragover');
+        if (!list.length) return;
+
+        renderMultiStatus(`<span style="color:var(--muted);">⏳ Detectando tipos de archivo...</span>`);
+
+        // Limpiar inputs previos
+        clearHiddenInput('auto-file1');
+        clearHiddenInput('auto-file2');
+
+        // Detectar cada uno
+        let detected;
+        try {
+            detected = await Promise.all(list.map(async f => ({ file: f, type: await detectFileType(f) })));
+        } catch (e) {
+            renderMultiStatus(`<span style="color:var(--red);">❌ Error leyendo: ${e.message}</span>`);
+            return;
+        }
+
+        const originals = detected.filter(d => d.type === 'original');
+        const preliqs   = detected.filter(d => d.type === 'preliquidado');
+        const unknowns  = detected.filter(d => d.type === 'unknown');
+
+        const lines = [];
+        for (const d of detected) {
+            const icon = d.type === 'original' ? '📄' : d.type === 'preliquidado' ? '📊' : '❓';
+            const label = d.type === 'original' ? 'ORIGINAL' : d.type === 'preliquidado' ? 'PRELIQUIDADO' : '<span style="color:var(--red);">DESCONOCIDO</span>';
+            lines.push(`<div>${icon} ${label} → <span style="color:var(--amber2);">${d.file.name}</span></div>`);
+        }
+
+        // Validaciones
+        if (unknowns.length) {
+            lines.push(`<div style="color:var(--red);margin-top:6px;">❌ ${unknowns.length} archivo(s) no son ni Original ni Preliquidado válido</div>`);
+            renderMultiStatus(lines.join(''));
+            return;
+        }
+        if (originals.length > 1) {
+            lines.push(`<div style="color:var(--red);margin-top:6px;">❌ Subiste ${originals.length} ORIGINALES — debe ser solo 1</div>`);
+            renderMultiStatus(lines.join(''));
+            return;
+        }
+        if (preliqs.length > 1) {
+            lines.push(`<div style="color:var(--red);margin-top:6px;">❌ Subiste ${preliqs.length} PRELIQUIDADOS — debe ser solo 1</div>`);
+            renderMultiStatus(lines.join(''));
+            return;
+        }
+        if (originals.length === 1) assignToHiddenInput('auto-file1', originals[0].file);
+        if (preliqs.length === 1)   assignToHiddenInput('auto-file2', preliqs[0].file);
+
+        const missing = [];
+        if (!originals.length) missing.push('ORIGINAL');
+        if (!preliqs.length)   missing.push('PRELIQUIDADO');
+        if (missing.length) {
+            lines.push(`<div style="color:var(--amber);margin-top:6px;">⚠️ Falta: ${missing.join(', ')}</div>`);
+        } else {
+            lines.push(`<div style="color:var(--green);margin-top:6px;">✓ Listos — ambos archivos detectados y asignados</div>`);
+        }
+        renderMultiStatus(lines.join(''));
+    }
+
+    function doDropMulti(e) {
+        e.preventDefault();
+        document.getElementById('auto-drop-multi').classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            onMultiFilesChange(e.dataTransfer.files);
+        }
     }
 
     // Helper: ejecuta el flujo completo de validación. Resuelve true si puede continuar.
