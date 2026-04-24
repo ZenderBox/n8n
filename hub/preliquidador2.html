@@ -6,6 +6,7 @@
     <title>ZenderBox · Pre-liquidador 2 (TEST)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
     :root {
         --bg: #0a0c0f;
@@ -1462,6 +1463,16 @@
         if (!fileOrig) { showToast('Selecciona el archivo ORIGINAL', 'error'); return; }
         if (!filePre)  { showToast('Selecciona el archivo PRELIQUIDADO', 'error'); return; }
 
+        // Pre-flight: validar que las guías del Preliquidado existan en el Original.
+        // Modal con info si subset OK; bloqueo + admin PIN 0707 si hay huérfanos.
+        try {
+            const canProceed = await runMatchPreflight(fileOrig, filePre);
+            if (!canProceed) return;
+        } catch (e) {
+            showToast('Error validando match de guías: ' + e.message, 'error');
+            return;
+        }
+
         const promts = {
             'promt_AIRWAYBILL':      document.getElementById('auto-promt-val-1').value.trim(),
             'promt_FECHA DIAN':      document.getElementById('auto-promt-val-2').value.trim(),
@@ -1689,6 +1700,150 @@
         modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
     }
 
+    // ── Validación de match Original ↔ Preliquidado (vía SheetJS) ────
+    const ADMIN_PIN_OVERRIDE = '0707';
+    const COL_GUIA_ORIGINAL = ['numero_guia', 'NUMERO_GUIA', 'Numero Guia', 'numero guia'];
+    const COL_GUIA_PRELIQ   = ['GUIA HIJA', 'guia hija', 'Guia Hija', 'GUIA_HIJA'];
+
+    const normGuia = v => (v == null ? '' : String(v)).trim().toUpperCase();
+
+    function parseXlsxGuias(file, possibleColumnNames) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('No se pudo leer ' + file.name));
+            reader.onload = e => {
+                try {
+                    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+                    if (!rows.length) return resolve([]);
+                    // Encontrar columna real (case/whitespace tolerant)
+                    const headers = Object.keys(rows[0]);
+                    const wanted = possibleColumnNames.map(s => s.toLowerCase().replace(/\s+/g,''));
+                    const colKey = headers.find(h => wanted.includes(h.toLowerCase().replace(/\s+/g,'')));
+                    if (!colKey) return reject(new Error(
+                        `No encontré la columna de guía en ${file.name}. Headers: ${headers.join(', ')}`
+                    ));
+                    const guias = rows.map(r => normGuia(r[colKey])).filter(Boolean);
+                    resolve(guias);
+                } catch (err) { reject(err); }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    async function validateGuiaMatch(originalFile, preliqFile) {
+        const [origGuias, preliqGuias] = await Promise.all([
+            parseXlsxGuias(originalFile, COL_GUIA_ORIGINAL),
+            parseXlsxGuias(preliqFile,   COL_GUIA_PRELIQ)
+        ]);
+        const origSet = new Set(origGuias);
+        const matched = preliqGuias.filter(g => origSet.has(g));
+        const orphans = preliqGuias.filter(g => !origSet.has(g));
+        return {
+            ok: orphans.length === 0,
+            originalCount: origGuias.length,
+            preliqCount:   preliqGuias.length,
+            matchedCount:  matched.length,
+            orphans
+        };
+    }
+
+    // Modal: info de coverage (preliq < original es OK, solo informa). Resuelve true/false.
+    function showMatchInfoModal({ originalCount, preliqCount, matchedCount }) {
+        return new Promise(resolve => {
+            const isPartial = preliqCount < originalCount;
+            const m = document.createElement('div');
+            m.id = 'matchInfoModal';
+            m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;';
+            m.innerHTML = `
+    <div style="background:#111318;border:2px solid ${isPartial ? '#f5a623' : '#3dffa0'};border-radius:12px;padding:28px;max-width:460px;width:100%;text-align:center;">
+      <div style="font-size:36px;margin-bottom:8px;">${isPartial ? '⚠️' : '✓'}</div>
+      <div style="font-family:Syne,sans-serif;font-size:17px;font-weight:800;color:${isPartial ? '#f5a623' : '#3dffa0'};margin-bottom:12px;">
+        ${isPartial ? 'Liquidación PARCIAL' : 'Liquidación COMPLETA'}
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:#8a9099;line-height:2;margin-bottom:18px;">
+        Original: <span style="color:#ffcc66;">${originalCount}</span> guías<br>
+        Preliquidado: <span style="color:#ffcc66;">${preliqCount}</span> guías<br>
+        Match OK: <span style="color:#3dffa0;">${matchedCount}/${preliqCount}</span>
+        ${isPartial ? `<br><br><span style="color:#f5a623;">${originalCount - preliqCount} guía(s) del Original no se liquidarán en este lote</span>` : ''}
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button id="matchCancel" style="flex:1;padding:12px;background:transparent;color:#5a6070;border:1px solid #2a2f3a;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+        <button id="matchOk" style="flex:1;padding:12px;background:${isPartial ? '#f5a623' : '#3dffa0'};color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Continuar</button>
+      </div>
+    </div>`;
+            document.body.appendChild(m);
+            const close = (val) => { m.remove(); resolve(val); };
+            m.querySelector('#matchOk').onclick = () => close(true);
+            m.querySelector('#matchCancel').onclick = () => close(false);
+            m.addEventListener('click', e => { if (e.target === m) close(false); });
+        });
+    }
+
+    // Modal: huérfanos detectados → admin PIN para sobreescribir. Resuelve true (autorizado) / false (cancelado).
+    function showOrphansAdminModal({ orphans, preliqCount }) {
+        return new Promise(resolve => {
+            const m = document.createElement('div');
+            m.id = 'orphansModal';
+            m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:301;display:flex;align-items:center;justify-content:center;padding:24px;';
+            const lista = orphans.slice(0, 30).map(g =>
+                `<div style="padding:5px 0;border-bottom:1px solid #1e2229;color:#ff4d6d;">🚫 ${g}</div>`
+            ).join('');
+            const more = orphans.length > 30 ? `<div style="color:#5a6070;padding:6px 0;">…y ${orphans.length - 30} más</div>` : '';
+            m.innerHTML = `
+    <div style="background:#111318;border:2px solid #ff4d6d;border-radius:12px;padding:28px;max-width:520px;width:100%;box-shadow:0 0 60px rgba(255,77,109,.25);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <span style="font-size:30px;">🚫</span>
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:#ff4d6d;text-transform:uppercase;letter-spacing:.1em;">Guías sin match en Original</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:#5a6070;margin-top:2px;">${orphans.length}/${preliqCount} guías del Preliquidado NO existen en el Original</div>
+        </div>
+      </div>
+      <div style="max-height:240px;overflow-y:auto;font-family:'Space Mono',monospace;font-size:11px;margin:14px 0;background:#0a0c0f;border-radius:8px;padding:12px;">${lista}${more}</div>
+      <div style="background:rgba(77,166,255,.07);border:1px solid rgba(77,166,255,.25);border-radius:8px;padding:14px;margin-bottom:14px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:#4da6ff;font-weight:700;margin-bottom:8px;">⚠️ Bloqueado — requiere autorización admin</div>
+        <input id="adminPinInput" type="password" maxlength="6" autocomplete="off"
+          placeholder="PIN admin"
+          style="width:100%;background:#0a0c0f;border:1px solid #2a2f3a;border-radius:6px;padding:10px;font-family:'Space Mono',monospace;font-size:18px;color:#4da6ff;text-align:center;letter-spacing:.3em;outline:none;"
+          onkeydown="if(event.key==='Enter') document.getElementById('adminPinSubmit').click()">
+        <div id="adminPinErr" style="font-family:'Space Mono',monospace;font-size:10px;color:#ff4d6d;min-height:14px;margin-top:6px;text-align:center;"></div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button id="adminPinCancel" style="flex:1;padding:12px;background:transparent;color:#5a6070;border:1px solid #2a2f3a;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+        <button id="adminPinSubmit" style="flex:1;padding:12px;background:#4da6ff;color:#0a0c0f;border:none;border-radius:8px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Autorizar y continuar</button>
+      </div>
+    </div>`;
+            document.body.appendChild(m);
+            setTimeout(() => m.querySelector('#adminPinInput')?.focus(), 80);
+            const close = (val) => { m.remove(); resolve(val); };
+            m.querySelector('#adminPinCancel').onclick = () => close(false);
+            m.querySelector('#adminPinSubmit').onclick = () => {
+                const v = m.querySelector('#adminPinInput').value || '';
+                if (v === ADMIN_PIN_OVERRIDE) close(true);
+                else {
+                    m.querySelector('#adminPinErr').textContent = 'PIN incorrecto';
+                    m.querySelector('#adminPinInput').value = '';
+                    m.querySelector('#adminPinInput').focus();
+                }
+            };
+            m.addEventListener('click', e => { if (e.target === m) close(false); });
+        });
+    }
+
+    // Helper: ejecuta el flujo completo de validación. Resuelve true si puede continuar.
+    async function runMatchPreflight(originalFile, preliqFile) {
+        const r = await validateGuiaMatch(originalFile, preliqFile);
+        if (!r.ok) {
+            return await showOrphansAdminModal({ orphans: r.orphans, preliqCount: r.preliqCount });
+        }
+        return await showMatchInfoModal({
+            originalCount: r.originalCount,
+            preliqCount:   r.preliqCount,
+            matchedCount:  r.matchedCount
+        });
+    }
+
     // ── step navigation ─────────────────────────────────────
     function goStep(n) {
         currentStep = n;
@@ -1854,9 +2009,20 @@
         if (!assertUrl(getUrl()))
             return;
         const file = document.getElementById('file2').files[0];
+        const fileOrig = document.getElementById('file1').files[0];
         if (!file) {
             showToast('Selecciona el archivo PRELIQUIDADO', 'error');
             return;
+        }
+        // Pre-flight match (solo si todavía está el ORIGINAL en el input — usuario podría haberlo limpiado)
+        if (fileOrig) {
+            try {
+                const canProceed = await runMatchPreflight(fileOrig, file);
+                if (!canProceed) return;
+            } catch (e) {
+                showToast('Error validando match de guías: ' + e.message, 'error');
+                return;
+            }
         }
         setLoading('btn2', true);
         try {
