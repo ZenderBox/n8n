@@ -1725,7 +1725,7 @@
 
     // ── Validación de match Original ↔ Preliquidado (vía SheetJS) ────
     const ADMIN_PIN_OVERRIDE = '0707';
-    const COL_GUIA_ORIGINAL = ['numero_guia', 'NUMERO_GUIA', 'Numero Guia', 'numero guia'];
+    const COL_GUIA_ORIGINAL = ['numero_guia', 'NUMERO_GUIA', 'GUIA / consignment', 'GUIA/consignment', 'guia/consignment', 'GUIA'];
     const COL_GUIA_PRELIQ   = ['GUIA HIJA', 'guia hija', 'Guia Hija', 'GUIA_HIJA'];
 
     const normGuia = v => (v == null ? '' : String(v)).trim().toUpperCase();
@@ -1872,7 +1872,11 @@
                     }
                     const has = list => list.some(x => headers.includes(x.toLowerCase().replace(/\s+/g,'')));
                     if (has(['GUIA HIJA','BASE ARANCEL','ARANCEL %','TIENE NOVEDAD'])) return resolve('preliquidado');
-                    if (has(['numero_guia','remitente_nombre_empresa','remitente_email','destinatario_nombre_completo'])) return resolve('original');
+                    // Original — múltiples formatos (Manifiesto MOVI original + Manifiesto "GUIA / consignment")
+                    if (has([
+                        'numero_guia','remitente_nombre_empresa','remitente_email','destinatario_nombre_completo',
+                        'GUIA / consignment','COMPAÑÍA REMITENTE','REMITE PAIS','NOMBRE DESTINO','POSICION ARANCELARIA'
+                    ])) return resolve('original');
                     resolve('unknown');
                 } catch (err) { reject(err); }
             };
@@ -1999,7 +2003,7 @@
         };
         const origByGuia = {};
         origRows.forEach(r => {
-            const g = normGuia(pick(r, ['numero_guia']));
+            const g = normGuia(pick(r, ['numero_guia','GUIA / consignment','GUIA/consignment','GUIA']));
             if (g) origByGuia[g] = r;
         });
         const items = [];
@@ -2014,7 +2018,7 @@
             const reajuste = ['true','verdadero','sí','si','1'].includes(novVal) ? 'REAJUSTADO' : '';
             const partidaPreq = String(pick(p, ['POSICION']) || '').trim();
             const orig = origByGuia[guia];
-            const partidaOrig = orig ? String(pick(orig, ['partida_arancelaria']) || '').trim() : '';
+            const partidaOrig = orig ? String(pick(orig, ['partida_arancelaria','POSICION ARANCELARIA','POSICIONARANCELARIA']) || '').trim() : '';
             const partidaCode = (partidaPreq && partidaOrig && partidaPreq === partidaOrig) ? 14 : 12;
             items.push({ guia, arancel, iva, total, reajuste, partidaCode });
         });
