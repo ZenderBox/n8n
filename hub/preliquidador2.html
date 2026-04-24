@@ -1664,8 +1664,12 @@
                 }
                 const pdfBlob = await r.blob();
                 if (!pdfBlob.size) throw new Error('PDF vacío');
-                const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
-                const pdfName = `Resultado_Aduana_${ts}.pdf`;
+                // Nombre: <agencia>_<AIRWAYBILL>.pdf — sanitizado para filesystem
+                const sanitize = s => String(s || '').trim().replace(/[^a-zA-Z0-9_\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+                const awb = document.getElementById('auto-promt-val-1').value.trim();
+                const safeAgencia = sanitize(agencia) || 'lote';
+                const safeAwb     = sanitize(awb)     || new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+                const pdfName = `${safeAgencia}_${safeAwb}.pdf`;
                 const pdfUrl = URL.createObjectURL(pdfBlob);
                 // Auto-descarga silenciosa a ~/Downloads
                 const a = document.createElement('a');
@@ -2504,8 +2508,13 @@
             if (!pdfBlob.size) throw new Error('PDF descargado vacío');
 
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            const pdfName = `Resultado_Aduana_${ts}.pdf`;
+            // Nombre: <agencia>_<AIRWAYBILL>.pdf — usa los inputs del modo Manual (card-0)
+            const sanitize = s => String(s || '').trim().replace(/[^a-zA-Z0-9_\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+            const agenciaM = document.getElementById('agencia').value.trim();
+            const awbM     = document.getElementById('promt-val-1').value.trim();
+            const safeAg   = sanitize(agenciaM) || 'lote';
+            const safeAwb  = sanitize(awbM)     || new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+            const pdfName  = `${safeAg}_${safeAwb}.pdf`;
 
             document.getElementById('zhDownloadArea').innerHTML =
                 `<a class="btn-download" href="${pdfUrl}" download="${pdfName}">⬇ Descargar ${pdfName}</a>`;
