@@ -1146,6 +1146,7 @@
     const STEPS = ['card-0', 'card-1', 'card-2', 'card-3', 'card-4', 'card-5'];
     const TOTAL_STEPS = 6;
     let lastExportedBlob = null;
+    let lastSummaryItems = null;
     let lastExportedFilename = null;
 
     const FIXED_PROMTS = `
@@ -1671,17 +1672,22 @@
                 a.href = pdfUrl; a.download = pdfName;
                 document.body.appendChild(a); a.click(); a.remove();
                 log(`  ✓ PDF descargado (${(pdfBlob.size/1024).toFixed(1)} KB) → ${pdfName}`);
-                document.getElementById('autoDownload').innerHTML =
-                    `<a class="btn-download" href="${pdfUrl}" download="${pdfName}">⬇ Descargar de nuevo: ${pdfName}</a>`;
                 showDownloadedModal(pdfName, pdfBlob.size);
                 showToast('📄 PDF descargado a Downloads');
-                // Resumen final del lote
+                // Resumen final del lote — guardar items y mostrar botón persistente
+                let summaryHtml = '';
                 try {
-                    const items = buildSummary(origRows, preqRows);
-                    setTimeout(() => showSummaryModal(items), 600);
+                    lastSummaryItems = buildSummary(origRows, preqRows);
+                    summaryHtml = `<button type="button" class="btn-download" style="background:#3dffa0;color:#0a0c0f;border:none;cursor:pointer;font-family:Syne,sans-serif;font-weight:700;" onclick="showSummaryModal(lastSummaryItems)">📊 Mostrar resultado (${lastSummaryItems.length})</button>`;
+                    setTimeout(() => showSummaryModal(lastSummaryItems), 600);
                 } catch (e) {
                     console.error('Error construyendo resumen:', e);
                 }
+                document.getElementById('autoDownload').innerHTML =
+                    `<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+                        <a class="btn-download" href="${pdfUrl}" download="${pdfName}">⬇ Descargar de nuevo: ${pdfName}</a>
+                        ${summaryHtml}
+                    </div>`;
             }
         } catch (e) {
             log('✗ ' + e.message);
@@ -2686,6 +2692,19 @@
         if (zhd) zhd.innerHTML = '';
         lastExportedBlob = null;
         lastExportedFilename = null;
+        lastSummaryItems = null;
+        const autoDl = document.getElementById('autoDownload');
+        if (autoDl) autoDl.innerHTML = '';
+        const autoLog = document.getElementById('autoLog');
+        if (autoLog) { autoLog.textContent = ''; autoLog.style.display = 'none'; }
+        const autoMulti = document.getElementById('auto-multi-status');
+        if (autoMulti) autoMulti.innerHTML = '';
+        const autoFileMulti = document.getElementById('auto-file-multi');
+        if (autoFileMulti) autoFileMulti.value = '';
+        ['auto-file1','auto-file2'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.value = ''; el.dispatchEvent(new Event('change', {bubbles:true})); }
+        });
         goStep(0);
     }
     </script>
