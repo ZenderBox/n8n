@@ -5,58 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale-1.0">
 <title>Buscar Guías — ZenderBox</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
 <style>
+  /* ZenderBox Design System tokens — white-first
+     Ref: 00-wms core/09-Design-System/colors_and_type.css */
   :root {
-    --bg:        #0d1117;
-    --surface:   #161b22;
-    --surface2:  #1e2630;
-    --border:    #2a3441;
-    --border2:   #3d4f61;
-    --cyan:      #00c9b1;
-    --cyan-dim:  rgba(0,201,177,.12);
-    --cyan-glow: rgba(0,201,177,.25);
-    --lime:      #CCD32A;
-    --lime-dim:  rgba(204,211,42,.12);
-    --amber:     #f59e0b;
-    --amber-dim: rgba(245,158,11,.12);
-    --red:       #ef4444;
-    --red-dim:   rgba(239,68,68,.12);
-    --blue:      #3b82f6;
-    --blue-dim:  rgba(59,130,246,.12);
-    --purple:    #a855f7;
-    --purple-dim:rgba(168,85,247,.12);
-    --text:      #e2e8f0;
-    --text2:     #8b9cb0;
-    --text3:     #4f6070;
-    --r:         8px;
-    --r-lg:      12px;
-    --shadow:    0 4px 24px rgba(0,0,0,.4);
-    --navy:      #081F3A;
+    /* Brand */
+    --zb-cyan:       #029ECB;
+    --zb-cyan-dark:  #007B9F;
+    --zb-cyan-soft:  rgba(2,158,203,.10);
+    --zb-navy:       #004B72;
+    --zb-lime:       #CCD32A;
+    --zb-lime-soft:  rgba(204,211,42,.18);
+    --zb-gradient:   linear-gradient(45deg, #029ECB 0%, #CCD32A 85%);
+
+    /* Ink scale (warm neutrals) */
+    --zb-ink-900: #1F1F1F;
+    --zb-ink-700: #333333;
+    --zb-ink-500: #666666;
+    --zb-ink-300: #8A8A8A;
+    --zb-ink-200: #B8B8B8;
+    --zb-ink-100: #DBDBDB;
+    --zb-ink-50:  #F6F6F6;
+    --zb-paper:   #FFFFFF;
+
+    /* Semantic */
+    --zb-success:    #008C31;
+    --zb-success-bg: #F1F6F5;
+    --zb-error:      #F32735;
+    --zb-error-bg:   #F4E8E9;
+    --zb-warn:       #7A6A00;
+    --zb-warn-bg:    rgba(204,211,42,.18);
+
+    /* Foundations */
+    --zb-radius-sm: 8px;
+    --zb-radius-md: 10px;
+    --zb-radius-pill: 99px;
+    --zb-shadow-sm: 0 2px 4px 0 rgba(39,39,39,.10);
+    --zb-shadow-md: 0 4px 12px 0 rgba(39,39,39,.08);
   }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
-  input, select, textarea, button { font-family: inherit; }
+  html, body {
+    height: 100%;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: var(--zb-ink-50);
+    color: var(--zb-ink-700);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  input, select, textarea, button { font-family: inherit; color: inherit; }
+  ::selection { background: var(--zb-cyan-soft); }
 
   /* ── Top bar ── */
   .topbar {
     display: flex; align-items: center; gap: 16px;
     padding: 14px 24px;
     margin-left: 220px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    background: var(--zb-paper);
+    border-bottom: 1px solid var(--zb-ink-100);
     position: sticky; top: 0; z-index: 100;
   }
   .topbar-logo {
-    font-family: 'Exo 2', sans-serif;
-    font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: .3px;
+    font-size: 16px; font-weight: 700; color: var(--zb-ink-900);
+    letter-spacing: -.01em;
   }
-  .topbar-logo span { color: var(--cyan); }
+  .topbar-logo span { color: var(--zb-cyan); }
   .topbar-sep { flex: 1; }
   .topbar-stats {
-    display: flex; gap: 20px; font-size: 12px; color: var(--text2);
+    display: flex; gap: 20px; font-size: 13px; color: var(--zb-ink-500);
+    font-weight: 500;
   }
-  .topbar-stats strong { color: var(--text); font-weight: 600; }
+  .topbar-stats strong { color: var(--zb-ink-900); font-weight: 700; }
 
   /* ── Main container ── */
   .main {
@@ -67,24 +89,18 @@
 
   /* ── Search hero ── */
   .search-hero {
-    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: 28px;
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-100);
+    border-radius: var(--zb-radius-md);
+    padding: 24px;
     margin-bottom: 20px;
   }
   .search-title {
-    font-family: 'Exo 2', sans-serif;
-    font-size: 13px; font-weight: 700;
-    color: var(--cyan); letter-spacing: 1px;
-    text-transform: uppercase;
+    font-size: 19px; font-weight: 700;
+    color: var(--zb-ink-900);
+    line-height: 24px;
     margin-bottom: 16px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .search-title::before {
-    content: ''; width: 8px; height: 8px;
-    background: var(--cyan); border-radius: 50%;
-    box-shadow: 0 0 12px var(--cyan);
+    letter-spacing: -.01em;
   }
   .search-row {
     display: flex; gap: 12px;
@@ -94,97 +110,118 @@
   }
   .search-ico {
     position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-    font-size: 18px; color: var(--text3);
+    color: var(--zb-ink-300);
+    display: flex; align-items: center;
+    pointer-events: none;
   }
+  .search-ico svg { width: 18px; height: 18px; }
   .search-input {
     width: 100%;
-    background: var(--bg);
-    border: 2px solid var(--border2);
-    border-radius: var(--r);
-    color: var(--text);
-    padding: 14px 16px 14px 48px;
-    font-size: 15px;
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-200);
+    border-radius: var(--zb-radius-sm);
+    color: var(--zb-ink-900);
+    padding: 14px 16px 14px 44px;
+    font-size: 14px;
+    font-weight: 500;
     outline: none;
-    transition: all .2s;
+    transition: border-color .15s, box-shadow .15s;
   }
   .search-input:focus {
-    border-color: var(--cyan);
-    box-shadow: 0 0 0 3px var(--cyan-dim);
+    border-color: var(--zb-cyan);
+    box-shadow: 0 0 0 3px var(--zb-cyan-soft);
   }
-  .search-input::placeholder { color: var(--text3); }
+  .search-input::placeholder { color: var(--zb-ink-200); font-weight: 500; }
+
+  /* ── Buttons ── */
   .btn {
-    border: none; border-radius: var(--r);
-    padding: 14px 28px; font-size: 14px;
-    cursor: pointer; transition: all .2s;
-    font-family: 'Exo 2', sans-serif;
-    font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: var(--zb-radius-sm);
+    padding: 14px 22px; font-size: 14px;
+    font-weight: 700; line-height: 18px;
+    cursor: pointer;
+    transition: filter .15s ease, transform .1s ease, background .15s ease, border-color .15s ease, color .15s ease;
+    white-space: nowrap;
   }
+  .btn svg { width: 16px; height: 16px; }
   .btn-primary {
-    background: var(--cyan);
-    color: var(--navy);
-    box-shadow: 0 0 20px var(--cyan-glow);
+    background: var(--zb-gradient);
+    color: var(--zb-paper);
   }
-  .btn-primary:hover {
-    background: #00e6cc;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 24px var(--cyan-glow);
-  }
+  .btn-primary:hover  { filter: brightness(1.05); }
+  .btn-primary:active { transform: scale(.98); filter: brightness(.95); }
   .btn-secondary {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text2);
+    background: var(--zb-ink-50);
+    border: 1px solid var(--zb-ink-100);
+    color: var(--zb-ink-700);
   }
   .btn-secondary:hover {
-    border-color: var(--text2);
-    color: var(--text);
+    background: var(--zb-paper);
+    border-color: var(--zb-cyan-dark);
+    color: var(--zb-cyan-dark);
   }
-  .btn-icon {
-    display: flex; align-items: center; gap: 8px;
+  .btn-icon { display: inline-flex; align-items: center; gap: 8px; }
+  .btn-sm {
+    padding: 8px 14px;
+    font-size: 13px;
+    line-height: 16px;
   }
+  .btn-sm svg { width: 14px; height: 14px; }
   .search-hint {
     margin-top: 12px;
-    font-size: 11px;
-    color: var(--text3);
+    font-size: 12px;
+    color: var(--zb-ink-500);
+    font-weight: 500;
   }
-  .search-hint span { 
-    background: var(--surface2);
+  .search-hint span {
+    background: var(--zb-ink-50);
+    color: var(--zb-ink-700);
     padding: 2px 8px;
     border-radius: 4px;
     margin: 0 2px;
+    font-size: 11px;
+    font-weight: 600;
   }
 
   /* ── Filters panel ── */
   .filters-toggle {
     display: flex; align-items: center; gap: 8px;
     padding: 10px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    color: var(--text2);
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-100);
+    border-radius: var(--zb-radius-sm);
+    color: var(--zb-ink-500);
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     margin-bottom: 16px;
-    transition: all .2s;
+    transition: all .15s;
   }
-  .filters-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
-  .filters-toggle.active { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
-  .filters-toggle .arrow { transition: transform .2s; }
-  .filters-toggle.active .arrow { transform: rotate(180deg); }
+  .filters-toggle:hover { border-color: var(--zb-cyan-dark); color: var(--zb-cyan-dark); }
+  .filters-toggle.active {
+    background: var(--zb-cyan-soft);
+    border-color: var(--zb-cyan);
+    color: var(--zb-cyan-dark);
+  }
+  .filters-toggle svg { width: 16px; height: 16px; transition: transform .2s; }
+  .filters-toggle.active svg.chevron { transform: rotate(180deg); }
   .filters-count {
-    background: var(--cyan);
-    color: var(--navy);
-    font-size: 10px;
+    background: var(--zb-cyan);
+    color: var(--zb-paper);
+    font-size: 11px;
     font-weight: 700;
     padding: 2px 7px;
-    border-radius: 10px;
+    border-radius: var(--zb-radius-pill);
     margin-left: auto;
+    min-width: 20px;
+    text-align: center;
   }
 
   .filters-panel {
     display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-100);
+    border-radius: var(--zb-radius-md);
     padding: 20px;
     margin-bottom: 20px;
     gap: 16px;
@@ -194,45 +231,48 @@
     display: flex; flex-direction: column; gap: 6px;
   }
   .filter-group label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: .5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--zb-ink-700);
+    line-height: 15px;
   }
   .filter-group input,
   .filter-group select {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
-    color: var(--text);
-    padding: 9px 12px;
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-200);
+    border-radius: var(--zb-radius-sm);
+    color: var(--zb-ink-900);
+    padding: 10px 12px;
     font-size: 13px;
+    font-weight: 500;
     outline: none;
-    transition: border-color .2s;
+    transition: border-color .15s, box-shadow .15s;
   }
+  .filter-group input::placeholder { color: var(--zb-ink-200); }
   .filter-group input:focus,
-  .filter-group select:focus { border-color: var(--cyan); }
-  .filter-row {
-    display: flex; gap: 8px;
+  .filter-group select:focus {
+    border-color: var(--zb-cyan);
+    box-shadow: 0 0 0 3px var(--zb-cyan-soft);
   }
-  .filter-row input { flex: 1; }
+  .filter-row { display: flex; gap: 8px; }
+  .filter-row input { flex: 1; min-width: 0; }
   .filter-check {
     display: flex; align-items: center; gap: 8px;
     padding-top: 8px;
   }
-  .filter-check input { width: 16px; height: 16px; accent-color: var(--cyan); }
-  .filter-check label { font-size: 12px; color: var(--text2); text-transform: none; cursor: pointer; }
+  .filter-check input { width: 16px; height: 16px; accent-color: var(--zb-cyan); }
+  .filter-check label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--zb-ink-700);
+    cursor: pointer;
+  }
   .filter-actions {
     grid-column: 1 / -1;
     display: flex; gap: 10px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    border-top: 1px solid var(--zb-ink-100);
     margin-top: 4px;
-  }
-  .btn-sm {
-    padding: 8px 16px;
-    font-size: 12px;
   }
 
   /* ── Results header ── */
@@ -242,9 +282,9 @@
     flex-wrap: wrap;
   }
   .results-count {
-    font-size: 13px; color: var(--text2);
+    font-size: 13px; color: var(--zb-ink-500); font-weight: 500;
   }
-  .results-count strong { color: var(--text); font-weight: 600; }
+  .results-count strong { color: var(--zb-ink-900); font-weight: 700; }
   .results-actions {
     margin-left: auto;
     display: flex; gap: 10px;
@@ -252,9 +292,9 @@
 
   /* ── Results table ── */
   .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-100);
+    border-radius: var(--zb-radius-md);
     overflow: hidden;
   }
   .table-scroll {
@@ -266,127 +306,145 @@
     font-size: 13px;
   }
   thead {
-    background: var(--surface2);
+    background: var(--zb-ink-50);
     position: sticky; top: 0;
   }
   th {
     text-align: left;
     padding: 12px 16px;
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text3);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--zb-ink-500);
     text-transform: uppercase;
-    letter-spacing: .5px;
-    border-bottom: 1px solid var(--border);
+    letter-spacing: .03em;
+    border-bottom: 1px solid var(--zb-ink-100);
     white-space: nowrap;
   }
   th.sortable { cursor: pointer; user-select: none; }
-  th.sortable:hover { color: var(--cyan); }
-  th .sort-arrow { margin-left: 4px; opacity: 0.4; }
-  th.sorted .sort-arrow { opacity: 1; color: var(--cyan); }
+  th.sortable:hover { color: var(--zb-cyan-dark); }
+  th .sort-arrow { margin-left: 4px; opacity: .4; font-size: 10px; }
+  th.sorted .sort-arrow { opacity: 1; color: var(--zb-cyan); }
   td {
     padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--zb-ink-100);
+    color: var(--zb-ink-700);
+    font-weight: 500;
     white-space: nowrap;
   }
-  tr:hover td { background: var(--cyan-dim); }
+  tbody tr:hover td { background: var(--zb-ink-50); }
   tr:last-child td { border-bottom: none; }
 
   /* ── Status badges ── */
   .badge {
-    display: inline-flex; align-items: center; gap: 5px;
+    display: inline-flex; align-items: center; gap: 6px;
     padding: 4px 10px;
-    border-radius: 20px;
+    border-radius: var(--zb-radius-pill);
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    white-space: nowrap;
   }
-  .badge-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-  }
-  .badge-bodega { background: var(--blue-dim); color: var(--blue); }
-  .badge-bodega .badge-dot { background: var(--blue); }
-  .badge-despachado { background: var(--amber-dim); color: var(--amber); }
-  .badge-despachado .badge-dot { background: var(--amber); }
-  .badge-transito { background: var(--purple-dim); color: var(--purple); }
-  .badge-transito .badge-dot { background: var(--purple); }
-  .badge-entregado { background: var(--cyan-dim); color: var(--cyan); }
-  .badge-entregado .badge-dot { background: var(--cyan); }
-  .badge-devuelto { background: var(--red-dim); color: var(--red); }
-  .badge-devuelto .badge-dot { background: var(--red); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
 
-  .badge-pagado { background: var(--cyan-dim); color: var(--cyan); }
-  .badge-pendiente { background: var(--amber-dim); color: var(--amber); }
+  /* Estado guía/consolidado */
+  .badge-bodega       { background: var(--zb-success-bg); color: var(--zb-success); }
+  .badge-bodega .badge-dot       { background: var(--zb-success); }
+  .badge-transito     { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
+  .badge-transito .badge-dot     { background: var(--zb-cyan); }
+  .badge-despachado   { background: var(--zb-lime-soft); color: var(--zb-warn); }
+  .badge-despachado .badge-dot   { background: var(--zb-lime); }
+  .badge-entregado    { background: var(--zb-ink-50); color: var(--zb-ink-900); }
+  .badge-entregado .badge-dot    { background: var(--zb-ink-500); }
+  .badge-devuelto     { background: var(--zb-error-bg); color: var(--zb-error); }
+  .badge-devuelto .badge-dot     { background: var(--zb-error); }
+
+  /* Pago */
+  .badge-pagado    { background: var(--zb-success-bg); color: var(--zb-success); }
+  .badge-pendiente { background: var(--zb-lime-soft); color: var(--zb-warn); }
 
   /* ── WhatsApp ── */
-  .mono { font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; }
+  .mono {
+    font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: var(--zb-ink-700);
+  }
   .wa-cell { display: flex; flex-direction: column; gap: 4px; }
   .btn-wa {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     background: #25D366;
     color: #fff;
     border: none;
-    border-radius: var(--r);
-    padding: 6px 12px;
+    border-radius: var(--zb-radius-sm);
+    padding: 7px 12px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
-    transition: all .2s;
+    transition: filter .15s, transform .1s;
     white-space: nowrap;
   }
-  .btn-wa:hover { background: #20bd5a; transform: translateY(-1px); }
-  .btn-wa:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-wa svg { width: 14px; height: 14px; }
+  .btn-wa:hover { filter: brightness(1.05); }
+  .btn-wa:active { transform: scale(.98); }
+  .btn-wa:disabled { opacity: .6; cursor: not-allowed; transform: none; }
   .wa-log {
     font-size: 10px;
-    color: var(--cyan);
-    background: var(--cyan-dim);
+    font-weight: 600;
+    color: var(--zb-success);
+    background: var(--zb-success-bg);
     padding: 3px 8px;
     border-radius: 4px;
     white-space: nowrap;
   }
   .tpl-select {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
+    background: var(--zb-paper);
+    color: var(--zb-ink-700);
+    border: 1px solid var(--zb-ink-200);
+    border-radius: var(--zb-radius-sm);
     padding: 6px 8px;
     font-size: 11px;
+    font-weight: 500;
     max-width: 150px;
     outline: none;
     cursor: pointer;
+    transition: border-color .15s;
   }
-  .tpl-select:focus { border-color: var(--cyan); }
+  .tpl-select:focus { border-color: var(--zb-cyan); }
 
-  /* ── View Toggle ── */
+  /* ── View Toggle (segmented control) ── */
   .view-toggle {
-    display: flex;
+    display: inline-flex;
     gap: 4px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
+    background: var(--zb-ink-50);
+    border: 1px solid var(--zb-ink-100);
+    border-radius: var(--zb-radius-sm);
     padding: 3px;
   }
   .view-btn {
+    display: inline-flex; align-items: center; gap: 6px;
     background: transparent;
     border: none;
-    color: var(--text3);
-    padding: 6px 14px;
-    border-radius: 5px;
+    color: var(--zb-ink-500);
+    padding: 7px 14px;
+    border-radius: 6px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all .2s;
+    transition: all .15s;
   }
-  .view-btn:hover { color: var(--text); }
+  .view-btn svg { width: 14px; height: 14px; }
+  .view-btn:hover { color: var(--zb-ink-900); }
   .view-btn.active {
-    background: var(--cyan);
-    color: var(--navy);
+    background: var(--zb-paper);
+    color: var(--zb-cyan-dark);
+    box-shadow: var(--zb-shadow-sm);
   }
 
   /* ── Consolidados View ── */
   .consolidados-wrap {
-    background: var(--surface);
-    border-radius: var(--r-lg);
-    border: 1px solid var(--border);
+    background: var(--zb-paper);
+    border-radius: var(--zb-radius-md);
+    border: 1px solid var(--zb-ink-100);
     overflow: hidden;
   }
   .consolidados-list {
@@ -394,7 +452,7 @@
     overflow-y: auto;
   }
   .cons-item {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--zb-ink-100);
   }
   .cons-item:last-child { border-bottom: none; }
   .cons-header {
@@ -405,75 +463,89 @@
     cursor: pointer;
     transition: background .15s;
   }
-  .cons-header:hover { background: var(--surface2); }
+  .cons-header:hover { background: var(--zb-ink-50); }
   .cons-arrow {
-    font-size: 10px;
-    color: var(--text3);
+    color: var(--zb-ink-300);
     transition: transform .2s;
     width: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
+  .cons-arrow svg { width: 14px; height: 14px; }
   .cons-item.open .cons-arrow { transform: rotate(90deg); }
   .cons-id {
-    font-family: 'Consolas', monospace;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
+    font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--zb-ink-900);
     min-width: 100px;
   }
   .cons-fecha {
     font-size: 12px;
-    color: var(--text3);
+    color: var(--zb-ink-500);
+    font-weight: 500;
     min-width: 90px;
   }
   .cons-estado {
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
     padding: 4px 10px;
-    border-radius: 4px;
+    border-radius: var(--zb-radius-pill);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: .03em;
+    white-space: nowrap;
   }
-  .cons-estado.bodega { background: var(--cyan-dim); color: var(--cyan); }
-  .cons-estado.miami { background: var(--blue-dim); color: var(--blue); }
-  .cons-estado.transito { background: var(--purple-dim); color: var(--purple); }
-  .cons-estado.aeropuerto { background: var(--amber-dim); color: var(--amber); }
+  .cons-estado.bodega     { background: var(--zb-success-bg); color: var(--zb-success); }
+  .cons-estado.miami      { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
+  .cons-estado.transito   { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
+  .cons-estado.aeropuerto { background: var(--zb-lime-soft); color: var(--zb-warn); }
   .cons-stats {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     flex: 1;
     justify-content: flex-start;
     margin-left: 20px;
+    flex-wrap: wrap;
   }
   .cons-stat {
     font-size: 11px;
+    font-weight: 600;
     padding: 3px 10px;
-    border-radius: 4px;
+    border-radius: var(--zb-radius-pill);
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
-  .cons-stat.guias { background: var(--surface2); color: var(--text2); }
-  .cons-stat.pagadas { background: var(--cyan-dim); color: var(--cyan); }
-  .cons-stat.despachadas { background: var(--lime-dim); color: var(--lime); }
-  .cons-stat.sinpago { background: var(--amber-dim); color: var(--amber); }
+  .cons-stat svg { width: 12px; height: 12px; }
+  .cons-stat.guias       { background: var(--zb-ink-50); color: var(--zb-ink-700); }
+  .cons-stat.pagadas     { background: var(--zb-success-bg); color: var(--zb-success); }
+  .cons-stat.despachadas { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
+  .cons-stat.sinpago     { background: var(--zb-error-bg); color: var(--zb-error); }
   .cons-tracking {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     font-size: 10px;
-    color: var(--text3);
+    font-weight: 600;
+    color: var(--zb-ink-500);
     margin-left: auto;
+    text-transform: uppercase;
+    letter-spacing: .03em;
   }
   .cons-tracking span { display: flex; align-items: center; gap: 4px; }
   .cons-tracking .dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: var(--cyan);
+    background: var(--zb-cyan);
   }
-  
+
   /* ── Consolidado Body (guías) ── */
   .cons-body {
     display: none;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
+    background: var(--zb-ink-50);
+    border-top: 1px solid var(--zb-ink-100);
   }
   .cons-item.open .cons-body { display: block; }
   .cons-guias-header {
@@ -481,76 +553,110 @@
     grid-template-columns: 140px 1fr 120px 80px 100px 150px 120px;
     gap: 12px;
     padding: 10px 20px;
-    background: var(--surface2);
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text3);
+    background: var(--zb-paper);
+    border-bottom: 1px solid var(--zb-ink-100);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--zb-ink-500);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: .03em;
   }
   .cons-guia-row {
     display: grid;
     grid-template-columns: 140px 1fr 120px 80px 100px 150px 120px;
     gap: 12px;
     padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--zb-ink-100);
     align-items: center;
     font-size: 12px;
+    background: var(--zb-paper);
   }
   .cons-guia-row:last-child { border-bottom: none; }
-  .cons-guia-row:hover { background: rgba(0,201,177,.05); }
+  .cons-guia-row:hover { background: var(--zb-ink-50); }
   .guia-num {
-    font-family: 'Consolas', monospace;
-    font-weight: 600;
-    color: var(--cyan);
+    font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    color: var(--zb-cyan-dark);
   }
 
   /* ── Action button ── */
   .btn-action {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text2);
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-200);
+    color: var(--zb-ink-700);
     padding: 6px 12px;
-    border-radius: var(--r);
+    border-radius: var(--zb-radius-sm);
     font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all .2s;
+    transition: all .15s;
   }
   .btn-action:hover {
-    border-color: var(--cyan);
-    color: var(--cyan);
-    background: var(--cyan-dim);
+    border-color: var(--zb-cyan);
+    color: var(--zb-cyan-dark);
+    background: var(--zb-cyan-soft);
   }
 
   /* ── Pagination ── */
   .pagination {
     display: flex; align-items: center; justify-content: center;
     gap: 8px; padding: 16px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--zb-ink-100);
+    background: var(--zb-paper);
   }
   .page-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text2);
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-200);
+    color: var(--zb-ink-700);
     padding: 8px 14px;
-    border-radius: var(--r);
+    border-radius: var(--zb-radius-sm);
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all .2s;
+    transition: all .15s;
   }
-  .page-btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
-  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .page-btn.active { background: var(--cyan); color: var(--navy); border-color: var(--cyan); }
-  .page-info { font-size: 12px; color: var(--text3); margin: 0 12px; }
+  .page-btn svg { width: 14px; height: 14px; }
+  .page-btn:hover:not(:disabled) {
+    border-color: var(--zb-cyan-dark);
+    color: var(--zb-cyan-dark);
+  }
+  .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .page-btn.active {
+    background: var(--zb-cyan);
+    color: var(--zb-paper);
+    border-color: var(--zb-cyan);
+  }
+  .page-info {
+    font-size: 13px;
+    color: var(--zb-ink-500);
+    font-weight: 500;
+    margin: 0 12px;
+  }
+  .page-info strong { color: var(--zb-ink-900); font-weight: 700; }
 
   /* ── Empty state ── */
   .empty-state {
     padding: 60px 20px;
     text-align: center;
   }
-  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-  .empty-title { font-size: 16px; color: var(--text); margin-bottom: 8px; }
-  .empty-text { font-size: 13px; color: var(--text3); }
+  .empty-icon {
+    margin: 0 auto 16px;
+    color: var(--zb-ink-200);
+    display: inline-flex;
+  }
+  .empty-icon svg { width: 48px; height: 48px; }
+  .empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--zb-ink-900);
+    margin-bottom: 8px;
+  }
+  .empty-text {
+    font-size: 13px;
+    color: var(--zb-ink-500);
+    font-weight: 500;
+  }
 
   /* ── Loading ── */
   .loading {
@@ -561,118 +667,127 @@
   .loading.show { display: block; }
   .spinner {
     width: 32px; height: 32px;
-    border: 3px solid var(--border2);
-    border-top-color: var(--cyan);
+    border: 3px solid var(--zb-ink-100);
+    border-top-color: var(--zb-cyan);
     border-radius: 50%;
     animation: spin .7s linear infinite;
     margin: 0 auto 12px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text2); }
+  .loading-text {
+    font-size: 13px;
+    color: var(--zb-ink-500);
+    font-weight: 500;
+  }
 
   /* ── Modal ── */
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(13,17,23,.85);
+    background: rgba(31,31,31,.45);
     z-index: 500;
     display: flex; align-items: center; justify-content: center;
     opacity: 0; pointer-events: none;
-    transition: opacity .25s;
+    transition: opacity .2s;
+    padding: 20px;
   }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    width: 90%; max-width: 700px;
+    background: var(--zb-paper);
+    border-radius: var(--zb-radius-md);
+    width: 100%; max-width: 700px;
     max-height: 85vh;
     overflow: hidden;
-    box-shadow: 0 16px 64px rgba(0,0,0,.5);
-    transform: translateY(20px);
-    transition: transform .25s;
+    box-shadow: var(--zb-shadow-md);
+    transform: translateY(12px);
+    transition: transform .2s;
+    display: flex;
+    flex-direction: column;
   }
   .modal-overlay.open .modal { transform: translateY(0); }
   .modal-header {
     display: flex; align-items: center; gap: 12px;
-    padding: 18px 24px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    background: var(--zb-paper);
+    border-bottom: 1px solid var(--zb-ink-100);
   }
+  .modal-header svg.modal-icon { width: 18px; height: 18px; color: var(--zb-cyan); }
   .modal-title {
-    font-family: 'Exo 2', sans-serif;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
-    color: var(--text);
+    color: var(--zb-ink-900);
   }
   .modal-close {
     margin-left: auto;
     background: none; border: none;
-    color: var(--text3);
-    font-size: 20px;
+    color: var(--zb-ink-500);
     cursor: pointer;
-    padding: 4px 8px;
-    transition: color .2s;
+    padding: 4px;
+    border-radius: var(--zb-radius-sm);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
   }
-  .modal-close:hover { color: var(--red); }
+  .modal-close svg { width: 18px; height: 18px; }
+  .modal-close:hover { background: var(--zb-ink-50); color: var(--zb-ink-900); }
   .modal-body {
-    padding: 24px;
+    padding: 20px;
     overflow-y: auto;
-    max-height: calc(85vh - 140px);
+    max-height: calc(85vh - 60px);
   }
   .detail-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
   }
   .detail-section {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
+    background: var(--zb-ink-50);
+    border-radius: var(--zb-radius-md);
     padding: 16px;
   }
   .detail-section-title {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    color: var(--cyan);
+    color: var(--zb-cyan-dark);
     text-transform: uppercase;
-    letter-spacing: .5px;
+    letter-spacing: .04em;
     margin-bottom: 12px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .detail-section-title::before {
-    content: ''; width: 6px; height: 6px;
-    background: var(--cyan); border-radius: 50%;
   }
   .detail-row {
-    display: flex; justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--zb-ink-100);
     font-size: 13px;
   }
   .detail-row:last-child { border-bottom: none; }
-  .detail-label { color: var(--text3); }
-  .detail-value { color: var(--text); font-weight: 500; text-align: right; }
-  .detail-full {
-    grid-column: 1 / -1;
+  .detail-label { color: var(--zb-ink-500); font-weight: 500; }
+  .detail-value {
+    color: var(--zb-ink-900);
+    font-weight: 600;
+    text-align: right;
+    word-break: break-word;
   }
+  .detail-full { grid-column: 1 / -1; }
 
   /* ── Toast ── */
   .toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--r-lg);
-    padding: 12px 24px;
+    background: var(--zb-paper);
+    border: 1px solid var(--zb-ink-100);
+    border-radius: var(--zb-radius-sm);
+    padding: 10px 18px;
     font-size: 13px;
-    color: var(--text);
-    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    font-weight: 600;
+    color: var(--zb-ink-900);
+    box-shadow: var(--zb-shadow-md);
     z-index: 999;
     opacity: 0; pointer-events: none;
-    transition: opacity .25s, bottom .25s;
+    transition: opacity .2s, bottom .2s;
   }
   .toast.show { opacity: 1; bottom: 32px; }
-  .toast.ok { border-color: var(--cyan); color: var(--cyan); }
-  .toast.err { border-color: var(--red); color: var(--red); }
+  .toast.ok  { background: var(--zb-success-bg); border-color: var(--zb-success); color: var(--zb-success); }
+  .toast.err { background: var(--zb-error-bg);   border-color: var(--zb-error);   color: var(--zb-error); }
+
+  /* ── Lucide icon sizing helper ── */
+  [data-lucide] { width: 16px; height: 16px; vertical-align: middle; }
 
   /* ── Responsive ── */
   @media (max-width: 768px) {
@@ -710,13 +825,13 @@
     <div class="search-title">Buscador Universal</div>
     <div class="search-row">
       <div class="search-input-wrap">
-        <span class="search-ico">⌕</span>
-        <input type="text" class="search-input" id="search-input" 
+        <span class="search-ico"><i data-lucide="search"></i></span>
+        <input type="text" class="search-input" id="search-input"
           placeholder="Buscar por guía, tracking, nombre, teléfono, casillero, PO#..."
           autocomplete="off">
       </div>
       <button class="btn btn-primary btn-icon" onclick="buscar()">
-        <span>Buscar</span>
+        <i data-lucide="search"></i><span>Buscar</span>
       </button>
     </div>
     <div class="search-hint">
@@ -727,8 +842,9 @@
 
   <!-- Filters toggle -->
   <button class="filters-toggle" id="filters-toggle" onclick="toggleFilters()">
-    <span class="arrow">▼</span>
+    <i data-lucide="sliders-horizontal"></i>
     <span>Filtros avanzados</span>
+    <i data-lucide="chevron-down" class="chevron"></i>
     <span class="filters-count" id="filters-count" style="display:none">0</span>
   </button>
 
@@ -814,13 +930,13 @@
   <div class="results-header" id="results-header" style="display:none">
     <div class="view-toggle">
       <button class="view-btn active" id="btn-vista-agencia" onclick="cambiarVista('agencia')">
-        🏢 Agencia
+        <i data-lucide="building-2"></i><span>Agencia</span>
       </button>
       <button class="view-btn" id="btn-vista-guias" onclick="cambiarVista('guias')">
-        📋 Guías
+        <i data-lucide="list"></i><span>Guías</span>
       </button>
       <button class="view-btn" id="btn-vista-consolidados" onclick="cambiarVista('consolidados')">
-        📦 Consolidados
+        <i data-lucide="package"></i><span>Consolidados</span>
       </button>
     </div>
     <div class="results-count">
@@ -828,10 +944,10 @@
     </div>
     <div class="results-actions">
       <button class="btn btn-secondary btn-icon btn-sm" onclick="recargarDatos()">
-        <span>🔄</span> Recargar
+        <i data-lucide="refresh-cw"></i><span>Recargar</span>
       </button>
       <button class="btn btn-secondary btn-icon btn-sm" onclick="exportarExcel()">
-        <span>📊</span> Exportar Excel
+        <i data-lucide="file-spreadsheet"></i><span>Exportar Excel</span>
       </button>
     </div>
   </div>
@@ -842,7 +958,7 @@
       <table>
         <thead>
           <tr>
-            <th class="sortable" onclick="sortBy('guia')">Guía <span class="sort-arrow">↕</span></th>
+            <th class="sortable" onclick="sortBy('guia')">Guía <i data-lucide="arrow-up-down" class="sort-arrow"></i></th>
             <th>Cliente</th>
             <th>Casillero</th>
             <th>Teléfono</th>
@@ -857,9 +973,9 @@
       </table>
     </div>
     <div class="pagination" id="pagination-agencia">
-      <button class="page-btn" id="prev-btn-agencia" onclick="cambiarPaginaAgencia(-1)">← Anterior</button>
+      <button class="page-btn" id="prev-btn-agencia" onclick="cambiarPaginaAgencia(-1)"><i data-lucide="chevron-left"></i><span>Anterior</span></button>
       <span class="page-info">Página <strong id="current-page-agencia">1</strong> de <strong id="total-pages-agencia">1</strong></span>
-      <button class="page-btn" id="next-btn-agencia" onclick="cambiarPaginaAgencia(1)">Siguiente →</button>
+      <button class="page-btn" id="next-btn-agencia" onclick="cambiarPaginaAgencia(1)"><span>Siguiente</span><i data-lucide="chevron-right"></i></button>
     </div>
   </div>
 
@@ -869,8 +985,8 @@
       <table>
         <thead>
           <tr>
-            <th class="sortable" onclick="sortBy('guia')">Guía <span class="sort-arrow">↕</span></th>
-            <th class="sortable" onclick="sortBy('fecha')">Fecha <span class="sort-arrow">↕</span></th>
+            <th class="sortable" onclick="sortBy('guia')">Guía <i data-lucide="arrow-up-down" class="sort-arrow"></i></th>
+            <th class="sortable" onclick="sortBy('fecha')">Fecha <i data-lucide="arrow-up-down" class="sort-arrow"></i></th>
             <th>Cliente</th>
             <th>Teléfono</th>
             <th>Pago</th>
@@ -886,9 +1002,9 @@
 
     <!-- Pagination -->
     <div class="pagination" id="pagination">
-      <button class="page-btn" id="prev-btn" onclick="cambiarPagina(-1)">← Anterior</button>
+      <button class="page-btn" id="prev-btn" onclick="cambiarPagina(-1)"><i data-lucide="chevron-left"></i><span>Anterior</span></button>
       <span class="page-info">Página <strong id="current-page">1</strong> de <strong id="total-pages">1</strong></span>
-      <button class="page-btn" id="next-btn" onclick="cambiarPagina(1)">Siguiente →</button>
+      <button class="page-btn" id="next-btn" onclick="cambiarPagina(1)"><span>Siguiente</span><i data-lucide="chevron-right"></i></button>
     </div>
   </div>
 
@@ -907,14 +1023,14 @@
 
   <!-- Empty state -->
   <div class="empty-state" id="empty-state">
-    <div class="empty-icon">📦</div>
+    <div class="empty-icon"><i data-lucide="package-search"></i></div>
     <div class="empty-title">Busca una guía</div>
     <div class="empty-text">Escribe en el buscador o usa los filtros avanzados para encontrar guías</div>
   </div>
 
   <!-- No results -->
   <div class="empty-state" id="no-results" style="display:none">
-    <div class="empty-icon">🔍</div>
+    <div class="empty-icon"><i data-lucide="search-x"></i></div>
     <div class="empty-title">Sin resultados</div>
     <div class="empty-text">No se encontraron guías con esos criterios. Intenta con otros filtros.</div>
   </div>
@@ -925,9 +1041,9 @@
 <div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
-      <span style="font-size:20px">📋</span>
+      <i data-lucide="file-text" class="modal-icon"></i>
       <span class="modal-title">Detalle de Guía <span id="modal-guia"></span></span>
-      <button class="modal-close" onclick="cerrarModal()">&times;</button>
+      <button class="modal-close" onclick="cerrarModal()" aria-label="Cerrar"><i data-lucide="x"></i></button>
     </div>
     <div class="modal-body" id="modal-body">
       <!-- Content loaded dynamically -->
@@ -1142,7 +1258,8 @@ function renderAgencia() {
       <td>${esc(g.actualizado) || '—'}</td>
     </tr>
   `).join('');
-  
+  if (window.lucide) lucide.createIcons();
+
   // Update pagination
   const totalPaginas = Math.ceil(resultados.length / porPagina);
   document.getElementById('current-page-agencia').textContent = paginaAgencia;
@@ -1187,10 +1304,10 @@ function renderConsolidados() {
     const guiasHtml = (cons.guias || []).map(g => {
       const guiaId = esc(g.guia);
       const logEntry = waLog[g.guia];
-      const waLogHtml = logEntry 
-        ? `<div class="wa-log" id="walog-${guiaId}">✓ ${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
+      const waLogHtml = logEntry
+        ? `<div class="wa-log" id="walog-${guiaId}">${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
         : `<div class="wa-log" id="walog-${guiaId}" style="display:none"></div>`;
-      
+
       return `
         <div class="cons-guia-row">
           <div class="guia-num">${guiaId}</div>
@@ -1200,7 +1317,7 @@ function renderConsolidados() {
           <div>${renderBadgeSQ(g.sq)}</div>
           <div>${buildTemplateSelect(g.pago, g.sq_system_id, guiaId)}</div>
           <div class="wa-cell">
-            <button class="btn-wa" id="wa-${guiaId}" onclick="enviarWA('${esc(g.tel)}', '${guiaId}', this)">💬 Enviar</button>
+            <button class="btn-wa" id="wa-${guiaId}" onclick="enviarWA('${esc(g.tel)}', '${guiaId}', this)"><i data-lucide="message-circle"></i><span>Enviar</span></button>
             ${waLogHtml}
           </div>
         </div>
@@ -1210,20 +1327,20 @@ function renderConsolidados() {
     return `
       <div class="cons-item" id="cons-${esc(cons.id)}">
         <div class="cons-header" onclick="toggleConsolidado('${esc(cons.id)}')">
-          <span class="cons-arrow">▶</span>
+          <span class="cons-arrow"><i data-lucide="chevron-right"></i></span>
           <span class="cons-id">${esc(cons.id)}</span>
           <span class="cons-fecha">${formatFecha(cons.fecha)}</span>
           <span class="cons-estado ${estadoClass}">${esc(estadoLabel)}</span>
           <div class="cons-stats">
-            <span class="cons-stat guias">📦 ${stats.total || 0} guías</span>
-            <span class="cons-stat pagadas">✓ ${stats.pagadas || 0} pagadas</span>
-            <span class="cons-stat despachadas">🚚 ${stats.despachadas || 0} despachadas</span>
-            ${stats.sinPago > 0 ? `<span class="cons-stat sinpago">⚠ ${stats.sinPago} sin pago</span>` : ''}
+            <span class="cons-stat guias"><i data-lucide="package"></i>${stats.total || 0} guías</span>
+            <span class="cons-stat pagadas"><i data-lucide="check"></i>${stats.pagadas || 0} pagadas</span>
+            <span class="cons-stat despachadas"><i data-lucide="truck"></i>${stats.despachadas || 0} despachadas</span>
+            ${stats.sinPago > 0 ? `<span class="cons-stat sinpago"><i data-lucide="alert-triangle"></i>${stats.sinPago} sin pago</span>` : ''}
           </div>
           <div class="cons-tracking">
-            <span><span class="dot" style="background:${cons.miami ? 'var(--cyan)' : 'var(--text3)'}"></span> MIA</span>
-            <span><span class="dot" style="background:${cons.aeropuerto ? 'var(--cyan)' : 'var(--text3)'}"></span> SJO</span>
-            <span><span class="dot" style="background:${cons.bodega ? 'var(--cyan)' : 'var(--text3)'}"></span> BODEGA</span>
+            <span><span class="dot" style="background:${cons.miami ? 'var(--zb-cyan)' : 'var(--zb-ink-200)'}"></span> MIA</span>
+            <span><span class="dot" style="background:${cons.aeropuerto ? 'var(--zb-cyan)' : 'var(--zb-ink-200)'}"></span> SJO</span>
+            <span><span class="dot" style="background:${cons.bodega ? 'var(--zb-cyan)' : 'var(--zb-ink-200)'}"></span> BODEGA</span>
           </div>
         </div>
         <div class="cons-body">
@@ -1241,6 +1358,7 @@ function renderConsolidados() {
       </div>
     `;
   }).join('');
+  if (window.lucide) lucide.createIcons();
 }
 
 function toggleConsolidado(consId) {
@@ -1390,8 +1508,8 @@ function renderResultados() {
   tbody.innerHTML = pagina.map(g => {
     const guiaId = esc(g.guia);
     const logEntry = waLog[g.guia];
-    const waLogHtml = logEntry 
-      ? `<div class="wa-log" id="walog-${guiaId}">✓ ${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
+    const waLogHtml = logEntry
+      ? `<div class="wa-log" id="walog-${guiaId}">${esc(logEntry.nombre)} · ${logEntry.hora}</div>`
       : `<div class="wa-log" id="walog-${guiaId}" style="display:none"></div>`;
     
     return `
@@ -1406,14 +1524,15 @@ function renderResultados() {
       <td>
         <div class="wa-cell">
           <button class="btn-wa" id="wa-${guiaId}" onclick="enviarWA('${esc(g.telefono)}', '${guiaId}', this)">
-            💬 Enviar
+            <i data-lucide="message-circle"></i><span>Enviar</span>
           </button>
           ${waLogHtml}
         </div>
       </td>
     </tr>
   `}).join('');
-  
+  if (window.lucide) lucide.createIcons();
+
   // Update counts
   document.getElementById('showing-count').textContent = pagina.length;
   document.getElementById('total-count').textContent = resultados.length;
@@ -1553,6 +1672,7 @@ async function verDetalle(guia) {
     </div>
   `;
   
+  if (window.lucide) lucide.createIcons();
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1647,7 +1767,7 @@ function getDefaultSid(pago, sqId) {
 
 function buildTemplateSelect(pago, sqId, guia) {
   if (!TEMPLATES.length) {
-    return '<span style="color:var(--text3);font-size:10px">Cargando...</span>';
+    return '<span style="color:var(--zb-ink-300);font-size:10px">Cargando...</span>';
   }
   const defaultSid = getDefaultSid(pago, sqId);
   const options = TEMPLATES.map(t =>
@@ -1672,7 +1792,8 @@ async function enviarWA(tel, guia, btn) {
   const nombre = opt?.text || sid;
   
   btn.disabled = true;
-  btn.innerHTML = '⏳';
+  btn.innerHTML = '<i data-lucide="loader-2"></i><span>Enviando…</span>';
+  if (window.lucide) lucide.createIcons();
   
   try {
     const url = `${EP.enviarWACR}?tel=${encodeURIComponent(tel)}&guia=${encodeURIComponent(guia)}&sid=${encodeURIComponent(sid)}&nombre=${encodeURIComponent(nombre)}`;
@@ -1693,13 +1814,14 @@ async function enviarWA(tel, guia, btn) {
     waLog[guia] = { nombre, hora };
     localStorage.setItem('wms_waLog', JSON.stringify(waLog));
     
-    btn.innerHTML = '✅ Enviado';
-    btn.style.background = 'var(--cyan-dim)';
-    btn.style.color = 'var(--cyan)';
-    
+    btn.innerHTML = '<i data-lucide="check"></i><span>Enviado</span>';
+    btn.style.background = 'var(--zb-success-bg)';
+    btn.style.color = 'var(--zb-success)';
+    if (window.lucide) lucide.createIcons();
+
     const logBadge = document.getElementById('walog-' + guia);
     if (logBadge) {
-      logBadge.innerHTML = '✓ ' + esc(nombre) + ' · ' + hora;
+      logBadge.innerHTML = esc(nombre) + ' · ' + hora;
       logBadge.style.display = 'block';
     }
     
@@ -1708,17 +1830,19 @@ async function enviarWA(tel, guia, btn) {
     
   } catch(e) {
     console.error('Error enviando WA:', e);
-    btn.innerHTML = '❌ Error';
-    btn.style.background = 'var(--red-dim)';
-    btn.style.color = 'var(--red)';
+    btn.innerHTML = '<i data-lucide="x"></i><span>Error</span>';
+    btn.style.background = 'var(--zb-error-bg)';
+    btn.style.color = 'var(--zb-error)';
     btn.disabled = false;
     waErr++;
+    if (window.lucide) lucide.createIcons();
     toast('Error: ' + e.message, 'err');
-    
+
     setTimeout(() => {
-      btn.innerHTML = '💬 Enviar';
+      btn.innerHTML = '<i data-lucide="message-circle"></i><span>Enviar</span>';
       btn.style.background = '#25D366';
       btn.style.color = '#fff';
+      if (window.lucide) lucide.createIcons();
     }, 3000);
   }
 }
@@ -1775,8 +1899,10 @@ document.addEventListener('keydown', (e) => {
 
 // Cargar templates y datos al inicio
 async function init() {
+  if (window.lucide) lucide.createIcons();
   await cargarTemplates();
   await buscar();
+  if (window.lucide) lucide.createIcons();
 }
 init();
 </script>
