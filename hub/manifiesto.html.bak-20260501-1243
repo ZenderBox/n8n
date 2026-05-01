@@ -3,347 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenderBox — Cargar Manifiesto</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>ZenderBox Costa Rica — Módulo Consolidados</title>
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
     :root {
-        --zb-cyan:       #029ECB;
-        --zb-cyan-dark:  #007B9F;
-        --zb-navy:       #004B72;
-        --zb-lime:       #CCD32A;
-        --zb-gradient:   linear-gradient(45deg, #029ECB 0%, #CCD32A 85%);
-        --zb-ink-900:    #1F1F1F;
-        --zb-ink-700:    #333333;
-        --zb-ink-500:    #666666;
-        --zb-ink-300:    #8A8A8A;
-        --zb-ink-200:    #DBDBDB;
-        --zb-ink-50:     #F6F6F6;
-        --zb-paper:      #FFFFFF;
-        --zb-success:    #008C31;
-        --zb-success-bg: #F1F6F5;
-        --zb-error:      #F32735;
-        --zb-error-bg:   #F4E8E9;
-        --zb-warn:       #f59e0b;
-        --zb-font-sans:  "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-        --zb-radius-sm:  8px;
-        --zb-radius-md:  10px;
-        --zb-shadow-sm:  0 2px 4px 0 rgba(39,39,39,0.10);
-        --zb-shadow-md:  0 4px 12px 0 rgba(39,39,39,0.08);
-        --zb-border:     1px solid #DBDBDB;
+        --bg: #040d18;
+        --surface: #081F3A;
+        --surface2: #0d2748;
+        --border: #0f3058;
+        --border2: #1a4575;
+        --accent: #CCD32A;
+        --accent-dim: rgba(204, 211, 42, 0.12);
+        --blue: #009CC9;
+        --blue-dim: rgba(0, 156, 201, 0.12);
+        --green: #22c55e;
+        --green-dim: rgba(34, 197, 94, 0.1);
+        --red: #ef4444;
+        --red-dim: rgba(239, 68, 68, 0.1);
+        --yellow: #f59e0b;
+        --yellow-dim: rgba(245, 158, 11, 0.1);
+        --purple: #a78bfa;
+        --text: #e8f0f8;
+        --text-muted: #5a7a9a;
+        --text-mid: #8aaac8;
+        --mono: 'IBM Plex Mono', monospace;
+        --sans: 'IBM Plex Sans', sans-serif;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
     body {
-        background: var(--zb-ink-50);
-        color: var(--zb-ink-700);
-        font-family: var(--zb-font-sans);
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
         min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 48px 24px;
     }
 
-    /* ── SIDEBAR placeholder — sidebar.js lo llena ── */
-    #wms-sidebar {
+    body::before {
+        content: '';
         position: fixed;
-        left: 0; top: 0; bottom: 0;
-        width: 220px;
-        z-index: 100;
+        inset: 0;
+        background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.4;
+        pointer-events: none;
+        z-index: 0;
     }
 
-    /* ── WRAPPER principal ── */
     .wrapper {
-        margin-left: 220px;
-        padding: 40px 48px;
-        max-width: calc(220px + 696px);
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 560px;
     }
 
-    /* ── PAGE HEADER ── */
-    .page-header {
+    .header {
         display: flex;
         align-items: center;
-        gap: 16px;
-        margin-bottom: 32px;
+        gap: 12px;
+        margin-bottom: 40px;
     }
 
-    .page-logo {
-        width: 44px;
-        height: 44px;
-        background: var(--zb-gradient);
-        border-radius: var(--zb-radius-sm);
+    .logo {
+        width: 36px;
+        height: 36px;
+        background: var(--accent);
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 15px;
-        color: #fff;
-        letter-spacing: -0.5px;
-        flex-shrink: 0;
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 14px;
+        color: white;
+        letter-spacing: -1px;
     }
 
-    .page-header-text { flex: 1; }
-
-    .page-header-text h1 {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--zb-ink-900);
-        line-height: 1.2;
-    }
-
-    .page-header-text p {
+    .header-text h1 {
+        font-family: var(--mono);
         font-size: 13px;
-        color: var(--zb-ink-500);
-        margin-top: 2px;
-        font-weight: 500;
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
 
-    .page-header-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .badge-status {
+    .header-text p {
         font-size: 11px;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 99px;
-        background: var(--zb-success-bg);
-        color: var(--zb-success);
-        border: 1px solid rgba(0,140,49,0.18);
-        letter-spacing: 0.02em;
+        color: var(--text-muted);
+        font-family: var(--mono);
+        margin-top: 2px;
     }
 
-    .btn-drive {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--zb-cyan-dark);
-        background: var(--zb-paper);
-        border: var(--zb-border);
-        border-radius: var(--zb-radius-sm);
-        padding: 6px 12px;
-        text-decoration: none;
-        transition: background .15s, border-color .15s;
+    .badge {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 3px 8px;
+        border: 1px solid var(--accent-dim);
+        color: var(--accent);
+        border-radius: 4px;
+        letter-spacing: 0.05em;
     }
-    .btn-drive:hover { background: var(--zb-ink-50); border-color: var(--zb-cyan); }
 
-    /* ── CARDS ── */
     .card {
-        background: var(--zb-paper);
-        border: var(--zb-border);
-        border-radius: var(--zb-radius-md);
-        box-shadow: var(--zb-shadow-sm);
-        margin-bottom: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
         overflow: hidden;
+        margin-bottom: 16px;
     }
 
     .card-header {
         padding: 14px 20px;
-        border-bottom: var(--zb-border);
+        border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
 
-    .card-header-icon {
-        width: 6px; height: 6px;
+    .card-header .dot {
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        background: var(--zb-cyan);
-        flex-shrink: 0;
+        background: var(--accent);
     }
 
     .card-header span {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--zb-ink-500);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
     }
 
-    .card-body { padding: 20px; }
+    .card-body {
+        padding: 20px;
+    }
 
-    /* ── WEBHOOK ROWS ── */
     .webhook-row {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: var(--zb-ink-50);
-        border: var(--zb-border);
-        border-radius: var(--zb-radius-sm);
-        padding: 9px 14px;
-        transition: border-color .15s;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
     }
-    .webhook-row:focus-within { border-color: var(--zb-cyan); }
 
     .method-badge {
-        padding: 3px 8px;
-        border-radius: 5px;
+        background: var(--accent-dim);
+        color: var(--accent);
+        padding: 2px 6px;
+        border-radius: 4px;
         font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
+        font-weight: 600;
+        letter-spacing: 0.05em;
         flex-shrink: 0;
-    }
-    .method-badge.post {
-        background: rgba(204,211,42,0.15);
-        color: #7a7e00;
-        border: 1px solid rgba(204,211,42,0.40);
-    }
-    .method-badge.get {
-        background: rgba(2,158,203,0.10);
-        color: var(--zb-cyan-dark);
-        border: 1px solid rgba(2,158,203,0.25);
-    }
-    .method-badge.get-green {
-        background: var(--zb-success-bg);
-        color: var(--zb-success);
-        border: 1px solid rgba(0,140,49,0.20);
-    }
-    .method-badge.get-red {
-        background: var(--zb-error-bg);
-        color: var(--zb-error);
-        border: 1px solid rgba(243,39,53,0.20);
     }
 
     .webhook-url {
         flex: 1;
         background: transparent;
         border: none;
-        color: var(--zb-ink-500);
-        font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+        color: var(--text-muted);
+        font-family: var(--mono);
         font-size: 11px;
         outline: none;
-        min-width: 0;
+        width: 100%;
     }
 
-    .webhook-hint {
-        font-size: 11px;
-        color: var(--zb-ink-300);
-        margin-top: 5px;
+    .edit-hint {
+        font-size: 10px;
+        color: var(--text-dim);
+        font-family: var(--mono);
+        margin-top: 6px;
         padding-left: 2px;
-        font-weight: 500;
     }
 
-    .webhook-spacer { margin-top: 10px; }
+    .field {
+        margin-bottom: 16px;
+    }
 
-    /* ── FIELDS ── */
-    .field { margin-bottom: 18px; }
-
-    .field > label,
-    .field-label {
+    .field label {
         display: block;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--zb-ink-700);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
         margin-bottom: 8px;
-        letter-spacing: 0.01em;
     }
 
-    /* ── AGENCIA CHIPS ── */
     .agencia-grid {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
         gap: 8px;
     }
 
     .ag-btn {
-        background: var(--zb-ink-50);
-        border: var(--zb-border);
-        border-radius: 99px;
-        padding: 7px 16px;
-        font-family: var(--zb-font-sans);
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--zb-ink-500);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 4px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
         cursor: pointer;
-        transition: all .15s;
-        white-space: nowrap;
-    }
-    .ag-btn:hover {
-        border-color: var(--zb-cyan);
-        color: var(--zb-cyan-dark);
-        background: rgba(2,158,203,0.05);
-    }
-    .ag-btn.active {
-        background: rgba(204,211,42,0.12);
-        border-color: var(--zb-lime);
-        color: #5a5e00;
+        transition: all 0.15s;
+        text-align: center;
     }
 
-    .agencia-custom { margin-top: 10px; }
+    .ag-btn:hover {
+        border-color: var(--accent-dim);
+        color: var(--accent);
+    }
+
+    .ag-btn.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .agencia-custom {
+        margin-top: 8px;
+    }
+
     .agencia-custom input {
         width: 100%;
-        background: var(--zb-paper);
-        border: var(--zb-border);
-        border-radius: var(--zb-radius-sm);
-        padding: 9px 14px;
-        font-family: var(--zb-font-sans);
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--zb-ink-700);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text);
         outline: none;
-        transition: border-color .15s;
+        transition: border-color 0.15s;
     }
-    .agencia-custom input:focus { border-color: var(--zb-cyan); }
-    .agencia-custom input::placeholder { color: var(--zb-ink-200); }
 
-    /* ── CONSOLIDADO ── */
+    .agencia-custom input:focus {
+        border-color: var(--accent);
+    }
+
+    .agencia-custom input::placeholder {
+        color: var(--text-dim);
+    }/* Campo consolidado */
+
     .consolidado-field {
         display: none;
-        margin-bottom: 18px;
-        animation: fadeIn .2s ease;
+        margin-bottom: 16px;
+        animation: fadeIn 0.2s ease;
     }
-    .consolidado-field.visible { display: block; }
 
-    .consolidado-field label {
+    .consolidado-field.visible {
         display: block;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--zb-ink-700);
-        margin-bottom: 8px;
     }
 
     .consolidado-field input {
         width: 100%;
-        background: var(--zb-paper);
-        border: 2px solid var(--zb-lime);
-        border-radius: var(--zb-radius-sm);
+        background: var(--bg);
+        border: 1px solid var(--yellow);
+        border-radius: 6px;
         padding: 10px 14px;
-        font-family: var(--zb-font-sans);
+        font-family: var(--mono);
         font-size: 13px;
-        font-weight: 500;
-        color: var(--zb-ink-700);
+        color: var(--text);
         outline: none;
-        transition: border-color .15s;
+        transition: border-color 0.15s;
     }
-    .consolidado-field input:focus { border-color: var(--zb-cyan); }
-    .consolidado-field input::placeholder { color: var(--zb-ink-200); }
+
+    .consolidado-field input:focus {
+        border-color: var(--accent);
+    }
+
+    .consolidado-field input::placeholder {
+        color: var(--text-dim);
+    }
 
     .consolidado-hint {
-        font-size: 11px;
-        color: #7a7e00;
-        margin-top: 5px;
-        font-weight: 600;
+        font-size: 10px;
+        color: var(--yellow);
+        font-family: var(--mono);
+        margin-top: 6px;
+        padding-left: 2px;
     }
 
-    /* ── DROP ZONE ── */
     .drop-zone {
-        border: 2px dashed var(--zb-ink-200);
-        border-radius: var(--zb-radius-sm);
-        padding: 36px 20px;
+        border: 1px dashed var(--border-bright);
+        border-radius: 8px;
+        padding: 32px 20px;
         text-align: center;
         cursor: pointer;
-        transition: all .2s;
+        transition: all 0.2s;
         position: relative;
-        background: var(--zb-ink-50);
     }
-    .drop-zone:hover,
-    .drop-zone.drag-over {
-        border-color: var(--zb-cyan);
-        background: rgba(2,158,203,0.04);
+
+    .drop-zone:hover, .drop-zone.drag-over {
+        border-color: var(--accent);
+        background: rgba(79, 110, 247, 0.04);
     }
+
     .drop-zone input[type="file"] {
         position: absolute;
         inset: 0;
@@ -354,327 +325,404 @@
     }
 
     .drop-icon {
-        font-size: 30px;
+        font-size: 28px;
         margin-bottom: 10px;
-        opacity: 0.55;
-        line-height: 1;
+        opacity: 0.5;
     }
 
     .drop-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--zb-ink-700);
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
         margin-bottom: 4px;
     }
 
     .drop-sub {
-        font-size: 12px;
-        color: var(--zb-ink-300);
-        font-weight: 500;
+        font-size: 11px;
+        color: var(--text-muted);
+        font-family: var(--mono);
     }
 
-    /* ── FILE SELECTED ── */
     .file-selected {
         display: none;
         align-items: center;
-        gap: 12px;
-        background: var(--zb-success-bg);
-        border: 1px solid rgba(0,140,49,0.20);
-        border-radius: var(--zb-radius-sm);
+        gap: 10px;
+        background: var(--bg);
+        border: 1px solid var(--green);
+        border-radius: 8px;
         padding: 12px 16px;
         margin-top: 10px;
-        animation: fadeIn .2s ease;
     }
-    .file-selected.visible { display: flex; }
 
-    .file-icon { font-size: 20px; flex-shrink: 0; }
+    .file-selected.visible {
+        display: flex;
+    }
 
-    .file-info { flex: 1; overflow: hidden; }
+    .file-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .file-info {
+        flex: 1;
+        overflow: hidden;
+    }
 
     .file-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--zb-success);
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--green);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .file-size {
-        font-size: 11px;
-        color: var(--zb-ink-500);
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
         margin-top: 2px;
-        font-weight: 500;
     }
 
     .file-clear {
         background: none;
         border: none;
-        color: var(--zb-ink-300);
+        color: var(--text-muted);
         cursor: pointer;
         font-size: 16px;
         padding: 2px;
         line-height: 1;
         flex-shrink: 0;
-        transition: color .15s;
     }
-    .file-clear:hover { color: var(--zb-error); }
 
-    /* ── BUTTONS ── */
+    .file-clear:hover {
+        color: var(--red);
+    }
+
     .btn-procesar {
         width: 100%;
-        background: var(--zb-gradient);
+        background: var(--accent);
         border: none;
-        border-radius: var(--zb-radius-sm);
-        padding: 15px 20px;
-        font-family: var(--zb-font-sans);
-        font-size: 14px;
-        font-weight: 700;
-        color: #fff;
+        border-radius: 8px;
+        padding: 14px;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
         cursor: pointer;
-        transition: filter .15s, transform .1s;
+        transition: all 0.15s;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
-        margin-top: 6px;
-        letter-spacing: 0.02em;
+        margin-top: 4px;
     }
-    .btn-procesar:hover:not(:disabled) { filter: brightness(1.05); }
-    .btn-procesar:active:not(:disabled) { transform: scale(0.99); filter: brightness(0.95); }
+
+    .btn-procesar:hover:not(:disabled) {
+        background: #6b83f8;
+        transform: translateY(-1px);
+    }
+
     .btn-procesar:disabled {
-        opacity: 0.38;
+        opacity: 0.4;
         cursor: not-allowed;
-        filter: grayscale(0.3);
+        transform: none;
     }
 
-    .btn-descargar {
-        margin-top: 8px;
-        width: 100%;
-        padding: 11px 16px;
-        background: transparent;
-        border: 1px solid var(--zb-cyan);
-        border-radius: var(--zb-radius-sm);
-        color: var(--zb-cyan-dark);
-        font-family: var(--zb-font-sans);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background .15s;
-    }
-    .btn-descargar:hover { background: rgba(2,158,203,0.06); }
-
-    .btn-limpiar {
-        margin-top: 8px;
-        width: 100%;
-        padding: 11px 16px;
-        background: transparent;
-        border: 1px solid var(--zb-error);
-        border-radius: var(--zb-radius-sm);
-        color: var(--zb-error);
-        font-family: var(--zb-font-sans);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background .15s;
-    }
-    .btn-limpiar:hover { background: rgba(243,39,53,0.05); }
-
-    /* ── SPINNER ── */
     .spinner {
-        width: 15px;
-        height: 15px;
-        border: 2px solid rgba(255,255,255,0.35);
-        border-top-color: #fff;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
         border-radius: 50%;
-        animation: spin .7s linear infinite;
+        animation: spin 0.7s linear infinite;
         display: none;
-        flex-shrink: 0;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── LOG CARD ── */
-    .log-card { display: none; }
-    .log-card.visible { display: block; }
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .log-card {
+        display: none;
+    }
+
+    .log-card.visible {
+        display: block;
+    }
 
     .log-body {
-        padding: 14px 20px;
-        font-family: "SFMono-Regular", "Consolas", monospace;
-        font-size: 11.5px;
+        padding: 16px 20px;
+        font-family: var(--mono);
+        font-size: 11px;
         line-height: 1.7;
-        max-height: 280px;
-        overflow-y: auto;
     }
 
     .log-line {
         display: flex;
-        gap: 14px;
+        gap: 12px;
         padding: 3px 0;
-        border-bottom: 1px solid var(--zb-ink-50);
-        animation: fadeIn .18s ease;
+        border-bottom: 1px solid var(--border);
+        animation: fadeIn 0.2s ease;
     }
-    .log-line:last-child { border-bottom: none; }
+
+    .log-line:last-child {
+        border-bottom: none;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
     .log-time {
-        color: var(--zb-ink-200);
+        color: var(--text-dim);
         flex-shrink: 0;
-        font-size: 11px;
     }
 
-    .log-msg { color: var(--zb-ink-500); }
-    .log-msg.ok   { color: var(--zb-success); }
-    .log-msg.err  { color: var(--zb-error); }
-    .log-msg.info { color: var(--zb-cyan); }
-    .log-msg.warn { color: var(--zb-warn); }
+    .log-msg {
+        color: var(--text-muted);
+    }
 
-    /* ── STATS CARD ── */
+    .log-msg.ok {
+        color: var(--green);
+    }
+
+    .log-msg.err {
+        color: var(--red);
+    }
+
+    .log-msg.info {
+        color: var(--accent);
+    }
+
+    .log-msg.warn {
+        color: var(--yellow);
+    }
+
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-top: 4px;
+        gap: 10px;
+        margin-top: 8px;
     }
 
     .stat-box {
-        background: var(--zb-ink-50);
-        border: var(--zb-border);
-        border-radius: var(--zb-radius-sm);
-        padding: 16px 12px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
         text-align: center;
     }
 
     .stat-val {
-        font-size: 26px;
-        font-weight: 700;
-        color: var(--zb-cyan);
+        font-family: var(--mono);
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--accent);
         line-height: 1;
     }
 
     .stat-label {
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--zb-ink-500);
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.07em;
-        margin-top: 6px;
-    }
-
-    /* btn-download inline */
-    .btn-download {
-        display: none;
-        margin-top: 14px;
-        padding: 11px 16px;
-        background: transparent;
-        border: 1px solid var(--zb-success);
-        border-radius: var(--zb-radius-sm);
-        color: var(--zb-success);
-        font-family: var(--zb-font-sans);
-        font-size: 13px;
-        font-weight: 600;
-        text-align: center;
-        text-decoration: none;
-        width: 100%;
-        transition: background .15s;
-    }
-    .btn-download.visible { display: block; }
-    .btn-download:hover { background: rgba(0,140,49,0.06); }
-
-    /* ── FOOTER ── */
-    .page-footer {
-        margin-top: 32px;
-        padding-bottom: 32px;
-        text-align: center;
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--zb-ink-200);
         letter-spacing: 0.08em;
-        text-transform: uppercase;
+        margin-top: 4px;
     }
 
-    /* ── ANIMATIONS ── */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(4px); }
-        to   { opacity: 1; transform: translateY(0);   }
+    .footer {
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-dim);
+        margin-top: 32px;
+        letter-spacing: 0.06em;
     }
 
-    /* ── LOG STATUS DOT ── */
-    #logDot {
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: var(--zb-warn);
+    .sidebar {
+        width: 220px;
+        min-height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
         flex-shrink: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 10;
+    }
+
+    .sidebar-logo {
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .nav-back {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        text-decoration: none;
+        transition: color .15s;
+    }
+
+    .nav-back:hover {
+        color: var(--accent);
+    }
+
+    .nav-section {
+        padding: 16px 12px 8px;
+    }
+
+    .nav-section-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 0 8px;
+        margin-bottom: 4px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 6px;
+        transition: all 0.15s;
+        margin-bottom: 2px;
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+
+    .nav-item:hover {
+        background: var(--surface2);
+    }
+
+    .nav-item.active {
+        background: var(--accent-dim);
+        border-color: rgba(204, 211, 42, 0.2);
+    }
+
+    .nav-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .nav-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-mid);
+    }
+
+    .nav-item.active .nav-label {
+        color: var(--accent);
+    }
+
+    .nav-coming {
+        font-family: var(--mono);
+        font-size: 9px;
+        color: var(--text-muted);
+        padding: 2px 6px;
+        background: var(--surface2);
+        border-radius: 3px;
+        margin-left: auto;
+    }
+
+    .sidebar-footer {
+        margin-top: auto;
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+    }
+
+    .sidebar-footer .version {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+    }
+
+    .wrapper {
+        margin-left: 220px;
     }
     </style>
 </head>
 <body>
-
-    <!-- Sidebar externo — sidebar.js lo popula -->
-    <div id="wms-sidebar"></div>
-
+    <div class="sidebar" id="wms-sidebar"></div>
     <div class="wrapper">
 
-        <!-- Page header -->
-        <div class="page-header">
-            <div class="page-logo">ZB</div>
-            <div class="page-header-text">
-                <h1>Cargar Manifiesto</h1>
+        <div class="header">
+            <div class="logo">ZB</div>
+            <div class="header-text">
+                <h1>ZenderBox</h1>
                 <p id="headerSub">Módulo Consolidados v2 · Multiagencia</p>
             </div>
-            <div class="page-header-actions">
-                <span class="badge-status">n8n activo</span>
-                <a id="driveLink"
-                   href="https://docs.google.com/spreadsheets/d/1CYJsc8KaOjuigYP5MKtWPh5Gt9V07lpKKslh9ksWjRY/edit?pli=1&gid=476955927#gid=476955927"
-                   target="_blank" class="btn-drive">
-                    📊 Abrir Drive
-                </a>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                <div class="badge">n8n CLOUD</div>
+                <a id="driveLink" href="https://docs.google.com/spreadsheets/d/1CYJsc8KaOjuigYP5MKtWPh5Gt9V07lpKKslh9ksWjRY/edit?pli=1&gid=476955927#gid=476955927" target="_blank" style="font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:none;border:1px solid var(--accent-dim);border-radius:4px;padding:3px 10px;">📊 Abrir Drive</a>
             </div>
         </div>
 
-        <!-- Card: Endpoints -->
         <div class="card">
             <div class="card-header">
-                <div class="card-header-icon"></div>
-                <span>Endpoints</span>
+                <div class="dot"></div>
+                <span>Endpoint</span>
             </div>
             <div class="card-body">
-
                 <div class="webhook-row">
-                    <span class="method-badge post">POST</span>
+                    <span class="method-badge">POST</span>
                     <input class="webhook-url" id="webhookUrl" value="https://hub.zenderbox.com/webhook/cr-consolidados"/>
                 </div>
-                <p class="webhook-hint">Endpoint procesar archivo</p>
+                <p class="edit-hint">// Endpoint procesar archivo</p>
 
-                <div class="webhook-spacer">
+                <div style="margin-top:10px;">
                     <div class="webhook-row">
-                        <span class="method-badge get">GET</span>
+                        <span class="method-badge" style="background:#2a1a3a;color:#a78bfa;">GET</span>
                         <input class="webhook-url" id="webhookConsulta" value="https://hub.zenderbox.com/webhook/cr-consultar-agencia"/>
                     </div>
-                    <p class="webhook-hint">Endpoint consultar agencia</p>
+                    <p class="edit-hint">// Endpoint consultar agencia</p>
                 </div>
-
-                <div class="webhook-spacer" id="rowDescarga" style="display:none">
+                <div style="margin-top:10px;" id="rowDescarga" style="display:none">
                     <div class="webhook-row">
-                        <span class="method-badge get-green">GET</span>
+                        <span class="method-badge" style="background:#1a3a1a;color:#22c55e;">GET</span>
                         <input class="webhook-url" id="webhookDescarga" value=""/>
                     </div>
-                    <p class="webhook-hint">Endpoint descargar histórico</p>
+                    <p class="edit-hint">// Endpoint descargar histórico</p>
                 </div>
-
-                <div class="webhook-spacer" id="rowLimpiar" style="display:none">
+                <div style="margin-top:10px;" id="rowLimpiar" style="display:none">
                     <div class="webhook-row">
-                        <span class="method-badge get-red">GET</span>
+                        <span class="method-badge" style="background:#3a1a1a;color:#ef4444;">GET</span>
                         <input class="webhook-url" id="webhookLimpiar" value=""/>
                     </div>
-                    <p class="webhook-hint">Endpoint limpiar hoja Resultado</p>
+                    <p class="edit-hint">// Endpoint limpiar hoja Resultado</p>
                 </div>
-
             </div>
         </div>
 
-        <!-- Card: Procesar Archivo -->
         <div class="card">
             <div class="card-header">
-                <div class="card-header-icon"></div>
+                <div class="dot"></div>
                 <span>Procesar Archivo</span>
             </div>
             <div class="card-body">
@@ -682,7 +730,9 @@
                 <div class="field">
                     <label>Agencia</label>
                     <div class="agencia-grid" id="agenciaGrid">
+
                         <button class="ag-btn active" onclick="selectAgencia(this, 'CASILLERO')">CASILLERO</button>
+
                     </div>
                     <div class="agencia-custom">
                         <input type="text" id="agenciaCustom" placeholder="Otra agencia..." oninput="onCustomAgencia(this)"/>
@@ -693,7 +743,7 @@
                 <div class="consolidado-field" id="consolidadoField">
                     <label>Número de Consolidado</label>
                     <input type="text" id="numConsolidado" placeholder="Ej: CONS-2026-001"/>
-                    <p class="consolidado-hint">⚡ Requerido para esta agencia</p>
+                    <p class="consolidado-hint">// Requerido para esta agencia</p>
                 </div>
 
                 <div class="field">
@@ -716,43 +766,34 @@
 
                 <button class="btn-procesar" id="btnProcesar" onclick="procesar()" disabled>
                     <div class="spinner" id="spinner"></div>
-                    <span id="btnText">Procesar archivo</span>
+                    <span id="btnText">PROCESAR ARCHIVO</span>
                 </button>
-
-                <button class="btn-descargar" id="btnDescargar" onclick="descargarHistorico()" style="display:none">
-                    ⬇ Descargar histórico
-                </button>
-                <button class="btn-limpiar" id="btnLimpiar" onclick="limpiarResultado()" style="display:none">
-                    🗑 Limpiar hoja Resultado
-                </button>
-
+                <button class="btn-descargar" id="btnDescargar" onclick="descargarHistorico()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-family:var(--mono);font-size:11px;cursor:pointer;">⬇ DESCARGAR HISTÓRICO</button>
+                <button class="btn-limpiar" id="btnLimpiar" onclick="limpiarResultado()" style="display:none;margin-top:8px;width:100%;padding:10px;background:transparent;border:1px solid var(--red);border-radius:8px;color:var(--red);font-family:var(--mono);font-size:11px;cursor:pointer;">🗑 LIMPIAR HOJA RESULTADO</button>
             </div>
         </div>
 
-        <!-- Card: Log de ejecución (hidden) -->
         <div class="card log-card" id="logCard">
             <div class="card-header">
-                <div id="logDot"></div>
+                <div class="dot" id="logDot" style="background: var(--yellow)"></div>
                 <span id="logTitle">Log de ejecución</span>
             </div>
             <div class="log-body" id="logBody"></div>
         </div>
 
-        <!-- Card: Resultado (hidden) -->
         <div class="card log-card" id="statsCard">
             <div class="card-header">
-                <div class="card-header-icon" style="background:var(--zb-success)"></div>
+                <div class="dot" style="background: var(--green)"></div>
                 <span>Resultado</span>
             </div>
             <div class="card-body">
                 <div class="stats-grid" id="statsGrid"></div>
-                <a class="btn-download" id="btnDownload" href="#" download>⬇ Descargar XLSX Aduana</a>
+                <a class="btn-download" id="btnDownload" href="#" download style="display:none;margin-top:12px;padding:10px;background:transparent;border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--mono);font-size:11px;text-align:center;text-decoration:none;">⬇ Descargar XLSX Aduana</a>
             </div>
         </div>
 
-        <div class="page-footer" id="footerPais">ZENDERBOX — MÓDULO CONSOLIDADOS v2 · MULTIAGENCIA — 2026</div>
-
-    </div><!-- /wrapper -->
+        <div class="footer" id="footerPais">ZENDERBOX — MÓDULO CONSOLIDADOS v2 · MULTIAGENCIA — 2026</div>
+    </div>
 
     <script>
     const BASE = 'https://hub.zenderbox.com/webhook';
@@ -956,11 +997,11 @@
     function setLoading(on) {
         document.getElementById('btnProcesar').disabled = on;
         document.getElementById('spinner').style.display = on ? 'block' : 'none';
-        document.getElementById('btnText').textContent = on ? 'PROCESANDO...' : 'Procesar archivo';
+        document.getElementById('btnText').textContent = on ? 'PROCESANDO...' : 'PROCESAR ARCHIVO';
     }
 
     function setLogStatus(ok) {
-        document.getElementById('logDot').style.background = ok ? 'var(--zb-success)' : 'var(--zb-error)';
+        document.getElementById('logDot').style.background = ok ? 'var(--green)' : 'var(--red)';
         document.getElementById('logTitle').textContent = ok ? 'Ejecución completada' : 'Error en ejecución';
     }
 
@@ -1135,3 +1176,4 @@
     <script src="../sidebar.js"></script>
 </body>
 </html>
+
