@@ -148,50 +148,6 @@
         gap: 10px;
     }
 
-    /* Collapsible card */
-    .card-collapsible .card-header {
-        cursor: pointer;
-        user-select: none;
-        border-bottom: none;
-        transition: background .12s;
-    }
-    .card-collapsible .card-header:hover { background: var(--zb-ink-50); }
-    .card-collapsible.open .card-header  { border-bottom: var(--zb-border); }
-
-    .card-chevron {
-        margin-left: auto;
-        font-size: 11px;
-        color: var(--zb-ink-300);
-        transition: transform .2s;
-    }
-    .card-collapsible.open .card-chevron { transform: rotate(180deg); }
-
-    .card-collapsible .card-body {
-        display: none;
-    }
-    .card-collapsible.open .card-body {
-        display: block;
-        animation: fadeIn .15s ease;
-    }
-
-    /* Webhook link-to-flow */
-    .wh-flow-link {
-        flex-shrink: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px; height: 24px;
-        border-radius: 6px;
-        color: var(--zb-ink-300);
-        text-decoration: none;
-        font-size: 13px;
-        transition: background .12s, color .12s;
-    }
-    .wh-flow-link:hover {
-        background: rgba(2,158,203,0.10);
-        color: var(--zb-cyan);
-    }
-
     .card-header-icon {
         width: 6px; height: 6px;
         border-radius: 50%;
@@ -675,18 +631,16 @@
         </div>
 
         <!-- Card: Endpoints -->
-        <div class="card card-collapsible" id="endpointCard">
-            <div class="card-header" onclick="toggleEndpoints()">
+        <div class="card">
+            <div class="card-header">
                 <div class="card-header-icon"></div>
                 <span>Endpoints</span>
-                <span class="card-chevron">▾</span>
             </div>
             <div class="card-body">
 
                 <div class="webhook-row">
                     <span class="method-badge post">POST</span>
                     <input class="webhook-url" id="webhookUrl" value="https://hub.zenderbox.com/webhook/cr-consolidados"/>
-                    <a class="wh-flow-link" id="flowLinkProcesar" href="https://hub.zenderbox.com/n8n/workflow/DPUQ5bUPoX6BJX3n" target="_blank" title="Ver flujo n8n">⧉</a>
                 </div>
                 <p class="webhook-hint">Endpoint procesar archivo</p>
 
@@ -694,7 +648,6 @@
                     <div class="webhook-row">
                         <span class="method-badge get">GET</span>
                         <input class="webhook-url" id="webhookConsulta" value="https://hub.zenderbox.com/webhook/cr-consultar-agencia"/>
-                        <a class="wh-flow-link" id="flowLinkConsulta" href="https://hub.zenderbox.com/n8n/workflow/DPUQ5bUPoX6BJX3n" target="_blank" title="Ver flujo n8n">⧉</a>
                     </div>
                     <p class="webhook-hint">Endpoint consultar agencia</p>
                 </div>
@@ -703,7 +656,6 @@
                     <div class="webhook-row">
                         <span class="method-badge get-green">GET</span>
                         <input class="webhook-url" id="webhookDescarga" value=""/>
-                        <a class="wh-flow-link" href="https://hub.zenderbox.com/n8n/workflow/dRuYGl5SmNSsl9KR" target="_blank" title="Ver flujo n8n">⧉</a>
                     </div>
                     <p class="webhook-hint">Endpoint descargar histórico</p>
                 </div>
@@ -712,7 +664,6 @@
                     <div class="webhook-row">
                         <span class="method-badge get-red">GET</span>
                         <input class="webhook-url" id="webhookLimpiar" value=""/>
-                        <a class="wh-flow-link" href="https://hub.zenderbox.com/n8n/workflow/dRuYGl5SmNSsl9KR" target="_blank" title="Ver flujo n8n">⧉</a>
                     </div>
                     <p class="webhook-hint">Endpoint limpiar hoja Resultado</p>
                 </div>
@@ -804,13 +755,6 @@
     </div><!-- /wrapper -->
 
     <script>
-    const N8N_BASE = 'https://hub.zenderbox.com/n8n/workflow';
-    const FLOW_ID = { CR: 'DPUQ5bUPoX6BJX3n', COL: 'dRuYGl5SmNSsl9KR' };
-
-    function toggleEndpoints() {
-        document.getElementById('endpointCard').classList.toggle('open');
-    }
-
     const BASE = 'https://hub.zenderbox.com/webhook';
 
     // Config por país
@@ -858,11 +802,6 @@
         // Actualizar webhooks mostrados
         document.getElementById('webhookUrl').value = cfg.webhooks.procesar;
         document.getElementById('webhookConsulta').value = cfg.webhooks.consulta;
-
-        // Actualizar links a flujos n8n
-        const flowHref = N8N_BASE + '/' + FLOW_ID[paisId];
-        document.getElementById('flowLinkProcesar').href = flowHref;
-        document.getElementById('flowLinkConsulta').href = flowHref;
         document.getElementById('webhookDescarga').value = cfg.webhooks.descarga || '— no disponible para esta agencia —';
         document.getElementById('webhookLimpiar').value = cfg.webhooks.limpiar || '— no disponible para esta agencia —';
 
