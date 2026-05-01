@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderBox · Growth</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #040d18;
+        --surface: #081F3A;
+        --surface2: #0d2748;
+        --border: #0f3058;
+        --border2: #1a4575;
+        --accent: #CCD32A;
+        --accent-dim: rgba(204, 211, 42, 0.12);
+        --blue: #009CC9;
+        --blue-dim: rgba(0, 156, 201, 0.12);
+        --green: #22c55e;
+        --green-dim: rgba(34, 197, 94, 0.1);
+        --red: #ef4444;
+        --red-dim: rgba(239, 68, 68, 0.1);
+        --yellow: #f59e0b;
+        --yellow-dim: rgba(245, 158, 11, 0.1);
+        --purple: #a855f7;
+        --purple-dim: rgba(168, 85, 247, 0.12);
+        --text: #e8f0f8;
+        --text-muted: #5a7a9a;
+        --text-mid: #8aaac8;
+        --mono: 'IBM Plex Mono', monospace;
+        --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; }
+
+    .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    .topbar {
+        padding: 16px 32px;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; gap: 16px;
+        background: var(--surface);
+        position: sticky; top: 0; z-index: 5;
+    }
+
+    .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .topbar-sub   { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+    .topbar-live  { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--yellow); }
+    .live-dot     { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); animation: pulse 2s ease-in-out infinite; }
+
+    @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
+    @keyframes spin  { to { transform: rotate(360deg) } }
+
+    .btn-refresh {
+        background: transparent; border: 1px solid var(--border2); border-radius: 6px;
+        padding: 6px 12px; font-family: var(--mono); font-size: 10px; color: var(--text-muted); cursor: pointer; transition: all .15s;
+    }
+    .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+    .content { padding: 28px 32px; flex: 1; }
+
+    .banner-info {
+        background: var(--yellow-dim); border: 1px solid rgba(245,158,11,0.25);
+        border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;
+        font-family: var(--mono); font-size: 11px; color: var(--yellow);
+        display: flex; align-items: center; gap: 12px;
+    }
+    .banner-info .icon { font-size: 16px; }
+
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .tab {
+        background: transparent; border: none; border-bottom: 2px solid transparent;
+        padding: 12px 18px; font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+        text-transform: uppercase; color: var(--text-muted); cursor: pointer; transition: all .15s;
+    }
+    .tab:hover { color: var(--text-mid); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; }
+    .stat-label { font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -1px; }
+    .stat-value.green  { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.blue   { color: var(--blue); }
+    .stat-value.red    { color: var(--red); }
+    .stat-value.purple { color: var(--purple); }
+    .stat-sub { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .panel-title { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+    .panel-body { padding: 18px 20px; }
+
+    .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .table thead { background: var(--surface2); }
+    .table th { padding: 10px 16px; text-align: left; font-family: var(--mono); font-size: 9px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; border-bottom: 1px solid var(--border); }
+    .table td { padding: 11px 16px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: middle; }
+    .table tbody tr:last-child td { border-bottom: none; }
+    .table tbody tr:hover { background: var(--surface2); }
+    .td-mono { font-family: var(--mono); font-size: 11px; }
+    .td-num { font-family: var(--mono); font-weight: 600; text-align: right; color: var(--text); }
+
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+    .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
+    .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(245,158,11,0.2); }
+    .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(239,68,68,0.2); }
+    .badge.blue   { background: var(--blue-dim);   color: var(--blue);   border: 1px solid rgba(0,156,201,0.2); }
+    .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
+    .badge.gray   { background: rgba(90,122,154,0.12); color: var(--text-muted); border: 1px solid rgba(90,122,154,0.2); }
+
+    .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .3s; }
+    .progress-bar-fill.green  { background: var(--green); }
+    .progress-bar-fill.yellow { background: var(--yellow); }
+    .progress-bar-fill.red    { background: var(--red); }
+
+    .placeholder-card {
+        background: var(--surface); border: 1px dashed var(--border2); border-radius: 8px;
+        padding: 32px 24px; text-align: center; color: var(--text-muted);
+    }
+    .placeholder-card .ph-icon { font-size: 32px; margin-bottom: 8px; opacity: .5; }
+    .placeholder-card .ph-text { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; }
+    .placeholder-card .ph-sub  { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 6px; opacity: .7; }
+
+    .meta-footer {
+        margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border);
+        display: flex; justify-content: space-between; align-items: center;
+        font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+    }
+    </style>
+</head>
+<body>
+
+<div id="wms-sidebar"></div>
+
+<div class="main">
+    <div class="topbar">
+        <div style="font-size:20px">📈</div>
+        <div>
+            <div class="topbar-title">Growth · Marketing &amp; Atribución</div>
+            <div class="topbar-sub">Performance de campañas, calidad de leads y atribución por zona</div>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-live"><div class="live-dot"></div>v1 · STATIC</div>
+            <button class="btn-refresh" onclick="alert('Backend live en construcción — próximo deploy')">↻ Actualizar</button>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <div class="banner-info">
+            <span class="icon">⚠</span>
+            <span><strong style="color:var(--text)">v1 — datos estáticos del análisis del 28-29 abr 2026 GMT-5.</strong>
+            Backend live (PG + Meta API) se conecta en v2. Datos vienen de <code style="color:var(--accent)">ia_clasificacion</code> + <code style="color:var(--accent)">meta_atribuciones</code> + Meta Ads Manager nativo.</span>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-panel="overview"  onclick="setTab('overview')">Overview</button>
+            <button class="tab"        data-panel="campanas"  onclick="setTab('campanas')">Campañas Meta</button>
+            <button class="tab"        data-panel="calidad"   onclick="setTab('calidad')">Calidad IA</button>
+            <button class="tab"        data-panel="atribucion" onclick="setTab('atribucion')">Atribución técnica</button>
+        </div>
+
+        <!-- ============= TAB: OVERVIEW ============= -->
+        <div class="tab-panel active" id="panel-overview">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Conversaciones 28-29 abr</div>
+                    <div class="stat-value">70</div>
+                    <div class="stat-sub">14 + 56 (proxy de leads CTM)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Spend Provincial 7d</div>
+                    <div class="stat-value yellow">$84</div>
+                    <div class="stat-sub">de $350 budget · 24% utilizado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Cost / conv (FB)</div>
+                    <div class="stat-value green">$1.77</div>
+                    <div class="stat-sub">Provincial · meta &lt; $2</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">% interés real (IA)</div>
+                    <div class="stat-value blue">60%</div>
+                    <div class="stat-sub">de leads nuevos del día</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">📊 Distribución calidad IA · 28 abr</div>
+                        <div class="badge gray">14 procesados</div>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table">
+                            <thead>
+                                <tr><th>Categoría</th><th style="text-align:right">N</th><th style="text-align:right">%</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><span class="badge green">interés real</span></td><td class="td-num">6</td><td class="td-num">43%</td><td><div class="progress-bar"><div class="progress-bar-fill green" style="width:43%"></div></div></td></tr>
+                                <tr><td><span class="badge blue">ya cliente</span></td><td class="td-num">4</td><td class="td-num">29%</td><td><div class="progress-bar"><div class="progress-bar-fill" style="width:29%;background:var(--blue)"></div></div></td></tr>
+                                <tr><td><span class="badge yellow">no califica</span></td><td class="td-num">2</td><td class="td-num">14%</td><td><div class="progress-bar"><div class="progress-bar-fill yellow" style="width:14%"></div></div></td></tr>
+                                <tr><td><span class="badge red">solo bono</span></td><td class="td-num">1</td><td class="td-num">7%</td><td><div class="progress-bar"><div class="progress-bar-fill red" style="width:7%"></div></div></td></tr>
+                                <tr><td><span class="badge gray">spam / error</span></td><td class="td-num">1</td><td class="td-num">7%</td><td><div class="progress-bar"><div class="progress-bar-fill" style="width:7%"></div></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">🎯 Performance campañas · últimos 7d (FB)</div>
+                        <div class="badge gray">Meta Ads Manager</div>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table">
+                            <thead>
+                                <tr><th>Campaña</th><th style="text-align:right">Conv.</th><th style="text-align:right">$/conv</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Provincial Abril</td><td class="td-num">42</td><td class="td-num">$1.77</td><td><span class="badge green">activa</span></td></tr>
+                                <tr><td>Consolidar V2</td><td class="td-num">12</td><td class="td-num">$0.96</td><td><span class="badge green">activa</span></td></tr>
+                                <tr><td>APP V2</td><td class="td-num">2</td><td class="td-num">$2.52</td><td><span class="badge green">activa</span></td></tr>
+                                <tr><td>Rastreo V2</td><td class="td-num">1</td><td class="td-num">$6.40</td><td><span class="badge yellow">activa</span></td></tr>
+                                <tr><td>Doble Puntería</td><td class="td-num">—</td><td class="td-num">—</td><td><span class="badge gray">pausada</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= TAB: CAMPAÑAS ============= -->
+        <div class="tab-panel" id="panel-campanas">
+            <div class="placeholder-card">
+                <div class="ph-icon">🎯</div>
+                <div class="ph-text">PERFORMANCE DETALLADO POR ADSET × AD</div>
+                <div class="ph-sub">v2: tabla live cruzando Meta API + meta_atribuciones (PG) · Spend / CTR / CPL real / Calidad IA por ad</div>
+            </div>
+        </div>
+
+        <!-- ============= TAB: CALIDAD IA ============= -->
+        <div class="tab-panel" id="panel-calidad">
+            <div class="grid-2">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">💬 Top welcomes 28-29 abr · CR</div>
+                        <div class="badge gray">de meta_atribuciones</div>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table">
+                            <thead><tr><th>Welcome</th><th style="text-align:right">N</th><th>Match</th></tr></thead>
+                            <tbody>
+                                <tr><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">¡Hola! Quiero más información.</td><td class="td-num">23</td><td><span class="badge red">none</span></td></tr>
+                                <tr><td>¡Hola! Quiero mi primer envio gratis!!!</td><td class="td-num">9</td><td><span class="badge green">exact</span></td></tr>
+                                <tr><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">¡Hola! Me gustaría conseguir más información sobre esto.</td><td class="td-num">2</td><td><span class="badge red">none</span></td></tr>
+                                <tr><td>Hola</td><td class="td-num">1</td><td><span class="badge red">none</span></td></tr>
+                                <tr><td>Buenos días</td><td class="td-num">1</td><td><span class="badge red">none</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">📍 Atribución por zona Provincial</div>
+                        <div class="badge yellow">0 atribuidos</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="placeholder-card" style="padding:24px 16px">
+                            <div class="ph-icon">⚠</div>
+                            <div class="ph-text">CERO atribución a Provincial 28-29 abr</div>
+                            <div class="ph-sub">Welcomes diseñados (8 patterns geo) NO se están usando.<br>FB reporta 42 conv pero ninguna mapeó al master parser v2.1.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============= TAB: ATRIBUCIÓN TÉCNICA ============= -->
+        <div class="tab-panel" id="panel-atribucion">
+            <div class="placeholder-card">
+                <div class="ph-icon">🔧</div>
+                <div class="ph-text">ATRIBUCIÓN TÉCNICA · MATCH RATE / HUÉRFANOS / FLUJOS</div>
+                <div class="ph-sub">v2: live de meta_atribuciones · distribución exact/normalized/keyword/promo_fallback/none · errores n8n últimas 24h · cursor lag</div>
+            </div>
+        </div>
+
+        <div class="meta-footer">
+            <div>📈 Growth · v1 estática · construido 2026-05-01</div>
+            <div>Datos: <code style="color:var(--text-mid)">ia_clasificacion</code> · <code style="color:var(--text-mid)">meta_atribuciones</code> · Meta Ads Manager</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setTab(panel) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+}
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>
