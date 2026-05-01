@@ -1,7 +1,17 @@
 /**
- * ZenderBox WMS — Sidebar compartido multiagencia
- * Importar en cada módulo: <script src="../sidebar.js"></script>
- * El sidebar se inyecta automáticamente en #wms-sidebar
+ * ZenderBox WMS — Sidebar v2 (variante B + dropdown agencia)
+ *
+ * Drop-in replacement de hub/sidebar.js. Conserva data + API:
+ *   - WMS_NAV, WMS_AGENCIAS
+ *   - renderSidebar, toggleNavSection, getAgencia, setAgencia
+ *   - sessionStorage: wms_agencia, wms_nav_<section>
+ *   - evento custom: wms:agencia
+ *
+ * Diseño:
+ *   - Indicator bar 3px cyan a la izquierda en active item (NO gradient)
+ *   - Active bg: #F6F6F6 — texto navy #004B72 weight 700
+ *   - Agency switcher: dropdown (escala a N países)
+ *   - White-first, Plus Jakarta Sans, radius 8px
  */
 
 const WMS_BASE = '/n8n/wms';
@@ -12,12 +22,11 @@ const WMS_NAV = [
     collapsible: true,
     id: 'operaciones-section',
     items: [
-      { icon: '🔍', label: 'Buscar Guía',      href: 'operaciones/buscar.html',       id: 'buscar' },
-      { icon: '📦', label: 'Consolidados',      href: 'operaciones/consolidados.html', id: 'consolidados' },
-      { icon: '📥', label: 'Cargar Manifiesto', href: 'operaciones/manifiesto.html',   id: 'manifiesto' },
-      { icon: '🚚', label: 'Despachos',         href: 'operaciones/despachos.html',    id: 'despachos' },
-
-      { icon: '🧾', label: 'Pre-liquidador',    href: 'operaciones/preliquidador.html', id: 'preliquidador' },
+      { icon: 'search',  label: 'Buscar Guía',      href: 'operaciones/buscar.html',        id: 'buscar' },
+      { icon: 'box',     label: 'Consolidados',     href: 'operaciones/consolidados.html',  id: 'consolidados' },
+      { icon: 'inbox',   label: 'Cargar Manifiesto',href: 'operaciones/manifiesto.html',    id: 'manifiesto' },
+      { icon: 'truck',   label: 'Despachos',        href: 'operaciones/despachos.html',     id: 'despachos' },
+      { icon: 'receipt', label: 'Pre-liquidador',   href: 'operaciones/preliquidador.html', id: 'preliquidador' },
     ]
   },
   {
@@ -25,9 +34,9 @@ const WMS_NAV = [
     collapsible: true,
     id: 'comunicaciones-section',
     items: [
-      { icon: '💬', label: 'WhatsApp',  href: 'comunicaciones/whatsapp.html',     id: 'whatsapp' },
-      { icon: '🗨️', label: 'WA Hub',    href: 'comunicaciones/whatsapp-hub.html', id: 'whatsapp-hub' },
-      { icon: '📞', label: 'Llamadas',  href: 'comunicaciones/llamadas.html',  id: 'llamadas' },
+      { icon: 'chat',        label: 'WhatsApp', href: 'comunicaciones/whatsapp.html',     id: 'whatsapp' },
+      { icon: 'chat-bubble', label: 'WA Hub',   href: 'comunicaciones/whatsapp-hub.html', id: 'whatsapp-hub' },
+      { icon: 'phone',       label: 'Llamadas', href: 'comunicaciones/llamadas.html',     id: 'llamadas' },
     ]
   },
   {
@@ -35,8 +44,16 @@ const WMS_NAV = [
     collapsible: true,
     id: 'ia-section',
     items: [
-      { icon: '📧', label: 'Correos',           href: 'ia/correos.html',   id: 'correos' },
-      { icon: '🎁', label: 'Primer Paquete',    href: 'ia/primer.html',    id: 'primer-paquete',  coming: true },
+      { icon: 'mail', label: 'Correos',        href: 'ia/correos.html', id: 'correos' },
+      { icon: 'gift', label: 'Primer Paquete', href: 'ia/primer.html',  id: 'primer-paquete', coming: true },
+    ]
+  },
+  {
+    section: 'MARKETING',
+    collapsible: true,
+    id: 'marketing-section',
+    items: [
+      { icon: 'bar-chart', label: 'Lifecycle', href: 'marketing/lifecycle.html', id: 'lifecycle' },
     ]
   },
   {
@@ -44,7 +61,7 @@ const WMS_NAV = [
     collapsible: true,
     id: 'cobros-section',
     items: [
-      { icon: '💰', label: 'QuickBooks',        href: 'contabilidad/quickbooks.html', id: 'quickbooks' },
+      { icon: 'dollar', label: 'QuickBooks', href: 'contabilidad/quickbooks.html', id: 'quickbooks' },
     ]
   },
   {
@@ -52,69 +69,121 @@ const WMS_NAV = [
     collapsible: true,
     id: 'casillero-section',
     items: [
-      { icon: '✈️', label: 'Despachos USA',    href: 'casillero/despachos-usa.html', id: 'despachos-usa' },
+      { icon: 'plane', label: 'Despachos USA', href: 'casillero/despachos-usa.html', id: 'despachos-usa' },
     ]
   },
   {
     section: 'SISTEMA',
     items: [
-      { icon: '⚙️', label: 'Settings',          href: 'settings.html',     id: 'settings',        coming: true },
+      { icon: 'gear', label: 'Settings', href: 'settings.html', id: 'settings', coming: true },
     ]
   }
 ];
 
-// Detectar página activa y profundidad de carpeta
+const WMS_AGENCIAS = [
+  { id: 'CR',  flag: '🇨🇷', name: 'Costa Rica' },
+  { id: 'COL', flag: '🇨🇴', name: 'Colombia' },
+  // futuras: PAN, MX
+];
+
+// Logo SVG inline
+const ZB_LOGO_SVG = `<svg viewBox="0 0 284 68" xmlns="http://www.w3.org/2000/svg" style="height:28px;width:auto;display:block">
+  <defs>
+    <linearGradient id="zb-g1" x1="55.87" y1="20.52" x2="20.80" y2="43.99" gradientUnits="userSpaceOnUse"><stop stop-color="#CCD32A"/><stop offset="0.845" stop-color="#029ECB"/></linearGradient>
+    <linearGradient id="zb-g2" x1="55.86" y1="42.87" x2="20.80" y2="66.34" gradientUnits="userSpaceOnUse"><stop stop-color="#CCD32A"/><stop offset="0.845" stop-color="#029ECB"/></linearGradient>
+  </defs>
+  <g>
+    <path fill="#029ECB" d="M84.23 50.24v-4.88l13.14-19.99H84.23v-5.45h20.6v4.84L91.69 44.8h13.14v5.45H84.23zM117.36 50.45c-2.45 0-4.39-.32-5.85-.96-1.46-.64-2.51-1.78-3.15-3.42-.65-1.64-.97-3.91-.97-6.8 0-2.9.3-5.29.91-6.92.6-1.64 1.62-2.79 3.05-3.45 1.43-.66 3.36-.98 5.81-.98 2.2 0 3.96.22 5.27.66 1.32.44 2.27 1.2 2.86 2.29.59 1.09.89 2.64.89 4.63 0 1.47-.3 2.64-.89 3.5-.59.86-1.42 1.47-2.49 1.84-1.07.37-2.34.55-3.79.55h-5.56c.05 1.12.22 2.02.51 2.69.29.67.83 1.14 1.61 1.43.78.28 1.91.43 3.4.43h6.47v3.56c-1.07.22-2.25.43-3.53.63-1.28.2-2.79.31-4.55.31zm-4-12.66h5.03c.82 0 1.43-.16 1.81-.49.38-.33.58-.92.58-1.77 0-.79-.13-1.43-.37-1.9-.25-.48-.64-.82-1.15-1.03-.52-.2-1.22-.3-2.1-.3-.94 0-1.68.16-2.23.47-.55.31-.95.87-1.2 1.66-.25.79-.37 1.91-.37 3.36zM129.55 50.24V28.24h5.03l1.07 2.25c.82-.68 1.86-1.29 3.11-1.82 1.25-.53 2.54-.8 3.86-.8 1.81 0 3.21.36 4.2 1.07.99.71 1.69 1.66 2.08 2.85.4 1.19.6 2.51.6 3.95v14.5h-6.1V36.52c0-.71-.13-1.3-.39-1.76-.26-.46-.63-.82-1.09-1.07-.47-.25-1.03-.37-1.69-.37-.58 0-1.13.07-1.67.2-.54.14-1.05.33-1.53.58-.48.25-.94.53-1.38.86v15.28h-6.1zM160.7 50.49c-1.73 0-3.19-.36-4.37-1.09-1.18-.72-2.07-1.9-2.66-3.52-.59-1.62-.88-3.77-.88-6.41 0-2.65.25-4.94.76-6.64.51-1.69 1.37-2.93 2.58-3.73 1.21-.79 2.87-1.19 4.98-1.19 1.02 0 2.02.1 3.01.31.99.2 1.87.44 2.64.71V18.97h6.14v31.27h-5.15l-.99-2.09c-.47.44-1.04.83-1.71 1.19-.67.36-1.38.64-2.12.84-.74.21-1.48.31-2.22.31zm2.14-4.88c.82 0 1.57-.14 2.25-.41.67-.27 1.23-.54 1.67-.82V33.32c-.55-.19-1.13-.38-1.73-.57-.61-.19-1.25-.29-1.94-.29-1.02 0-1.83.18-2.45.53-.62.36-1.06 1.02-1.34 2-.28.97-.41 2.37-.41 4.2 0 1.69.13 3.01.39 3.95.26.94.68 1.59 1.26 1.95.58.36 1.35.53 2.31.53zM186.16 50.45c-2.45 0-4.39-.32-5.85-.96-1.46-.64-2.51-1.78-3.15-3.42-.64-1.64-.97-3.91-.97-6.8 0-2.9.3-5.29.91-6.92.61-1.64 1.62-2.79 3.05-3.45 1.43-.66 3.37-.98 5.81-.98 2.2 0 3.96.22 5.28.66 1.32.44 2.27 1.2 2.87 2.29.59 1.09.88 2.64.88 4.63 0 1.47-.29 2.64-.88 3.5-.59.86-1.42 1.47-2.49 1.84-1.07.37-2.33.55-3.79.55h-5.56c.05 1.12.23 2.02.52 2.69.29.67.82 1.14 1.61 1.43.78.28 1.92.43 3.4.43h6.47v3.56c-1.07.22-2.24.43-3.52.63-1.28.2-2.8.31-4.55.31zm-4-12.66h5.03c.82 0 1.43-.16 1.81-.49.38-.33.58-.92.58-1.77 0-.79-.13-1.43-.37-1.9-.25-.48-.64-.82-1.15-1.03-.52-.2-1.22-.3-2.1-.3-.93 0-1.68.16-2.22.47-.55.31-.95.87-1.2 1.66-.25.79-.37 1.91-.37 3.36zM198.36 50.24V28.24h4.7l1.4 3.36c.79-1.01 1.7-1.87 2.7-2.58 1-.71 2.19-1.07 3.56-1.07.3 0 .61.01.93.04.31.03.61.08.88.16v6.23c-.41-.05-.85-.1-1.3-.14-.46-.04-.88-.06-1.3-.06-.8 0-1.52.09-2.16.27-.65.18-1.24.44-1.78.78-.54.34-1.05.79-1.54 1.33v13.69h-6.1z"/>
+    <path fill="#CCD32A" d="M215.46 50.24V19.92h11.99c3.02 0 5.23.69 6.62 2.07 1.39 1.38 2.08 3.34 2.08 5.88 0 1.2-.17 2.26-.52 3.18-.34.92-.83 1.67-1.46 2.25-.63.59-1.39.99-2.27 1.21.66.16 1.3.42 1.92.78.62.36 1.18.83 1.69 1.43.51.6.91 1.33 1.2 2.19.29.86.43 1.85.43 2.97 0 2.05-.35 3.69-1.05 4.92-.7 1.23-1.73 2.11-3.09 2.65-1.36.53-3.03.8-5.01.8h-12.53zm6.1-17.82h5.93c.88 0 1.57-.32 2.08-.96.51-.64.76-1.49.76-2.53.03-1.34-.25-2.27-.83-2.79-.58-.52-1.28-.78-2.1-.78h-5.85v7.05zm0 12.37h6.26c.71 0 1.33-.13 1.86-.41.52-.27.92-.7 1.21-1.27.29-.57.43-1.34.43-2.29 0-.79-.15-1.46-.46-2.01-.3-.55-.71-.97-1.23-1.27-.52-.3-1.13-.45-1.81-.45h-6.26v7.7zM249.86 50.45c-1.81 0-3.37-.19-4.66-.55-1.29-.37-2.34-.99-3.15-1.87-.81-.87-1.4-2.03-1.77-3.48-.37-1.45-.56-3.24-.56-5.37 0-2.24.19-4.09.56-5.55.37-1.46.96-2.61 1.77-3.45.81-.83 1.87-1.42 3.17-1.76 1.3-.34 2.85-.51 4.63-.51 1.78 0 3.41.18 4.7.53 1.29.36 2.34.96 3.15 1.79.81.83 1.4 1.98 1.77 3.44.37 1.46.55 3.3.55 5.51 0 2.21-.18 4.01-.54 5.47-.36 1.46-.93 2.61-1.73 3.46-.8.85-1.85 1.45-3.15 1.8-1.3.36-2.89.54-4.76.54zm0-4.84c.74 0 1.37-.07 1.88-.21.51-.13.92-.41 1.23-.84.32-.42.56-1.07.72-1.95.16-.87.25-2.02.25-3.44 0-1.42-.08-2.6-.25-3.46-.17-.86-.4-1.5-.72-1.93-.32-.42-.73-.7-1.23-.84-.51-.13-1.13-.21-1.88-.21-.74 0-1.32.07-1.83.21-.51.13-.93.41-1.26.84-.33.42-.57 1.06-.72 1.93-.15.86-.23 2.02-.23 3.46 0 1.45.08 2.57.23 3.45.15.88.39 1.53.72 1.95.33.42.75.7 1.26.84.51.13 1.12.21 1.83.21zM276.89 50.24L261.48 28.24h6.14l15.45 22h-6.18zm-15.41 0l8.53-12.91 2.22 5.69-4.57 7.21h-6.18zm13.02-9 -2.6-5.08 4.99-7.92h6.18l-8.57 12.99z"/>
+    <path fill="url(#zb-g1)" d="M67.79.51H22.84c-12.41 0-22.47 10-22.47 22.34h44.67v22.62L67.79 22.85V.51z"/>
+    <path fill="url(#zb-g2)" d="M23.12 22.85L.37 45.47v22.34h44.94c12.41 0 22.47-10 22.47-22.34H23.12V22.85z"/>
+    <g opacity="0.15"><path fill="#000" d="M67.79 22.85L45.05 45.47V22.85h22.74zM23.12 45.47V22.85L.37 45.47h22.75z"/></g>
+  </g>
+</svg>`;
+
+// Iconos SVG (line, viewBox 24x24, stroke 1.8)
+const ICONS = {
+  search:        '<circle cx="11" cy="11" r="6"/><path d="M20 20l-3.5-3.5"/>',
+  box:           '<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>',
+  inbox:         '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>',
+  truck:         '<rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h5l3 3v5h-8"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/>',
+  receipt:       '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z"/><path d="M9 7h6M9 11h6M9 15h4"/>',
+  chat:          '<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"/>',
+  'chat-bubble': '<path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>',
+  phone:         '<path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>',
+  mail:          '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  gift:          '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9"/><path d="M12 8v13"/><path d="M12 8s-2-4-5-4-3 3-1 4h6"/><path d="M12 8s2-4 5-4 3 3 1 4h-6"/>',
+  'bar-chart':   '<rect x="4" y="14" width="3" height="7"/><rect x="10.5" y="9" width="3" height="12"/><rect x="17" y="4" width="3" height="17"/>',
+  dollar:        '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a2 2 0 010 4h-3a2 2 0 000 4H15"/>',
+  plane:         '<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>',
+  gear:          '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
+  chevron:       '<polyline points="6 9 12 15 18 9"/>',
+  check:         '<polyline points="20 6 9 17 4 12"/>'
+};
+
+function iconSvg(name) {
+  const path = ICONS[name] || '';
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+}
+
 function getActivePage() {
   const path = window.location.pathname;
   const file = path.split('/').pop().replace('.html', '');
   return file || 'index';
 }
 
-// Detectar si estamos en subcarpeta (ej: /wms/ia/)
 function getBaseUrl() {
   const path = window.location.pathname;
-  // Si path contiene /wms/ia/ u otra subcarpeta dentro de wms
   const wmsIdx = path.indexOf('/wms/');
   if (wmsIdx < 0) return '';
-  const afterWms = path.substring(wmsIdx + 5); // después de /wms/
-  const depth = afterWms.split('/').length - 1; // niveles de subcarpeta
+  const afterWms = path.substring(wmsIdx + 5);
+  const depth = afterWms.split('/').length - 1;
   return depth > 0 ? '../'.repeat(depth) : '';
 }
 
-// Agencias disponibles
-const WMS_AGENCIAS = [
-  { id: 'CR', label: '🇨🇷 Costa Rica',  color: '#009CC9' },
-  { id: 'COL', label: '🇨🇴 Colombia',   color: '#F5A623' },
-];
-
-// Estado global de agencia — persiste en sessionStorage
 function getAgencia() {
   return sessionStorage.getItem('wms_agencia') || 'CR';
 }
 function setAgencia(id) {
   sessionStorage.setItem('wms_agencia', id);
-  // Disparar evento para que cada módulo reaccione
   window.dispatchEvent(new CustomEvent('wms:agencia', { detail: { agencia: id } }));
   updateAgenciaUI(id);
 }
 
 function updateAgenciaUI(id) {
-  document.querySelectorAll('.agency-opt').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.id === id);
+  const ag = WMS_AGENCIAS.find(a => a.id === id);
+  if (!ag) return;
+  const flag = document.querySelector('[data-agency-flag]');
+  const name = document.querySelector('[data-agency-name]');
+  if (flag) flag.textContent = ag.flag;
+  if (name) name.textContent = ag.name;
+  document.querySelectorAll('[data-agency-id]').forEach(el => {
+    el.classList.toggle('on', el.dataset.agencyId === id);
   });
-  const lbl = WMS_AGENCIAS.find(a => a.id === id)?.label || id;
-  const el = document.getElementById('wms-agencia-label');
-  if (el) el.textContent = lbl;
 }
 
-// Render del sidebar
+function toggleAgencyDropdown(force) {
+  const trigger = document.querySelector('.zb-agency-trigger');
+  const menu    = document.querySelector('.zb-agency-menu');
+  if (!trigger || !menu) return;
+  const isOpen = menu.classList.contains('open');
+  const next   = typeof force === 'boolean' ? force : !isOpen;
+  menu.classList.toggle('open', next);
+  trigger.setAttribute('aria-expanded', next ? 'true' : 'false');
+}
+
 function renderSidebar() {
   const activePage = getActivePage();
   const agencia    = getAgencia();
+  const ag         = WMS_AGENCIAS.find(a => a.id === agencia) || WMS_AGENCIAS[0];
 
-  const agenciaBtns = WMS_AGENCIAS.map(a =>
-    `<button class="agency-opt${a.id === agencia ? ' active' : ''}" data-id="${a.id}" onclick="setAgencia('${a.id}')">${a.label}</button>`
-  ).join('');
+  const agencyOptions = WMS_AGENCIAS.map(a => `
+    <button type="button" class="zb-agency-opt${a.id === agencia ? ' on' : ''}"
+            data-agency-id="${a.id}" onclick="setAgencia('${a.id}'); toggleAgencyDropdown(false)">
+      <span class="zb-agency-flag">${a.flag}</span>
+      <span class="zb-agency-name">${a.name}</span>
+      <span class="zb-agency-check">${iconSvg('check')}</span>
+    </button>`).join('');
 
   const navHtml = WMS_NAV.map(group => {
     const isCollapsible = group.collapsible;
@@ -123,57 +192,81 @@ function renderSidebar() {
 
     const itemsHtml = group.items.map(item => {
       const isActive = activePage === item.id || activePage.includes(item.id);
-      return `<a class="nav-item${isActive ? ' active' : ''}${item.coming ? ' nav-coming-item' : ''}"
+      return `<a class="zb-nav-item${isActive ? ' on' : ''}${item.coming ? ' coming' : ''}"
         href="${item.coming ? '#' : (getBaseUrl() + item.href)}"
-        onclick="${item.coming ? 'return false' : ''}"
-        style="${item.coming ? 'cursor:default;pointer-events:none;opacity:0.45' : ''}">
-        <span class="nav-icon">${item.icon}</span>
-        <span class="nav-label">${item.label}</span>
-        ${item.coming ? '<span class="nav-coming">pronto</span>' : ''}
+        ${item.coming ? 'onclick="return false"' : ''}
+        ${isActive ? 'aria-current="page"' : ''}>
+        <span class="zb-nav-icon">${iconSvg(item.icon)}</span>
+        <span class="zb-nav-label">${item.label}</span>
+        ${item.coming ? '<span class="zb-nav-tag">pronto</span>' : ''}
       </a>`;
     }).join('');
 
     if (isCollapsible) {
       return `
-        <div class="nav-section">
-          <div class="nav-section-label nav-collapsible" onclick="toggleNavSection('${sectionId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding-right:8px">
+        <div class="zb-nav-section">
+          <button type="button" class="zb-nav-section-h zb-collapsible"
+                  onclick="toggleNavSection('${sectionId}')"
+                  aria-expanded="${isOpen}">
             <span>${group.section}</span>
-            <span id="nav-arrow-${sectionId}" style="font-size:10px;transition:transform 0.2s;transform:rotate(${isOpen ? '90' : '0'}deg)">▶</span>
-          </div>
-          <div id="nav-items-${sectionId}" style="display:${isOpen ? 'block' : 'none'}">
+            <span id="nav-arrow-${sectionId}" class="zb-arrow" style="transform:rotate(${isOpen ? '90' : '0'}deg)">▶</span>
+          </button>
+          <div id="nav-items-${sectionId}" class="zb-nav-items" style="display:${isOpen ? 'block' : 'none'}">
             ${itemsHtml}
           </div>
         </div>`;
     }
-
     return `
-      <div class="nav-section">
-        <div class="nav-section-label">${group.section}</div>
-        ${itemsHtml}
+      <div class="zb-nav-section">
+        <div class="zb-nav-section-h">${group.section}</div>
+        <div class="zb-nav-items">${itemsHtml}</div>
       </div>`;
   }).join('');
 
   const html = `
-    <div class="sidebar-logo">
-      <div class="zb">ZENDERBOX</div>
-      <h2 style="font-size:15px;font-weight:600;color:var(--text)">WMS</h2>
-      <div class="country" style="font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:2px">
-        <span id="wms-agencia-label">${WMS_AGENCIAS.find(a => a.id === agencia)?.label || agencia}</span>
+    <div class="zb-sb-logo">${ZB_LOGO_SVG}</div>
+
+    <div class="zb-sb-product">
+      <div class="zb-sb-product-name">WMS</div>
+    </div>
+
+    <div class="zb-sb-agency-block">
+      <div class="zb-sb-agency-h">AGENCIA</div>
+      <div class="zb-agency">
+        <button type="button" class="zb-agency-trigger"
+                onclick="toggleAgencyDropdown()"
+                aria-haspopup="listbox" aria-expanded="false">
+          <span class="zb-agency-flag" data-agency-flag>${ag.flag}</span>
+          <span class="zb-agency-name" data-agency-name>${ag.name}</span>
+          <span class="zb-agency-chevron">${iconSvg('chevron')}</span>
+        </button>
+        <div class="zb-agency-menu" role="listbox">
+          ${agencyOptions}
+        </div>
       </div>
     </div>
-    <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">AGENCIA</div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        ${agenciaBtns}
-      </div>
-    </div>
-    ${navHtml}
-    <div class="sidebar-footer">
-      <div class="version">v2.0 · WMS Multiagencia</div>
+
+    <nav class="zb-sb-nav">${navHtml}</nav>
+
+    <div class="zb-sb-footer">
+      <div class="zb-sb-version">v2.0 · WMS Multiagencia</div>
     </div>`;
 
   const container = document.getElementById('wms-sidebar');
   if (container) container.innerHTML = html;
+
+  // Click fuera cierra el dropdown
+  document.addEventListener('click', handleOutsideClick);
+  document.addEventListener('keydown', handleEscape);
+}
+
+function handleOutsideClick(e) {
+  const agency = document.querySelector('.zb-agency');
+  if (!agency) return;
+  if (!agency.contains(e.target)) toggleAgencyDropdown(false);
+}
+function handleEscape(e) {
+  if (e.key === 'Escape') toggleAgencyDropdown(false);
 }
 
 function toggleNavSection(sectionId) {
@@ -182,21 +275,49 @@ function toggleNavSection(sectionId) {
   if (!items) return;
   const isOpen = items.style.display !== 'none';
   items.style.display = isOpen ? 'none' : 'block';
-  arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
   sessionStorage.setItem('wms_nav_' + sectionId, isOpen ? 'closed' : 'open');
 }
 
-// CSS del sidebar y agency buttons — hardcoded para funcionar en cualquier página
 function injectSidebarStyles() {
   if (document.getElementById('wms-sidebar-styles')) return;
+
+  // Plus Jakarta Sans desde Google Fonts
+  if (!document.querySelector('link[href*="Plus+Jakarta+Sans"]')) {
+    const pre1 = document.createElement('link');
+    pre1.rel = 'preconnect'; pre1.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(pre1);
+    const pre2 = document.createElement('link');
+    pre2.rel = 'preconnect'; pre2.href = 'https://fonts.gstatic.com'; pre2.crossOrigin = '';
+    document.head.appendChild(pre2);
+    const font = document.createElement('link');
+    font.rel = 'stylesheet';
+    font.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(font);
+  }
+
   const style = document.createElement('style');
   style.id = 'wms-sidebar-styles';
   style.textContent = `
     #wms-sidebar {
-      width: 220px;
+      --c-cyan:    var(--zb-cyan, #029ECB);
+      --c-navy:    var(--zb-navy, #004B72);
+      --c-paper:   var(--zb-paper, #FFFFFF);
+      --c-canvas:  var(--zb-bg-app, #F6F6F6);
+      --c-ink-700: var(--zb-ink-700, #333333);
+      --c-ink-500: var(--zb-ink-500, #666666);
+      --c-ink-300: var(--zb-ink-300, #8A8A8A);
+      --c-ink-200: var(--zb-ink-200, #B8B8B8);
+      --c-ink-100: var(--zb-ink-100, #DBDBDB);
+      --c-divider: #E8E8E8;
+      --r-sm:      var(--zb-radius-sm, 8px);
+      --shadow-md: 0 4px 12px 0 rgba(39, 39, 39, 0.08);
+      --f-sans:    var(--zb-font-sans, "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif);
+
+      width: 232px;
       min-height: 100vh;
-      background: #081F3A;
-      border-right: 1px solid #0f3058;
+      background: var(--c-paper);
+      border-right: 1px solid var(--c-divider);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
@@ -204,37 +325,138 @@ function injectSidebarStyles() {
       left: 0; top: 0; bottom: 0;
       z-index: 100;
       overflow-y: auto;
-      font-family: 'IBM Plex Sans', 'Space Mono', monospace;
+      font-family: var(--f-sans);
+      color: var(--c-ink-700);
     }
-    #wms-sidebar .sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid #0f3058; }
-    #wms-sidebar .zb { font-size: 11px; font-weight: 600; color: #CCD32A; letter-spacing: 3px; text-transform: uppercase; display: block; margin-bottom: 2px; }
-    #wms-sidebar .country { font-size: 10px; color: #5a7a9a; margin-top: 2px; display: block; }
-    #wms-sidebar .nav-section { padding: 12px 12px 4px; }
-    #wms-sidebar .nav-section-label { font-size: 9px; color: #5a7a9a; letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; display: flex; cursor: pointer; }
-    #wms-sidebar .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; transition: all 0.15s; margin-bottom: 2px; border: 1px solid transparent; text-decoration: none; color: #8aaac8; }
-    #wms-sidebar .nav-item:hover { background: #0d2748; }
-    #wms-sidebar .nav-item.active { background: rgba(204,211,42,0.12); border-color: rgba(204,211,42,0.2); }
-    #wms-sidebar .nav-item.active .nav-label { color: #CCD32A !important; }
-    #wms-sidebar .nav-icon { font-size: 14px; flex-shrink: 0; }
-    #wms-sidebar .nav-label { font-size: 13px; font-weight: 500; color: #8aaac8; }
-    #wms-sidebar .nav-coming { font-size: 9px; color: #5a7a9a; padding: 2px 6px; background: #0d2748; border-radius: 3px; margin-left: auto; }
-    #wms-sidebar .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid #0f3058; }
-    #wms-sidebar .version { font-size: 10px; color: #5a7a9a; }
-    #wms-sidebar h2 { font-size: 15px; font-weight: 600; color: #e8f0f8; }
-    .agency-opt {
-      display: block; width: 100%; text-align: left;
-      padding: 6px 10px; font-size: 11px;
-      border: 1px solid #0f3058; border-radius: 4px;
-      background: transparent; color: #5a7a9a;
-      cursor: pointer; transition: all 0.15s; margin-bottom: 4px;
+
+    /* Logo */
+    #wms-sidebar .zb-sb-logo { padding: 20px 22px 12px; }
+
+    /* Producto WMS */
+    #wms-sidebar .zb-sb-product { padding: 0 22px 14px; border-bottom: 1px solid var(--c-divider); }
+    #wms-sidebar .zb-sb-product-name { font-size: 19px; font-weight: 700; line-height: 24px; color: var(--c-ink-700); letter-spacing: 0.5px; }
+
+    /* Agencia (dropdown) */
+    #wms-sidebar .zb-sb-agency-block { padding: 14px 16px; border-bottom: 1px solid var(--c-divider); }
+    #wms-sidebar .zb-sb-agency-h {
+      font-size: 10px; font-weight: 700; color: var(--c-navy);
+      letter-spacing: 1.5px; padding: 0 4px 8px;
     }
-    .agency-opt:hover { background: #0d2748; color: #e8f0f8; }
-    .agency-opt.active { background: rgba(204,211,42,0.12); border-color: #CCD32A; color: #CCD32A; font-weight: 600; }
+    #wms-sidebar .zb-agency { position: relative; }
+    #wms-sidebar .zb-agency-trigger {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      background: var(--c-paper); border: 1px solid var(--c-divider);
+      border-radius: var(--r-sm); cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      color: var(--c-navy); text-align: left;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    #wms-sidebar .zb-agency-trigger:hover { border-color: var(--c-ink-200); }
+    #wms-sidebar .zb-agency-trigger:focus-visible {
+      outline: 0; border-color: var(--c-cyan);
+      box-shadow: 0 0 0 3px rgba(2, 158, 203, 0.15);
+    }
+    #wms-sidebar .zb-agency-trigger .zb-agency-flag { font-size: 16px; flex-shrink: 0; line-height: 1; }
+    #wms-sidebar .zb-agency-trigger .zb-agency-name { flex: 1; line-height: 1; }
+    #wms-sidebar .zb-agency-chevron { width: 16px; height: 16px; color: var(--c-ink-500); flex-shrink: 0; transition: transform .2s ease; }
+    #wms-sidebar .zb-agency-chevron svg { width: 16px; height: 16px; }
+    #wms-sidebar .zb-agency-trigger[aria-expanded="true"] .zb-agency-chevron { transform: rotate(180deg); }
+
+    #wms-sidebar .zb-agency-menu {
+      display: none;
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: var(--c-paper);
+      border: 1px solid var(--c-divider);
+      border-radius: var(--r-sm);
+      box-shadow: var(--shadow-md);
+      padding: 4px;
+      z-index: 200;
+    }
+    #wms-sidebar .zb-agency-menu.open { display: block; }
+    #wms-sidebar .zb-agency-opt {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px;
+      background: transparent; border: 0; border-radius: 6px; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      color: var(--c-ink-700); text-align: left;
+      transition: background .12s ease;
+    }
+    #wms-sidebar .zb-agency-opt:hover { background: var(--c-canvas); }
+    #wms-sidebar .zb-agency-opt.on { color: var(--c-navy); font-weight: 700; }
+    #wms-sidebar .zb-agency-opt .zb-agency-flag { font-size: 16px; flex-shrink: 0; line-height: 1; }
+    #wms-sidebar .zb-agency-opt .zb-agency-name { flex: 1; line-height: 1; }
+    #wms-sidebar .zb-agency-opt .zb-agency-check { width: 16px; height: 16px; color: var(--c-cyan); opacity: 0; flex-shrink: 0; }
+    #wms-sidebar .zb-agency-opt .zb-agency-check svg { width: 16px; height: 16px; }
+    #wms-sidebar .zb-agency-opt.on .zb-agency-check { opacity: 1; }
+
+    /* Nav */
+    #wms-sidebar .zb-sb-nav { flex: 1; padding: 8px 0 16px; }
+    #wms-sidebar .zb-nav-section { padding: 6px 8px 6px 0; }
+    #wms-sidebar .zb-nav-section-h {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px 6px 16px;
+      font-family: inherit; font-size: 11px; font-weight: 700;
+      color: var(--c-ink-500); letter-spacing: 1.5px;
+      text-align: left; background: transparent; border: 0; cursor: default;
+    }
+    #wms-sidebar .zb-nav-section-h.zb-collapsible { cursor: pointer; }
+    #wms-sidebar .zb-nav-section-h.zb-collapsible:hover { color: var(--c-navy); }
+    #wms-sidebar .zb-arrow { font-size: 9px; color: var(--c-ink-300); transition: transform 0.2s; display: inline-block; }
+    #wms-sidebar .zb-nav-items { display: flex; flex-direction: column; gap: 1px; padding: 0 0 0 8px; }
+
+    /* Nav items con indicator bar */
+    #wms-sidebar .zb-nav-item {
+      position: relative;
+      display: flex; align-items: center; gap: 10px;
+      height: 36px; padding: 0 12px;
+      border-radius: 0 var(--r-sm) var(--r-sm) 0;
+      font-size: 13px; font-weight: 500;
+      color: var(--c-ink-700); text-decoration: none;
+      transition: background .15s ease, color .15s ease;
+    }
+    #wms-sidebar .zb-nav-item:hover { background: var(--c-canvas); }
+    #wms-sidebar .zb-nav-item.on {
+      background: var(--c-canvas);
+      color: var(--c-navy);
+      font-weight: 700;
+    }
+    #wms-sidebar .zb-nav-item.on::before {
+      content: "";
+      position: absolute; left: 0; top: 4px; bottom: 4px;
+      width: 3px;
+      background: var(--c-cyan);
+      border-radius: 0 2px 2px 0;
+    }
+    #wms-sidebar .zb-nav-item.coming { cursor: default; pointer-events: none; opacity: 0.5; }
+    #wms-sidebar .zb-nav-icon {
+      width: 18px; height: 18px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--c-ink-500);
+    }
+    #wms-sidebar .zb-nav-icon svg { width: 18px; height: 18px; }
+    #wms-sidebar .zb-nav-item.on .zb-nav-icon { color: var(--c-cyan); }
+    #wms-sidebar .zb-nav-label { flex: 1; line-height: 1; }
+    #wms-sidebar .zb-nav-tag {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+      color: var(--c-ink-500); background: var(--c-canvas);
+      padding: 3px 7px; border-radius: 99px; text-transform: uppercase;
+    }
+
+    /* Footer */
+    #wms-sidebar .zb-sb-footer {
+      margin-top: auto; padding: 14px 22px;
+      border-top: 1px solid var(--c-divider);
+    }
+    #wms-sidebar .zb-sb-version { font-size: 10px; font-weight: 500; color: var(--c-ink-300); letter-spacing: 0.5px; }
+
+    /* Scrollbar */
+    #wms-sidebar::-webkit-scrollbar { width: 6px; }
+    #wms-sidebar::-webkit-scrollbar-thumb { background: var(--c-ink-100); border-radius: 99px; }
   `;
   document.head.appendChild(style);
 }
 
-// Init — funciona aunque el DOM ya haya cargado
 function initSidebar() {
   injectSidebarStyles();
   renderSidebar();
