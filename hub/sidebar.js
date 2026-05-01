@@ -77,15 +77,9 @@ const WMS_NAV = [
   {
     section: 'CONFIGURACIÓN',
     items: [
-      { icon: 'building', label: 'Agencias',    href: 'agencias.html',    id: 'agencias' },
-      { icon: 'truck',    label: 'Transportador', href: 'transportador.html', id: 'transportador', coming: true },
-      { icon: 'gear',     label: 'General',     href: 'config-general.html', id: 'config-general', coming: true },
-    ]
-  },
-  {
-    section: 'SISTEMA',
-    items: [
-      { icon: 'gear', label: 'Settings', href: 'settings.html', id: 'settings', coming: true },
+      { icon: 'gear',     label: 'Configuración', href: 'configuracion.html', id: 'configuracion' },
+      { icon: 'building', label: 'Agencias',      href: 'agencias.html',      id: 'agencias', indent: true },
+      { icon: 'truck',    label: 'Transportador', href: 'transportador.html', id: 'transportador', indent: true, coming: true },
     ]
   }
 ];
@@ -205,7 +199,7 @@ function renderSidebar() {
 
     const itemsHtml = group.items.map(item => {
       const isActive = activePage === item.id || activePage.includes(item.id);
-      return `<a class="zb-nav-item${isActive ? ' on' : ''}${item.coming ? ' coming' : ''}"
+      return `<a class="zb-nav-item${isActive ? ' on' : ''}${item.coming ? ' coming' : ''}${item.indent ? ' indent' : ''}"
         href="${item.coming ? '#' : (getBaseUrl() + item.href)}"
         ${item.coming ? 'onclick="return false"' : ''}
         ${isActive ? 'aria-current="page"' : ''}>
@@ -442,6 +436,8 @@ function injectSidebarStyles() {
       border-radius: 0 2px 2px 0;
     }
     #wms-sidebar .zb-nav-item.coming { cursor: default; pointer-events: none; opacity: 0.5; }
+    #wms-sidebar .zb-nav-item.indent { padding-left: 28px; font-size: 12px; }
+    #wms-sidebar .zb-nav-item.indent .zb-nav-icon { width: 16px; height: 16px; opacity: .7; }
     #wms-sidebar .zb-nav-icon {
       width: 18px; height: 18px; flex-shrink: 0;
       display: inline-flex; align-items: center; justify-content: center;

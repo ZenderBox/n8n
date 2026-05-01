@@ -846,7 +846,9 @@ function showToast(msg, type = '') {
 }
 
 // ── Init ──────────────────────────────────────────────────────────
-loadAgencias();
+loadAgencias().then(() => {
+  if (new URLSearchParams(location.search).get('new') === '1') openModal();
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configuración · ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --zb-cyan:    #029ECB;
+  --zb-cyan-lt: #E6F5FB;
+  --zb-navy:    #004B72;
+  --zb-lime:    #CCD32A;
+  --zb-ink:     #0D1C29;
+  --zb-ink-200: #6B7A8D;
+  --zb-ink-100: #A8B5C2;
+  --zb-surface: #F6F6F6;
+  --zb-line:    #E2E8EF;
+  --zb-white:   #FFFFFF;
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--zb-surface);
+  color: var(--zb-ink);
+  min-height: 100vh;
+}
+
+/* ── Layout ── */
+main {
+  margin-left: 220px;
+  padding: 32px 36px;
+  max-width: 1280px;
+}
+@media (max-width: 768px) { main { margin-left: 0; padding: 20px 16px; } }
+
+/* ── Page header ── */
+.page-header {
+  margin-bottom: 32px;
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--zb-navy);
+  letter-spacing: -.4px;
+}
+.page-header p {
+  font-size: 14px;
+  color: var(--zb-ink-200);
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--zb-ink-200);
+  margin-bottom: 14px;
+  margin-top: 32px;
+}
+.section-label:first-of-type { margin-top: 0; }
+
+/* ── Cards grid ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+/* ── Config card ── */
+.cfg-card {
+  background: var(--zb-white);
+  border: 1px solid var(--zb-line);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: box-shadow .2s, border-color .2s;
+  position: relative;
+  overflow: hidden;
+}
+.cfg-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--zb-cyan);
+}
+.cfg-card.coming {
+  opacity: .6;
+  pointer-events: none;
+}
+.cfg-card.coming:hover { box-shadow: var(--shadow-sm); border-color: var(--zb-line); }
+
+/* Accent bar on top */
+.cfg-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--zb-cyan);
+  opacity: 0;
+  transition: opacity .2s;
+}
+.cfg-card:hover::before { opacity: 1; }
+.cfg-card.active-card::before { opacity: 1; }
+
+/* ── Card icon ── */
+.card-icon {
+  width: 42px;
+  height: 42px;
+  background: var(--zb-cyan-lt);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--zb-cyan);
+  flex-shrink: 0;
+}
+.card-icon svg { width: 20px; height: 20px; }
+
+/* ── Card body ── */
+.card-head { display: flex; align-items: center; gap: 13px; }
+.card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--zb-navy);
+}
+.card-desc {
+  font-size: 13px;
+  color: var(--zb-ink-200);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* ── Card actions ── */
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 15px;
+  font: 600 13px 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter .15s, transform .1s;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--zb-cyan); color: #fff; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost {
+  background: var(--zb-surface);
+  color: var(--zb-navy);
+  border: 1px solid var(--zb-line);
+}
+.btn-ghost:hover { background: var(--zb-line); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ── Coming tag ── */
+.tag-coming {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  background: #F3F4F6;
+  color: var(--zb-ink-200);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+
+<script src="sidebar.js"></script>
+
+<main>
+  <!-- ── Header ── -->
+  <div class="page-header">
+    <h1>Configuración</h1>
+    <p>Administrá las entidades, tarifas y parámetros globales del sistema</p>
+  </div>
+
+  <!-- ── OPERACIONAL ── -->
+  <div class="section-label">Operacional</div>
+  <div class="cards-grid">
+
+    <!-- Agencias -->
+    <div class="cfg-card active-card">
+      <div class="card-head">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M3 21h18"/><rect x="4" y="4" width="10" height="17"/><rect x="14" y="10" width="6" height="11"/>
+            <path d="M8 8h4M8 12h4M8 16h4"/>
+          </svg>
+        </div>
+        <div class="card-title">Agencias</div>
+      </div>
+      <div class="card-desc">
+        Gestioná las agencias de rastreo: logos, colores, WhatsApp, ePayco y transferencia bancaria.
+      </div>
+      <div class="card-actions">
+        <a class="btn btn-primary btn-sm" href="agencias.html">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          Buscar Agencias
+        </a>
+        <a class="btn btn-ghost btn-sm" href="agencias.html?new=1">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nueva Agencia
+        </a>
+      </div>
+    </div>
+
+    <!-- Transportador -->
+    <div class="cfg-card coming">
+      <div class="card-head">
+        <div class="card-icon" style="background:#F3F4F6;color:var(--zb-ink-100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h5l3 3v5h-8"/>
+            <circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/>
+          </svg>
+        </div>
+        <div>
+          <span class="card-title">Transportador</span>
+          <span class="tag-coming">Próximamente</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        Carriers, tarifas por peso/zona y configuración de guías internas.
+      </div>
+    </div>
+
+    <!-- Casilleros -->
+    <div class="cfg-card coming">
+      <div class="card-head">
+        <div class="card-icon" style="background:#F3F4F6;color:var(--zb-ink-100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+          </svg>
+        </div>
+        <div>
+          <span class="card-title">Casilleros</span>
+          <span class="tag-coming">Próximamente</span>
+        </div>
+      </div>
+      <div class="card-desc">
+        Rangos de casilleros, asignación y configuración de posiciones físicas.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── TARIFAS & COBROS ── -->
+  <div class="section-label">Tarifas & Cobros</div>
+  <div class="cards-grid">
+
+    <div class="cfg-card coming">
+      <div class="card-head">
+        <div class="card-icon" style="background:#F3F4F6;color:var(--zb-ink-100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <span class="card-title">Tarifas Aéreas</span>
+          <span class="tag-coming">Próximamente</span>
+        </div>
+      </div>
+      <div class="card-desc">Tarifas por aerolínea, zona y rango de peso.</div>
+    </div>
+
+    <div class="cfg-card coming">
+      <div class="card-head">
+        <div class="card-icon" style="background:#F3F4F6;color:var(--zb-ink-100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a2 2 0 010 4h-3a2 2 0 000 4H15"/>
+          </svg>
+        </div>
+        <div>
+          <span class="card-title">Cargos Adicionales</span>
+          <span class="tag-coming">Próximamente</span>
+        </div>
+      </div>
+      <div class="card-desc">Cargos automáticos, especiales y códigos promocionales.</div>
+    </div>
+
+    <div class="cfg-card coming">
+      <div class="card-head">
+        <div class="card-icon" style="background:#F3F4F6;color:var(--zb-ink-100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/>
+            <path d="M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
+          </svg>
+        </div>
+        <div>
+          <span class="card-title">TRM Colombia</span>
+          <span class="tag-coming">Próximamente</span>
+        </div>
+      </div>
+      <div class="card-desc">Tasa de cambio COP/USD para liquidación de guías COL.</div>
+    </div>
+
+  </div>
+
+  <!-- ── SISTEMA ── -->
+  <div class="section-label">Sistema</div>
+  <div class="cards-grid">
+
+    <div class="cfg-card coming">
+      <div class="card-head">
+        <div class="card-icon" style="background:#F3F4F6;color:var(--zb-ink-100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <span class="card-title">Usuarios</span>
+          <span class="tag-coming">Próximamente</span>
+        </div>
+      </div>
+      <div class="card-desc">Permisos, roles y accesos por módulo.</div>
+    </div>
+
+    <div class="cfg-card coming">
+      <div class="card-head">
+        <div class="card-icon" style="background:#F3F4F6;color:var(--zb-ink-100)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="card-title">General</span>
+          <span class="tag-coming">Próximamente</span>
+        </div>
+      </div>
+      <div class="card-desc">Datos de la empresa, monedas, países y ciudades.</div>
+    </div>
+
+  </div>
+</main>
+</body>
+</html>
