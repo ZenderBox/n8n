@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agencias · ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── ZenderBox Design System tokens ─────────────────────────────── */
+:root {
+  --zb-cyan:    #029ECB;
+  --zb-cyan-lt: #E6F5FB;
+  --zb-navy:    #004B72;
+  --zb-lime:    #CCD32A;
+  --zb-ink:     #0D1C29;
+  --zb-ink-200: #6B7A8D;
+  --zb-ink-100: #A8B5C2;
+  --zb-surface: #F6F6F6;
+  --zb-line:    #E2E8EF;
+  --zb-white:   #FFFFFF;
+  --zb-ok:      #1EB980;
+  --zb-warn:    #F59E0B;
+  --zb-danger:  #EF4444;
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--zb-surface);
+  color: var(--zb-ink);
+  min-height: 100vh;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────── */
+main {
+  margin-left: 220px;
+  padding: 32px 36px;
+  max-width: 1280px;
+}
+@media (max-width: 768px) { main { margin-left: 0; padding: 20px 16px; } }
+
+/* ── Page header ─────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--zb-navy);
+  letter-spacing: -.3px;
+}
+.page-header .breadcrumb {
+  font-size: 12px;
+  color: var(--zb-ink-200);
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 18px;
+  font: 600 13px 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  transition: filter .15s, transform .1s;
+  text-decoration: none;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--zb-cyan); color: #fff; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost {
+  background: var(--zb-white);
+  color: var(--zb-navy);
+  border: 1px solid var(--zb-line);
+}
+.btn-ghost:hover { background: var(--zb-surface); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--zb-ink-200);
+  transition: background .15s, color .15s;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-icon:hover { background: var(--zb-surface); color: var(--zb-navy); }
+
+/* ── Stats strip ─────────────────────────────────────────────────── */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--zb-white);
+  border: 1px solid var(--zb-line);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-card .val {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--zb-navy);
+  line-height: 1;
+}
+.stat-card .lbl {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--zb-ink-200);
+  margin-top: 5px;
+}
+.stat-card.ok .val  { color: var(--zb-ok); }
+.stat-card.warn .val { color: var(--zb-warn); }
+
+/* ── Filters bar ─────────────────────────────────────────────────── */
+.filters-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.search-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--zb-ink-100);
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  background: var(--zb-white);
+  border: 1px solid var(--zb-line);
+  border-radius: var(--radius-sm);
+  font: 14px 'Plus Jakarta Sans', sans-serif;
+  color: var(--zb-ink);
+  transition: border-color .15s;
+}
+.search-input:focus { outline: none; border-color: var(--zb-cyan); }
+.search-input::placeholder { color: var(--zb-ink-100); }
+.filter-select {
+  padding: 10px 32px 10px 12px;
+  background: var(--zb-white);
+  border: 1px solid var(--zb-line);
+  border-radius: var(--radius-sm);
+  font: 14px 'Plus Jakarta Sans', sans-serif;
+  color: var(--zb-ink);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--zb-cyan); }
+
+/* ── Table card ──────────────────────────────────────────────────── */
+.table-card {
+  background: var(--zb-white);
+  border: 1px solid var(--zb-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.table-card table { width: 100%; border-collapse: collapse; }
+.table-card th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--zb-ink-200);
+  background: #FAFBFC;
+  border-bottom: 1px solid var(--zb-line);
+  white-space: nowrap;
+}
+.table-card td {
+  padding: 13px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--zb-line);
+  color: var(--zb-ink);
+  vertical-align: middle;
+}
+.table-card tr:last-child td { border-bottom: none; }
+.table-card tr:hover td { background: #FAFBFF; }
+
+/* ── Agency cell ─────────────────────────────────────────────────── */
+.ag-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ag-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+  color: #fff;
+  background: var(--zb-navy);
+  overflow: hidden;
+}
+.ag-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+.ag-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--zb-navy);
+}
+.ag-slug {
+  font-size: 11px;
+  color: var(--zb-ink-200);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ── Color dot ───────────────────────────────────────────────────── */
+.color-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--zb-ink-200);
+}
+.color-dot .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.1);
+  flex-shrink: 0;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+.badge-ok   { background: #ECFDF5; color: var(--zb-ok); }
+.badge-off  { background: #F3F4F6; color: var(--zb-ink-200); }
+.badge-warn { background: #FFFBEB; color: var(--zb-warn); }
+
+/* ── Feature icons row ───────────────────────────────────────────── */
+.features {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.feat {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.feat.on  { background: #ECFDF5; }
+.feat.off { background: #F3F4F6; opacity: .45; }
+
+/* ── Actions column ──────────────────────────────────────────────── */
+.actions { display: flex; gap: 4px; }
+
+/* ── Empty & loading states ──────────────────────────────────────── */
+.state-row td {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--zb-ink-200);
+  font-size: 14px;
+}
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--zb-line);
+  border-top-color: var(--zb-cyan);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Modal ───────────────────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--zb-white);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-md);
+}
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--zb-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-header h2 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--zb-navy);
+}
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--zb-line);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────── */
+.field-group { margin-bottom: 18px; }
+.field-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--zb-navy);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.field-input {
+  width: 100%;
+  padding: 10px 13px;
+  background: var(--zb-white);
+  border: 1px solid var(--zb-line);
+  border-radius: var(--radius-sm);
+  font: 14px 'Plus Jakarta Sans', sans-serif;
+  color: var(--zb-ink);
+  transition: border-color .15s;
+}
+.field-input:focus { outline: none; border-color: var(--zb-cyan); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field-hint {
+  font-size: 11px;
+  color: var(--zb-ink-200);
+  margin-top: 4px;
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--zb-line);
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 13px; font-weight: 600; color: var(--zb-ink); }
+.toggle-desc  { font-size: 11px; color: var(--zb-ink-200); margin-top: 2px; }
+/* Toggle switch */
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--zb-line);
+  border-radius: 22px;
+  transition: background .2s;
+}
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--zb-cyan); }
+.toggle input:checked + .toggle-slider::after { transform: translateX(18px); }
+
+/* ── Color preview strip ─────────────────────────────────────────── */
+.color-preview {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--zb-line);
+}
+
+/* ── Toast ───────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--zb-navy);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 200;
+  box-shadow: var(--shadow-md);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .25s ease;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok   { background: var(--zb-ok); }
+.toast.err  { background: var(--zb-danger); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar injection -->
+<script src="sidebar.js"></script>
+
+<main>
+  <!-- ── Page header ── -->
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">Configuración → Agencias</div>
+      <h1>Agencias</h1>
+    </div>
+    <button class="btn btn-primary" onclick="openModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva Agencia
+    </button>
+  </div>
+
+  <!-- ── Stats strip ── -->
+  <div class="stats-strip">
+    <div class="stat-card">
+      <div class="val" id="statTotal">—</div>
+      <div class="lbl">Total</div>
+    </div>
+    <div class="stat-card ok">
+      <div class="val" id="statActivas">—</div>
+      <div class="lbl">Activas</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="val" id="statInactivas">—</div>
+      <div class="lbl">Inactivas</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="statWA">—</div>
+      <div class="lbl">Con WhatsApp</div>
+    </div>
+  </div>
+
+  <!-- ── Filters bar ── -->
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="search" class="search-input" id="searchInput"
+        placeholder="Buscar por nombre o slug…" oninput="filterTable()">
+    </div>
+    <select class="filter-select" id="filterEstado" onchange="filterTable()">
+      <option value="">Todas</option>
+      <option value="activa">Activas</option>
+      <option value="inactiva">Inactivas</option>
+    </select>
+  </div>
+
+  <!-- ── Agencies table ── -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Agencia</th>
+          <th>Color</th>
+          <th>WhatsApp</th>
+          <th>ePayco</th>
+          <th>Transferencia</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="agenciasBody">
+        <tr class="state-row">
+          <td colspan="7">
+            <div class="spinner"></div>
+            Cargando agencias…
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- ── Modal Nueva / Editar Agencia ── -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nueva Agencia</h2>
+      <button class="btn-icon" onclick="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editSlugOriginal">
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Slug <span style="color:var(--zb-danger)">*</span></label>
+          <input class="field-input" id="fSlug" placeholder="expressmailco" autocomplete="off">
+          <div class="field-hint">Identificador único, sin espacios</div>
+        </div>
+        <div class="field-group">
+          <label>Nombre <span style="color:var(--zb-danger)">*</span></label>
+          <input class="field-input" id="fNombre" placeholder="Express Mail Co." autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Logo URL</label>
+        <input class="field-input" id="fLogo" placeholder="https://…/logo.png" autocomplete="off">
+        <div class="field-hint">URL de imagen pública (PNG/SVG recomendado, fondo transparente)</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Color primario</label>
+          <input class="field-input" id="fColorPrimary" type="color" value="#029ECB" style="height:42px;padding:4px 8px;cursor:pointer">
+        </div>
+        <div class="field-group">
+          <label>Color acento</label>
+          <input class="field-input" id="fColorAccent" type="color" value="#004B72" style="height:42px;padding:4px 8px;cursor:pointer">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>WhatsApp</label>
+        <input class="field-input" id="fWhatsapp" placeholder="+50688887777" autocomplete="off">
+        <div class="field-hint">Número con código de país (ej: +506…)</div>
+      </div>
+
+      <div style="margin-top:18px;margin-bottom:8px">
+        <label style="font-size:12px;font-weight:700;color:var(--zb-navy);text-transform:uppercase;letter-spacing:.5px">Funcionalidades</label>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Agencia activa</div>
+          <div class="toggle-desc">Visible en el portal de rastreo</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="fActiva" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">WhatsApp activo</div>
+          <div class="toggle-desc">Envía notificaciones por WhatsApp</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="fWhatsappActivo"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">ePayco</div>
+          <div class="toggle-desc">Acepta pagos online via ePayco</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="fEpayco"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Transferencia bancaria</div>
+          <div class="toggle-desc">Acepta comprobantes de transferencia</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="fTransferencia"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btnGuardar" onclick="guardarAgencia()">
+        Guardar agencia
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+const WEBHOOK_LIST  = 'https://hub.zenderbox.com/webhook/agencias-list';
+const WEBHOOK_SAVE  = 'https://hub.zenderbox.com/webhook/agencia-save';
+
+let allAgencias = [];
+
+// ── Data loading ──────────────────────────────────────────────────
+async function loadAgencias() {
+  try {
+    const res = await fetch(WEBHOOK_LIST);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    allAgencias = data.items || [];
+    updateStats(allAgencias);
+    renderTable(allAgencias);
+  } catch (e) {
+    document.getElementById('agenciasBody').innerHTML = `
+      <tr class="state-row">
+        <td colspan="7" style="color:var(--zb-danger)">
+          Error cargando agencias: ${e.message}
+        </td>
+      </tr>`;
+  }
+}
+
+// ── Stats ─────────────────────────────────────────────────────────
+function updateStats(list) {
+  const activas   = list.filter(a => a.activa).length;
+  const inactivas = list.length - activas;
+  const conWA     = list.filter(a => a.whatsapp_activo).length;
+  document.getElementById('statTotal').textContent    = list.length;
+  document.getElementById('statActivas').textContent  = activas;
+  document.getElementById('statInactivas').textContent = inactivas;
+  document.getElementById('statWA').textContent       = conWA;
+}
+
+// ── Filter ────────────────────────────────────────────────────────
+function filterTable() {
+  const q      = document.getElementById('searchInput').value.toLowerCase();
+  const estado = document.getElementById('filterEstado').value;
+  const filtered = allAgencias.filter(a => {
+    const matchQ = !q ||
+      a.nombre?.toLowerCase().includes(q) ||
+      a.slug?.toLowerCase().includes(q);
+    const matchE = !estado ||
+      (estado === 'activa' && a.activa) ||
+      (estado === 'inactiva' && !a.activa);
+    return matchQ && matchE;
+  });
+  renderTable(filtered);
+}
+
+// ── Render table ──────────────────────────────────────────────────
+function renderTable(list) {
+  const tbody = document.getElementById('agenciasBody');
+  if (!list.length) {
+    tbody.innerHTML = `
+      <tr class="state-row">
+        <td colspan="7">Sin resultados para los filtros aplicados.</td>
+      </tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(a => {
+    const initials = (a.nombre || a.slug || '?').substring(0, 2).toUpperCase();
+    const avatarStyle = a.color_primary
+      ? `style="background:${a.color_primary}"`
+      : '';
+    const avatarContent = a.logo
+      ? `<img src="${esc(a.logo)}" alt="${esc(a.nombre)}" onerror="this.style.display='none'">`
+      : initials;
+    return `
+      <tr>
+        <td>
+          <div class="ag-cell">
+            <div class="ag-avatar" ${avatarStyle}>${avatarContent}</div>
+            <div>
+              <div class="ag-name">${esc(a.nombre || '—')}</div>
+              <div class="ag-slug">${esc(a.slug)}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="color-dot">
+            <div class="dot" style="background:${a.color_primary || '#ccc'}"></div>
+            <div class="dot" style="background:${a.color_accent  || '#ccc'}"></div>
+          </div>
+        </td>
+        <td>
+          <span class="badge ${a.whatsapp_activo ? 'badge-ok' : 'badge-off'}">
+            ${a.whatsapp_activo ? '● Activo' : '○ Inactivo'}
+          </span>
+        </td>
+        <td>
+          <span class="badge ${a.epayco ? 'badge-ok' : 'badge-off'}">
+            ${a.epayco ? '● Sí' : '○ No'}
+          </span>
+        </td>
+        <td>
+          <span class="badge ${a.transferencia ? 'badge-ok' : 'badge-off'}">
+            ${a.transferencia ? '● Sí' : '○ No'}
+          </span>
+        </td>
+        <td>
+          <span class="badge ${a.activa ? 'badge-ok' : 'badge-off'}">
+            ${a.activa ? 'Activa' : 'Inactiva'}
+          </span>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn-icon" title="Editar" onclick='openModal(${JSON.stringify(a)})'>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+function openModal(agencia) {
+  const isEdit = !!agencia;
+  document.getElementById('modalTitle').textContent = isEdit ? 'Editar Agencia' : 'Nueva Agencia';
+  document.getElementById('editSlugOriginal').value = agencia?.slug || '';
+  document.getElementById('fSlug').value            = agencia?.slug            || '';
+  document.getElementById('fNombre').value          = agencia?.nombre          || '';
+  document.getElementById('fLogo').value            = agencia?.logo            || '';
+  document.getElementById('fColorPrimary').value    = agencia?.color_primary   || '#029ECB';
+  document.getElementById('fColorAccent').value     = agencia?.color_accent    || '#004B72';
+  document.getElementById('fWhatsapp').value        = agencia?.whatsapp        || '';
+  document.getElementById('fActiva').checked        = agencia?.activa          !== false;
+  document.getElementById('fWhatsappActivo').checked= !!agencia?.whatsapp_activo;
+  document.getElementById('fEpayco').checked        = !!agencia?.epayco;
+  document.getElementById('fTransferencia').checked = !!agencia?.transferencia;
+  // Slug no editable en modo edición
+  document.getElementById('fSlug').readOnly = isEdit;
+  document.getElementById('fSlug').style.opacity = isEdit ? '.5' : '1';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('overlay')) closeModal();
+}
+
+// ── Save ──────────────────────────────────────────────────────────
+async function guardarAgencia() {
+  const slug   = document.getElementById('fSlug').value.trim();
+  const nombre = document.getElementById('fNombre').value.trim();
+  if (!slug || !nombre) { showToast('Slug y nombre son obligatorios', 'err'); return; }
+
+  const payload = {
+    slug,
+    nombre,
+    logo:          document.getElementById('fLogo').value.trim() || null,
+    color_primary: document.getElementById('fColorPrimary').value,
+    color_accent:  document.getElementById('fColorAccent').value,
+    whatsapp:      document.getElementById('fWhatsapp').value.trim(),
+    activa:        document.getElementById('fActiva').checked,
+    whatsapp_activo: document.getElementById('fWhatsappActivo').checked,
+    epayco:        document.getElementById('fEpayco').checked,
+    transferencia: document.getElementById('fTransferencia').checked,
+  };
+
+  const btn = document.getElementById('btnGuardar');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  try {
+    const res = await fetch(WEBHOOK_SAVE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    showToast('Agencia guardada ✓', 'ok');
+    closeModal();
+    await loadAgencias();
+  } catch (e) {
+    showToast('Error: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar agencia';
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+loadAgencias();
+</script>
+</body>
+</html>
