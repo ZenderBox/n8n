@@ -814,9 +814,12 @@
     const BASE = 'https://hub.zenderbox.com/webhook';
 
     // Config por país
+    // agencia_id: ID de la agencia en el módulo Agencias (store1.zenderbox.com)
+    // 01=COL, 02=CR, 03=Xpress Mail, 04=...
     const CONFIG = {
         CR: {
             label: '🇨🇷 Costa Rica',
+            agencia_id: '02',
             webhooks: {
                 procesar: BASE + '/cr-consolidados',
                 consulta: BASE + '/cr-consultar-agencia',
@@ -828,6 +831,7 @@
         },
         COL: {
             label: '🇨🇴 Colombia',
+            agencia_id: '01',
             webhooks: {
                 procesar: BASE + '/consolidados',
                 consulta: BASE + '/consultar-agencia',
@@ -1069,7 +1073,8 @@
             if (numCons)
                 formData.append('consolidado', numCons);
         }
-        const endpoint = url + '?agencia=' + encodeURIComponent(selectedAgencia);
+        const agenciaId = CONFIG[currentPais].agencia_id;
+        const endpoint = url + '?agencia=' + encodeURIComponent(selectedAgencia) + '&agencia_id=' + agenciaId;
         addLog('POST → ' + endpoint);
 
         try {
