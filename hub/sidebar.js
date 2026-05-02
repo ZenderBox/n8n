@@ -24,7 +24,7 @@ const WMS_NAV = [
     items: [
       { icon: 'search',  label: 'Buscar Guía',      href: 'buscar.html',        id: 'buscar' },
       { icon: 'inbox',   label: 'Cargar Manifiesto',href: 'manifiesto.html',    id: 'manifiesto' },
-      { icon: 'box',     label: 'Consolidados',     href: 'consolidados.html',  id: 'consolidados' },
+      { icon: 'box',     label: 'Consolidados',     href: 'consolidados.html',  id: 'consolidados', disabled: true },
       { icon: 'truck',   label: 'Despachos',        href: 'despachos.html',     id: 'despachos' },
       { icon: 'receipt', label: 'Pre-liquidador',   href: 'preliquidador.html', id: 'preliquidador' },
     ]
@@ -198,10 +198,11 @@ function renderSidebar() {
     const isOpen        = sessionStorage.getItem('wms_nav_' + sectionId) !== 'closed';
 
     const itemsHtml = group.items.map(item => {
-      const isActive = activePage === item.id || activePage.includes(item.id);
-      return `<a class="zb-nav-item${isActive ? ' on' : ''}${item.coming ? ' coming' : ''}${item.indent ? ' indent' : ''}"
-        href="${item.coming ? '#' : (getBaseUrl() + item.href)}"
-        ${item.coming ? 'onclick="return false"' : ''}
+      const isActive   = activePage === item.id || activePage.includes(item.id);
+      const isInactive = item.coming || item.disabled;
+      return `<a class="zb-nav-item${isActive ? ' on' : ''}${isInactive ? ' coming' : ''}${item.indent ? ' indent' : ''}"
+        href="${isInactive ? '#' : (getBaseUrl() + item.href)}"
+        ${isInactive ? 'onclick="return false"' : ''}
         ${isActive ? 'aria-current="page"' : ''}>
         <span class="zb-nav-icon">${iconSvg(item.icon)}</span>
         <span class="zb-nav-label">${item.label}</span>
