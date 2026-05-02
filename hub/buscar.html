@@ -1405,13 +1405,15 @@ function filtrarGuias(query, filters) {
     }
 
     // Filtro: Urgentes (sin despachar + ya en bodega destino — listas para crear en SmartQuick)
-    // Pagado = PAGADO en Epayco O cod=false (ya cobró en destino)
+    // Pagado     = PAGADO en Epayco O cod=false (ya cobró en destino)
+    // Despachada = g.sq distinto de PENDIENTE (cubre tanto SmartQuick como control_despacho)
     if (filters.urgentes) {
       const pagado = g.pago === 'PAGADO' || g.cod === false;
-      const enSmartquick = !!(g.sq_system_id && String(g.sq_system_id).trim());
+      const sqUpper = String(g.sq || 'PENDIENTE').toUpperCase().trim();
+      const yaDespachada = sqUpper !== 'PENDIENTE' && sqUpper !== '';
       const enBodegaDestino = (g.estado_label || g.estado_consolidado || '')
         .toUpperCase().includes('BODEGA DESTINO');
-      if (!pagado || enSmartquick || !enBodegaDestino) return false;
+      if (!pagado || yaDespachada || !enBodegaDestino) return false;
     }
     
     // Filtro: Estado de guía (despacho)
