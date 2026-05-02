@@ -361,7 +361,8 @@
 
   /* Pago */
   .badge-pagado    { background: var(--zb-success-bg); color: var(--zb-success); }
-  .badge-pendiente { background: var(--zb-lime-soft); color: var(--zb-warn); }
+  .badge-cobrar    { background: var(--zb-cyan-soft);  color: var(--zb-cyan-dark); }
+  .badge-pendiente { background: var(--zb-error-bg);   color: var(--zb-error); }
 
   /* ── WhatsApp ── */
   .mono {
@@ -1324,7 +1325,7 @@ function renderConsolidados() {
           <div class="guia-num">${guiaId}</div>
           <div>${esc(g.nombre || '—')}</div>
           <div class="mono">${esc(g.tel || '—')}</div>
-          <div>${renderBadgePago(g.pago)}</div>
+          <div>${renderBadgePago(g.pago, g.cod)}</div>
           <div>${renderBadgeSQ(g.sq)}</div>
           <div>${buildTemplateSelect(g.pago, g.sq_system_id, guiaId)}</div>
           <div class="wa-cell">
@@ -1537,7 +1538,7 @@ function renderResultados() {
       <td>${formatFecha(g.fecha_consolidado || g.fecha)}</td>
       <td>${esc(g.nombre)}</td>
       <td class="mono">${esc(g.telefono)}</td>
-      <td>${renderBadgePago(g.pago)}</td>
+      <td>${renderBadgePago(g.pago, g.cod)}</td>
       <td>${renderBadgeSQ(g.sq)}</td>
       <td>${buildTemplateSelect(g.pago, g.sq_system_id, guiaId)}</td>
       <td>
@@ -1590,11 +1591,15 @@ function renderBadgeEstado(estado) {
   return `<span class="badge badge-${e.class}"><span class="badge-dot"></span>${e.label}</span>`;
 }
 
-function renderBadgePago(pago) {
+function renderBadgePago(pago, cod) {
+  // Reglas:
+  //   pagado en Epayco          → "Pagado"  (verde, manda Epayco aunque cod=true)
+  //   sin pago + cod=true       → "Por cobrar" (cyan, contra entrega)
+  //   sin pago + cod=false/und  → "Sin pago" (rojo, prepago no recibido)
   const pagado = pago?.toLowerCase() === 'pagado' || pago?.toLowerCase() === 'si' || pago === true;
-  return pagado 
-    ? '<span class="badge badge-pagado">Pagado</span>'
-    : '<span class="badge badge-pendiente">Pendiente</span>';
+  if (pagado)     return '<span class="badge badge-pagado">Pagado</span>';
+  if (cod === true) return '<span class="badge badge-cobrar">Por cobrar</span>';
+  return '<span class="badge badge-pendiente">Sin pago</span>';
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1684,7 +1689,7 @@ async function verDetalle(guia) {
       
       <div class="detail-section">
         <div class="detail-section-title">Estado</div>
-        <div class="detail-row"><span class="detail-label">Pago</span><span class="detail-value">${renderBadgePago(guia.pago)}</span></div>
+        <div class="detail-row"><span class="detail-label">Pago</span><span class="detail-value">${renderBadgePago(guia.pago, guia.cod)}</span></div>
         <div class="detail-row"><span class="detail-label">Despacho</span><span class="detail-value">${renderBadgeSQ(guia.sq)}</span></div>
         <div class="detail-row"><span class="detail-label">SmartQuick ID</span><span class="detail-value">${esc(guia.sq_system_id) || '—'}</span></div>
       </div>
