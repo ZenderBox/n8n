@@ -1406,11 +1406,16 @@ function filtrarGuias(query, filters) {
 
     // Filtro: Urgentes (sin despachar + ya en bodega destino — listas para crear en SmartQuick)
     // Pagado     = PAGADO en Epayco O cod=false (ya cobró en destino)
-    // Despachada = g.sq distinto de PENDIENTE (cubre tanto SmartQuick como control_despacho)
+    // Despachada = (tiene sq_system_id) O (sq distinto de PENDIENTE)
+    //   Combina ambas señales: registro en SmartQuick por id, y estado de despacho
+    //   por cualquier canal (SmartQuick o control_despacho). Cualquiera de las
+    //   dos la excluye del filtro.
     if (filters.urgentes) {
       const pagado = g.pago === 'PAGADO' || g.cod === false;
+      const tieneSqId = !!(g.sq_system_id && String(g.sq_system_id).trim());
       const sqUpper = String(g.sq || 'PENDIENTE').toUpperCase().trim();
-      const yaDespachada = sqUpper !== 'PENDIENTE' && sqUpper !== '';
+      const sqNoPendiente = sqUpper !== 'PENDIENTE' && sqUpper !== '';
+      const yaDespachada = tieneSqId || sqNoPendiente;
       const enBodegaDestino = (g.estado_label || g.estado_consolidado || '')
         .toUpperCase().includes('BODEGA DESTINO');
       if (!pagado || yaDespachada || !enBodegaDestino) return false;
