@@ -336,6 +336,33 @@
     .btn-o { background: var(--zb-gradient); }
     .btn-g { background: var(--zb-cyan); }
     .btn-a { background: var(--zb-gradient); }
+    .btn-backup {
+        background: var(--zb-paper);
+        color: var(--zb-ink-500);
+        border: 1px solid var(--zb-ink-100);
+    }
+    .btn-backup:hover:not(:disabled) {
+        background: var(--zb-ink-50);
+        color: var(--zb-ink-700);
+        filter: none;
+    }
+    .btn-backup .spinner {
+        border: 2px solid rgba(102,102,102,0.2);
+        border-top-color: var(--zb-ink-500);
+    }
+
+    .card-backup {
+        opacity: 0.92;
+        border-style: dashed;
+    }
+    .step-tag-muted {
+        background: var(--zb-ink-50) !important;
+        color: var(--zb-ink-500) !important;
+        border: 1px solid var(--zb-ink-100);
+    }
+    .card-title-muted {
+        color: var(--zb-ink-500) !important;
+    }
 
     .spinner {
         width: 14px; height: 14px;
@@ -976,16 +1003,16 @@ async function enviarSQ() {
 
 </script>
         <!-- STEP 3 respaldo -->
-        <div class="card" style="opacity:0.85;border-style:dashed">
+        <div class="card card-backup">
             <div class="card-hdr">
-                <span class="step-tag" style="background:var(--zb-ink-50);color:var(--zb-ink-500);border:1px solid var(--zb-ink-100)">RESPALDO</span>
-                <span class="card-title" style="color:var(--zb-ink-500)">Descargar CSV Manual</span>
+                <span class="step-tag step-tag-muted">RESPALDO</span>
+                <span class="card-title card-title-muted">Descargar CSV Manual</span>
             </div>
             <div class="card-body">
                 <div class="warn-box"><span>⚠</span><span>Usar solo si SmartQuick falla. La hoja <strong>Despachos</strong> se limpia al descargar.</span></div>
-                <button class="btn btn-g" id="btnDl" onclick="descargar()" style="background:var(--zb-ink-500)">
+                <button class="btn btn-backup" id="btnDl" onclick="descargar()">
                     <div class="spinner" id="sp3"></div>
-                    <span id="t3">↓ &nbsp;Descargar CSV</span>
+                    <span id="t3">↓&nbsp;&nbsp;Descargar CSV</span>
                 </button>
                 <div class="result-panel" id="res3">
                     <div class="result-inner">
@@ -996,7 +1023,6 @@ async function enviarSQ() {
             </div>
         </div>
 
-</div><!-- /main-content -->
 </div><!-- /wrapper -->
 </div><!-- /panel-cr -->
 </body>
