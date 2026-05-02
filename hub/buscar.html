@@ -361,8 +361,7 @@
 
   /* Pago */
   .badge-pagado    { background: var(--zb-success-bg); color: var(--zb-success); }
-  .badge-cobrar    { background: var(--zb-cyan-soft);  color: var(--zb-cyan-dark); }
-  .badge-pendiente { background: var(--zb-error-bg);   color: var(--zb-error); }
+  .badge-cobrar    { background: var(--zb-error-bg);   color: var(--zb-error); }
 
   /* ── WhatsApp ── */
   .mono {
@@ -523,8 +522,7 @@
   .cons-stat.guias       { background: var(--zb-ink-50); color: var(--zb-ink-700); }
   .cons-stat.pagadas     { background: var(--zb-success-bg); color: var(--zb-success); }
   .cons-stat.despachadas { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
-  .cons-stat.porcobrar   { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
-  .cons-stat.sinpago     { background: var(--zb-error-bg); color: var(--zb-error); }
+  .cons-stat.porcobrar   { background: var(--zb-error-bg); color: var(--zb-error); }
   .cons-tracking {
     display: flex;
     gap: 10px;
@@ -1348,8 +1346,7 @@ function renderConsolidados() {
             <span class="cons-stat guias"><i data-lucide="package"></i>${stats.total || 0} guías</span>
             <span class="cons-stat pagadas"><i data-lucide="check"></i>${stats.pagadas || 0} pagadas</span>
             <span class="cons-stat despachadas"><i data-lucide="truck"></i>${stats.despachadas || 0} despachadas</span>
-            ${stats.porCobrar > 0 ? `<span class="cons-stat porcobrar"><i data-lucide="hand-coins"></i>${stats.porCobrar} por cobrar</span>` : ''}
-            ${stats.sinPago > 0 ? `<span class="cons-stat sinpago"><i data-lucide="alert-triangle"></i>${stats.sinPago} sin pago</span>` : ''}
+            ${stats.porCobrar > 0 ? `<span class="cons-stat porcobrar"><i data-lucide="alert-triangle"></i>${stats.porCobrar} por cobrar</span>` : ''}
           </div>
           <div class="cons-tracking">
             <span><span class="dot" style="background:${cons.miami ? 'var(--zb-cyan)' : 'var(--zb-ink-200)'}"></span> MIA</span>
@@ -1404,8 +1401,9 @@ function filtrarGuias(query, filters) {
     }
 
     // Filtro: Urgentes (sin despachar + ya en bodega destino — listas para crear en SmartQuick)
+    // Pagado = PAGADO en Epayco O cod=false (ya cobró en destino)
     if (filters.urgentes) {
-      const pagado = g.pago === 'PAGADO';
+      const pagado = g.pago === 'PAGADO' || g.cod === false;
       const enSmartquick = !!(g.sq_system_id && String(g.sq_system_id).trim());
       const enBodegaDestino = (g.estado_label || g.estado_consolidado || '')
         .toUpperCase().includes('BODEGA DESTINO');
@@ -1595,14 +1593,16 @@ function renderBadgeEstado(estado) {
 }
 
 function renderBadgePago(pago, cod) {
+  // COD = Collect On Destination (cobrar en Epayco antes de despachar).
   // Reglas:
-  //   pagado en Epayco          → "Pagado"  (verde, manda Epayco aunque cod=true)
-  //   sin pago + cod=true       → "Por cobrar" (cyan, contra entrega)
-  //   sin pago + cod=false/und  → "Sin pago" (rojo, prepago no recibido)
+  //   pago=PAGADO en Epayco       → "Pagado" (verde)
+  //   cod=false                   → "Pagado" (verde, ya cobró en destino)
+  //   sin pago en Epayco + cod=true → "Por cobrar" (rojo, hay que cobrar antes de sacar a ruta)
   const pagado = pago?.toLowerCase() === 'pagado' || pago?.toLowerCase() === 'si' || pago === true;
-  if (pagado)     return '<span class="badge badge-pagado">Pagado</span>';
-  if (cod === true) return '<span class="badge badge-cobrar">Por cobrar</span>';
-  return '<span class="badge badge-pendiente">Sin pago</span>';
+  if (pagado)        return '<span class="badge badge-pagado">Pagado</span>';
+  if (cod === false) return '<span class="badge badge-pagado">Pagado</span>';
+  if (cod === true)  return '<span class="badge badge-cobrar">Por cobrar</span>';
+  return '<span class="badge badge-cobrar">Por cobrar</span>';
 }
 
 /* ══════════════════════════════════════════════════════════
