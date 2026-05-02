@@ -655,7 +655,7 @@ async function loadAgencias() {
     const res = await fetch(WEBHOOK_LIST);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    allAgencias = data.items || [];
+    allAgencias = Array.isArray(data) ? data : (data.items || []);
     updateStats(allAgencias);
     renderTable(allAgencias);
   } catch (e) {
