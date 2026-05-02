@@ -925,7 +925,7 @@
       <label>&nbsp;</label>
       <div class="filter-check">
         <input type="checkbox" id="f-sin-despachar">
-        <label for="f-sin-despachar">Sin despachar (pagadas + en bodega destino)</label>
+        <label for="f-sin-despachar">Sin despachar (pagadas + sin SmartQuick)</label>
       </div>
     </div>
 
@@ -1401,12 +1401,11 @@ function filtrarGuias(query, filters) {
       if (filters.pago === 'pendiente' && pagado) return false;
     }
 
-    // Filtro: Sin despachar (pagadas + en bodega destino)
+    // Filtro: Sin despachar (pagadas en Epayco + sin SmartQuick)
     if (filters.sinDespachar) {
       const pagado = g.pago === 'PAGADO';
-      const enBodegaDestino = (g.estado_label || g.estado_consolidado || '')
-        .toUpperCase().includes('BODEGA DESTINO');
-      if (!pagado || !enBodegaDestino) return false;
+      const enSmartquick = !!(g.sq_system_id && String(g.sq_system_id).trim());
+      if (!pagado || enSmartquick) return false;
     }
     
     // Filtro: Estado de guía (despacho)
