@@ -920,6 +920,14 @@
       </div>
     </div>
 
+    <div class="filter-group">
+      <label>&nbsp;</label>
+      <div class="filter-check">
+        <input type="checkbox" id="f-sin-despachar">
+        <label for="f-sin-despachar">Sin despachar (pagadas + en bodega destino)</label>
+      </div>
+    </div>
+
     <div class="filter-actions">
       <button class="btn btn-secondary btn-sm" onclick="limpiarFiltros()">Limpiar filtros</button>
       <button class="btn btn-primary btn-sm" onclick="buscar()">Aplicar filtros</button>
@@ -1107,6 +1115,7 @@ function contarFiltrosActivos() {
   if (document.getElementById('f-peso-min').value) count++;
   if (document.getElementById('f-peso-max').value) count++;
   if (document.getElementById('f-whr').checked) count++;
+  if (document.getElementById('f-sin-despachar').checked) count++;
   
   const badge = document.getElementById('filters-count');
   if (count > 0) {
@@ -1128,6 +1137,7 @@ function limpiarFiltros() {
   document.getElementById('f-peso-min').value = '';
   document.getElementById('f-peso-max').value = '';
   document.getElementById('f-whr').checked = false;
+  document.getElementById('f-sin-despachar').checked = false;
   contarFiltrosActivos();
   toast('Filtros limpiados');
 }
@@ -1143,6 +1153,7 @@ function getFilters() {
     pesoMin: document.getElementById('f-peso-min').value,
     pesoMax: document.getElementById('f-peso-max').value,
     soloWhr: document.getElementById('f-whr').checked,
+    sinDespachar: document.getElementById('f-sin-despachar').checked,
   };
 }
 
@@ -1387,6 +1398,14 @@ function filtrarGuias(query, filters) {
       const pagado = g.pago === 'PAGADO';
       if (filters.pago === 'pagado' && !pagado) return false;
       if (filters.pago === 'pendiente' && pagado) return false;
+    }
+
+    // Filtro: Sin despachar (pagadas + en bodega destino)
+    if (filters.sinDespachar) {
+      const pagado = g.pago === 'PAGADO';
+      const enBodegaDestino = (g.estado_label || g.estado_consolidado || '')
+        .toUpperCase().includes('BODEGA DESTINO');
+      if (!pagado || !enBodegaDestino) return false;
     }
     
     // Filtro: Estado de guía (despacho)
@@ -1891,6 +1910,7 @@ document.getElementById('search-input').addEventListener('keypress', (e) => {
   document.getElementById(id).addEventListener('change', contarFiltrosActivos);
 });
 document.getElementById('f-whr').addEventListener('change', contarFiltrosActivos);
+document.getElementById('f-sin-despachar').addEventListener('change', contarFiltrosActivos);
 
 // Close modal on Escape
 document.addEventListener('keydown', (e) => {
