@@ -336,24 +336,6 @@ table.bulk-tbl input, table.bulk-tbl select {
 }
 table.bulk-tbl input:focus, table.bulk-tbl select:focus { outline: 0; background: var(--zb-cyan-lt); box-shadow: inset 0 0 0 2px var(--zb-cyan); }
 table.bulk-tbl input.invalid { background: var(--zb-error-bg); }
-table.bulk-tbl input::placeholder, .modal-body input::placeholder, .search-box input::placeholder {
-  color: var(--zb-ink-200); font-style: italic; font-weight: 400;
-}
-
-/* ───── Quick filter chip ───── */
-.chip-toggle {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: var(--radius-pill);
-  border: 1px solid var(--zb-line); background: var(--zb-white);
-  font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--zb-ink-500);
-  cursor: pointer; transition: all .15s; white-space: nowrap;
-}
-.chip-toggle:hover { border-color: var(--zb-cyan); color: var(--zb-cyan-dk); }
-.chip-toggle.on {
-  background: var(--zb-cyan-lt); color: var(--zb-cyan-dk);
-  border-color: var(--zb-cyan);
-}
-.chip-toggle svg { width: 12px; height: 12px; }
 table.bulk-tbl .row-del {
   border: 0; background: transparent; cursor: pointer; padding: 6px 10px; color: var(--zb-ink-300);
   border-radius: 4px; transition: all .12s;
@@ -463,10 +445,6 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       <label>Hasta</label>
       <input type="date" id="filterTo">
     </div>
-    <button class="chip-toggle" id="chipWeek" type="button" title="Mostrar solo vuelos de esta semana (lun-dom)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Esta semana
-    </button>
   </div>
 
   <!-- Tabla de vuelos -->
@@ -556,7 +534,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
     <div class="modal-body" id="modeSingle">
       <div class="field full">
         <label class="zb-label">Master (AWB) *</label>
-        <input type="text" id="nvMaster" placeholder="406-XXXXXXXX">
+        <input type="text" id="nvMaster" placeholder="406-44582134">
       </div>
       <div class="field">
         <label class="zb-label">Fecha *</label>
@@ -584,11 +562,11 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       </div>
       <div class="field">
         <label class="zb-label">Piezas</label>
-        <input type="text" id="nvPiezas" placeholder="ej. 4 PALLETS">
+        <input type="text" id="nvPiezas" placeholder="4 PALLETS">
       </div>
       <div class="field full">
         <label class="zb-label">Consolidados</label>
-        <input type="text" id="nvCons" placeholder="ej. CAS xxxx - AGE xxxx">
+        <input type="text" id="nvCons" placeholder="CAS 3538 - AGE 3539">
       </div>
     </div>
 
@@ -662,9 +640,6 @@ const STATUS_MAP = Object.fromEntries(STATUS_LIST.map(s => [s.id, s]));
 const CARRIERS = ['UPS', 'ATLAS', '7AIR', 'DHL'];
 const TIPOS_EMBARQUE = ['', 'AAD', 'AAY', 'SUELTA'];
 const DESTINOS = ['ENEXCOL', '472', 'CR'];
-// Prefijo conocido del master por carrier (placeholder visual)
-const MASTER_PREFIX = { UPS: '406-XXXXXXXX', ATLAS: '369-XXXXXXXX', DHL: '992-XXXXXXXX', '7AIR': 'NNN-XXXXXXXX' };
-const masterPh = c => MASTER_PREFIX[c] || 'NNN-XXXXXXXX';
 
 const AGENCIAS_DEFAULT = [
   'Movi', 'JL', 'MSL', 'LACS', 'Damak', 'Aerocasilleros',
@@ -726,16 +701,12 @@ function renderTable() {
   const fFrom = $('#filterFrom').value;
   const fTo = $('#filterTo').value;
 
-  const weekOn = $('#chipWeek').classList.contains('on');
-  const week = weekOn ? currentWeekRange() : null;
-
   const rows = VUELOS.filter(v => {
     if (fStatus && v.status !== fStatus) return false;
     if (fDest && v.destinoCode !== fDest) return false;
     if (fCarrier && v.carrier !== fCarrier) return false;
     if (fFrom && v.fecha < fFrom) return false;
     if (fTo && v.fecha > fTo) return false;
-    if (week && (v.fecha < week.from || v.fecha > week.to)) return false;
     if (term) {
       const blob = `${v.master} ${composeDestino(v)} ${v.cons} ${v.piezas} ${v.tipoEmbarque||''}`.toLowerCase();
       if (!blob.includes(term)) return false;
@@ -774,16 +745,6 @@ function formatFecha(iso) {
   if (!iso) return '—';
   const [y,m,d] = iso.split('-');
   return `${d}/${m}/${y.slice(2)}`;
-}
-
-// Lunes-domingo de la semana en curso (ISO yyyy-mm-dd)
-function currentWeekRange() {
-  const now = new Date();
-  const dow = (now.getDay() + 6) % 7; // 0 = lunes
-  const mon = new Date(now); mon.setDate(now.getDate() - dow); mon.setHours(0,0,0,0);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const iso = d => d.toISOString().slice(0, 10);
-  return { from: iso(mon), to: iso(sun) };
 }
 
 function renderKPIs() {
@@ -932,8 +893,6 @@ function populateModalSelects() {
   $('#nvTipo').innerHTML    = TIPOS_EMBARQUE.map(t => `<option value="${t}">${t || '—'}</option>`).join('');
   $('#nvDestinoCode').innerHTML = `<option value="">—</option>` + DESTINOS.map(d => `<option value="${d}">${d}</option>`).join('');
   $('#nvStatus').innerHTML  = STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
-  // Placeholder del master se ajusta al carrier elegido
-  $('#nvCarrier').addEventListener('change', () => { $('#nvMaster').placeholder = masterPh($('#nvCarrier').value); });
 }
 
 function setMode(mode) {
@@ -964,15 +923,15 @@ function bulkRowHTML(idx) {
   return `
     <tr data-idx="${idx}">
       <td>${idx + 1}</td>
-      <td><input type="text" class="b-master" placeholder="${masterPh('UPS')}"></td>
+      <td><input type="text" class="b-master" placeholder="406-44582134"></td>
       <td><input type="date" class="b-fecha" value="${today}"></td>
       <td><select class="b-carrier">${CARRIERS.map(c => `<option value="${c}">${c}</option>`).join('')}</select></td>
       <td><select class="b-tipo">${TIPOS_EMBARQUE.map(t => `<option value="${t}">${t || '—'}</option>`).join('')}</select></td>
       <td><input type="number" step="0.01" class="b-factor" placeholder="0.40"></td>
       <td><select class="b-destino"><option value="">—</option>${DESTINOS.map(d => `<option value="${d}">${d}</option>`).join('')}</select></td>
       <td><select class="b-status">${STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}</select></td>
-      <td><input type="text" class="b-piezas" placeholder="ej. 1"></td>
-      <td><input type="text" class="b-cons" placeholder="ej. CAS xxxx - AGE xxxx"></td>
+      <td><input type="text" class="b-piezas" placeholder="1"></td>
+      <td><input type="text" class="b-cons" placeholder="CAS 3538 - AGE 3539"></td>
       <td><button class="row-del" title="Eliminar fila">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button></td>
@@ -991,12 +950,6 @@ function genBulkRows(n) {
   $$('#bulkBody .b-destino').forEach(s => s.value = 'ENEXCOL');
   $$('#bulkBody .b-status').forEach(s => s.value = 'sin-estatus');
   $$('#bulkBody .b-factor').forEach(i => i.value = '0.40');
-  // Placeholder del master cambia con el carrier de la fila
-  $$('#bulkBody tr').forEach(tr => {
-    const carSel = tr.querySelector('.b-carrier');
-    const masterInp = tr.querySelector('.b-master');
-    carSel.addEventListener('change', () => { masterInp.placeholder = masterPh(carSel.value); });
-  });
   updateModalFootInfo();
 }
 function renumberBulk() {
@@ -1086,10 +1039,6 @@ $('#modalBackdrop').addEventListener('click', e => { if (e.target.id === 'modalB
 ['searchInput','filterStatus','filterDest','filterCarrier','filterFrom','filterTo'].forEach(id => {
   $('#'+id).addEventListener('input', renderTable);
   $('#'+id).addEventListener('change', renderTable);
-});
-$('#chipWeek').addEventListener('click', () => {
-  $('#chipWeek').classList.toggle('on');
-  renderTable();
 });
 $('#drawerClose').addEventListener('click', closeDrawer);
 $('#drawerBackdrop').addEventListener('click', closeDrawer);
