@@ -523,6 +523,7 @@
   .cons-stat.guias       { background: var(--zb-ink-50); color: var(--zb-ink-700); }
   .cons-stat.pagadas     { background: var(--zb-success-bg); color: var(--zb-success); }
   .cons-stat.despachadas { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
+  .cons-stat.porcobrar   { background: var(--zb-cyan-soft); color: var(--zb-cyan-dark); }
   .cons-stat.sinpago     { background: var(--zb-error-bg); color: var(--zb-error); }
   .cons-tracking {
     display: flex;
@@ -1347,6 +1348,7 @@ function renderConsolidados() {
             <span class="cons-stat guias"><i data-lucide="package"></i>${stats.total || 0} guías</span>
             <span class="cons-stat pagadas"><i data-lucide="check"></i>${stats.pagadas || 0} pagadas</span>
             <span class="cons-stat despachadas"><i data-lucide="truck"></i>${stats.despachadas || 0} despachadas</span>
+            ${stats.porCobrar > 0 ? `<span class="cons-stat porcobrar"><i data-lucide="hand-coins"></i>${stats.porCobrar} por cobrar</span>` : ''}
             ${stats.sinPago > 0 ? `<span class="cons-stat sinpago"><i data-lucide="alert-triangle"></i>${stats.sinPago} sin pago</span>` : ''}
           </div>
           <div class="cons-tracking">
