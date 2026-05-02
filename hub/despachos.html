@@ -145,8 +145,46 @@
 
     /* ---------- Webhooks ---------- */
     .webhooks {
-        display: flex; flex-direction: column; gap: 6px;
+        background: var(--zb-paper);
+        border: var(--zb-border);
+        border-radius: var(--zb-radius-md);
         margin-bottom: 28px;
+        overflow: hidden;
+    }
+    .webhooks-summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 12px 16px;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 12px; font-weight: 700;
+        color: var(--zb-ink-500);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        user-select: none;
+        transition: background .12s;
+    }
+    .webhooks-summary::-webkit-details-marker { display: none; }
+    .webhooks-summary:hover { background: #FCFCFC; }
+    .webhooks-summary .chev {
+        margin-left: auto;
+        font-size: 14px;
+        color: var(--zb-ink-300);
+        transition: transform .15s;
+    }
+    .webhooks[open] .webhooks-summary .chev { transform: rotate(180deg); color: var(--zb-cyan); }
+    .webhooks[open] .webhooks-summary { border-bottom: var(--zb-border); }
+    .webhooks-count {
+        background: var(--zb-ink-50);
+        color: var(--zb-ink-500);
+        font-size: 11px; font-weight: 700;
+        padding: 2px 8px;
+        border-radius: var(--zb-radius-pill);
+        letter-spacing: 0.3px;
+    }
+    .webhooks-list {
+        display: flex; flex-direction: column;
+        padding: 8px;
+        gap: 6px;
     }
     .wh-row {
         display: flex; align-items: center;
@@ -556,32 +594,39 @@
             </div>
         </div>
 
-        <div class="webhooks">
-            <div class="wh-row">
-                <div class="wh-lbl">Ejecutar Motor</div>
-                <input class="wh-url" id="urlE" readonly value="https://hub.zenderbox.com/webhook/cr-despachos">
-                <div class="wh-dot" id="dotE"></div>
-                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/pzttcsfegxtCxWgE" target="_blank" title="Ver flujo n8n">⧉</a>
+        <details class="webhooks">
+            <summary class="webhooks-summary">
+                <span>Webhooks &amp; Flujos n8n</span>
+                <span class="webhooks-count">4</span>
+                <span class="chev">▾</span>
+            </summary>
+            <div class="webhooks-list">
+                <div class="wh-row">
+                    <div class="wh-lbl">Ejecutar Motor</div>
+                    <input class="wh-url" id="urlE" readonly value="https://hub.zenderbox.com/webhook/cr-despachos">
+                    <div class="wh-dot" id="dotE"></div>
+                    <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/pzttcsfegxtCxWgE" target="_blank" title="Ver flujo n8n">⧉</a>
+                </div>
+                <div class="wh-row">
+                    <div class="wh-lbl">SmartQuick</div>
+                    <input class="wh-url" id="urlSQ" readonly value="https://hub.zenderbox.com/webhook/crear-guias-smartquick">
+                    <div class="wh-dot" id="dotSQ"></div>
+                    <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/tQiNAGZJrxwcuLLz" target="_blank" title="Ver flujo n8n">⧉</a>
+                </div>
+                <div class="wh-row">
+                    <div class="wh-lbl">Sync Casilleros</div>
+                    <input class="wh-url" id="urlSync" readonly value="https://hub.zenderbox.com/webhook/sync-casilleros-cr">
+                    <div class="wh-dot" id="dotSync"></div>
+                    <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/HIdE835AzPnEQl3b" target="_blank" title="Ver flujo n8n">⧉</a>
+                </div>
+                <div class="wh-row">
+                    <div class="wh-lbl">Descargar CSV</div>
+                    <input class="wh-url" id="urlD" readonly value="https://hub.zenderbox.com/webhook/cr-descargar-despachos">
+                    <div class="wh-dot" id="dotD"></div>
+                    <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/1h8dz0jYSYatqrwd" target="_blank" title="Ver flujo n8n">⧉</a>
+                </div>
             </div>
-            <div class="wh-row">
-                <div class="wh-lbl">SmartQuick</div>
-                <input class="wh-url" id="urlSQ" readonly value="https://hub.zenderbox.com/webhook/crear-guias-smartquick">
-                <div class="wh-dot" id="dotSQ"></div>
-                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/tQiNAGZJrxwcuLLz" target="_blank" title="Ver flujo n8n">⧉</a>
-            </div>
-            <div class="wh-row">
-                <div class="wh-lbl">Sync Casilleros</div>
-                <input class="wh-url" id="urlSync" readonly value="https://hub.zenderbox.com/webhook/sync-casilleros-cr">
-                <div class="wh-dot" id="dotSync"></div>
-                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/HIdE835AzPnEQl3b" target="_blank" title="Ver flujo n8n">⧉</a>
-            </div>
-            <div class="wh-row">
-                <div class="wh-lbl">Descargar CSV</div>
-                <input class="wh-url" id="urlD" readonly value="https://hub.zenderbox.com/webhook/cr-descargar-despachos">
-                <div class="wh-dot" id="dotD"></div>
-                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/1h8dz0jYSYatqrwd" target="_blank" title="Ver flujo n8n">⧉</a>
-            </div>
-        </div>
+        </details>
 
         <div class="steps-nav">
             <div class="step-item">
@@ -964,20 +1009,27 @@ async function enviarSQ() {
       </div>
     </div>
 
-    <div class="webhooks">
-      <div class="wh-row">
-        <div class="wh-lbl">Generar Despachos</div>
-        <input class="wh-url" readonly value="https://hub.zenderbox.com/webhook/despachos">
-        <div class="wh-dot"></div>
-        <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/y0PT0QqGUn8QLLhz" target="_blank" title="Ver flujo n8n">⧉</a>
+    <details class="webhooks">
+      <summary class="webhooks-summary">
+        <span>Webhooks &amp; Flujos n8n</span>
+        <span class="webhooks-count">2</span>
+        <span class="chev">▾</span>
+      </summary>
+      <div class="webhooks-list">
+        <div class="wh-row">
+          <div class="wh-lbl">Generar Despachos</div>
+          <input class="wh-url" readonly value="https://hub.zenderbox.com/webhook/despachos">
+          <div class="wh-dot"></div>
+          <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/y0PT0QqGUn8QLLhz" target="_blank" title="Ver flujo n8n">⧉</a>
+        </div>
+        <div class="wh-row">
+          <div class="wh-lbl">Borrar TCC HOY</div>
+          <input class="wh-url" readonly value="https://hub.zenderbox.com/webhook/borrar-tcc">
+          <div class="wh-dot"></div>
+          <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/y3M4kmc4PBjWGidR" target="_blank" title="Ver flujo n8n">⧉</a>
+        </div>
       </div>
-      <div class="wh-row">
-        <div class="wh-lbl">Borrar TCC HOY</div>
-        <input class="wh-url" readonly value="https://hub.zenderbox.com/webhook/borrar-tcc">
-        <div class="wh-dot"></div>
-        <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/y3M4kmc4PBjWGidR" target="_blank" title="Ver flujo n8n">⧉</a>
-      </div>
-    </div>
+    </details>
 
     <div class="card" style="margin-bottom:14px">
       <div class="card-hdr">
