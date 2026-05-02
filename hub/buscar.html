@@ -877,7 +877,7 @@
       <select id="f-pago">
         <option value="">— Todos —</option>
         <option value="pagado">Pagado</option>
-        <option value="pendiente">Pendiente</option>
+        <option value="porcobrar">Por cobrar</option>
       </select>
     </div>
 
@@ -1394,11 +1394,14 @@ function filtrarGuias(query, filters) {
       if (!campos.some(c => c.includes(q))) return false;
     }
     
-    // Filtro: Estado de pago
+    // Filtro: Estado de pago (lógica COD)
+    //  pagado    = PAGADO en Epayco OR cod=false (cobró en destino)
+    //  porcobrar = SIN PAGO en Epayco AND cod=true (a perseguir cobranza)
     if (filters.pago) {
-      const pagado = g.pago === 'PAGADO';
+      const pagado = g.pago === 'PAGADO' || g.cod === false;
+      const porCobrar = g.pago === 'SIN PAGO' && g.cod === true;
       if (filters.pago === 'pagado' && !pagado) return false;
-      if (filters.pago === 'pendiente' && pagado) return false;
+      if (filters.pago === 'porcobrar' && !porCobrar) return false;
     }
 
     // Filtro: Urgentes (sin despachar + ya en bodega destino — listas para crear en SmartQuick)
