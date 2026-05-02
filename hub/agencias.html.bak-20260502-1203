@@ -472,122 +472,6 @@ main {
 .toggle input:checked + .toggle-slider { background: var(--zb-cyan); }
 .toggle input:checked + .toggle-slider::after { transform: translateX(18px); }
 
-/* ── Collapsible bancos section ── */
-.collapsible {
-  margin-top: 20px;
-  border: 1px solid var(--zb-line);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--zb-white);
-}
-.collapsible-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  cursor: pointer;
-  user-select: none;
-  background: #FAFBFC;
-  transition: background .15s;
-}
-.collapsible-trigger:hover { background: var(--zb-surface); }
-.collapsible-trigger .trigger-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--zb-navy);
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.collapsible-trigger .trigger-meta {
-  display: inline-block;
-  background: var(--zb-cyan-lt);
-  color: var(--zb-navy);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 9px;
-  border-radius: 99px;
-  font-family: monospace;
-}
-.collapsible-trigger .trigger-meta.empty {
-  background: var(--zb-surface);
-  color: var(--zb-ink-100);
-}
-.collapsible-trigger .chevron {
-  width: 16px;
-  height: 16px;
-  color: var(--zb-ink-200);
-  transition: transform .2s ease;
-}
-.collapsible.open .collapsible-trigger .chevron { transform: rotate(180deg); }
-.collapsible-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .3s ease;
-}
-.collapsible.open .collapsible-content { max-height: 1500px; }
-.collapsible-inner { padding: 14px 16px 16px; border-top: 1px solid var(--zb-line); }
-
-.banco-item {
-  border: 1px solid var(--zb-line);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  margin-bottom: 10px;
-  background: var(--zb-white);
-  position: relative;
-}
-.banco-item:last-of-type { margin-bottom: 12px; }
-.banco-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.banco-item-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--zb-ink-200);
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.banco-item .field-row { gap: 10px; }
-.banco-item .field-input { font-size: 12px; padding: 8px 10px; }
-.banco-item .b-row { margin-bottom: 8px; }
-.banco-item .b-row:last-child { margin-bottom: 0; }
-.bancos-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-}
-.bancos-actions .add-btn {
-  background: var(--zb-white);
-  color: var(--zb-cyan);
-  border: 1px dashed var(--zb-cyan);
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
-  font: 600 12px 'Plus Jakarta Sans', sans-serif;
-  cursor: pointer;
-  transition: background .15s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.bancos-actions .add-btn:hover { background: var(--zb-cyan-lt); }
-.bancos-actions .add-btn:disabled { opacity: .4; cursor: not-allowed; }
-.bancos-empty {
-  padding: 20px;
-  text-align: center;
-  color: var(--zb-ink-200);
-  font-size: 13px;
-  background: var(--zb-surface);
-  border-radius: var(--radius-sm);
-  margin-bottom: 12px;
-}
-
 /* ── Toast ── */
 .toast {
   position: fixed;
@@ -797,30 +681,6 @@ main {
         </div>
         <label class="toggle"><input type="checkbox" id="fTransferencia"><span class="toggle-slider"></span></label>
       </div>
-
-      <!-- Cuentas bancarias (colapsable, oculta por default) -->
-      <div class="collapsible" id="bancosSection">
-        <div class="collapsible-trigger" onclick="toggleBancos()">
-          <div class="trigger-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
-            Cuentas bancarias
-            <span class="trigger-meta empty" id="bancosCount">0 cuentas</span>
-          </div>
-          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-        </div>
-        <div class="collapsible-content">
-          <div class="collapsible-inner">
-            <div id="bancosList"></div>
-            <div class="bancos-actions">
-              <span style="font-size:11px;color:var(--zb-ink-200)">Hasta 3 cuentas. Se muestran al cliente al elegir transferencia.</span>
-              <button type="button" class="add-btn" id="addBancoBtn" onclick="addBanco()">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                Añadir cuenta
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
@@ -976,90 +836,11 @@ function openModal(agencia) {
   document.getElementById('fTransferencia').checked   = !!agencia?.transferencia;
   document.getElementById('fSlug').readOnly           = isEdit;
   document.getElementById('fSlug').style.opacity      = isEdit ? '.5' : '1';
-
-  // Cuentas bancarias — siempre cerrado al abrir, prefill desde agencia.banco
-  const bancos = Array.isArray(agencia?.banco) ? agencia.banco : (agencia?.banco ? [agencia.banco] : []);
-  renderBancos(bancos);
-  document.getElementById('bancosSection').classList.remove('open');
-
   document.getElementById('overlay').classList.add('open');
 }
 
 function closeModal() {
   document.getElementById('overlay').classList.remove('open');
-}
-
-// ── Bancos (cuentas bancarias colapsables) ──────────────────────────
-function toggleBancos() {
-  document.getElementById('bancosSection').classList.toggle('open');
-}
-
-function renderBancos(list) {
-  const cont = document.getElementById('bancosList');
-  const count = (list || []).length;
-  const cnt = document.getElementById('bancosCount');
-  cnt.textContent = count === 1 ? '1 cuenta' : `${count} cuentas`;
-  cnt.classList.toggle('empty', count === 0);
-
-  if (!count) {
-    cont.innerHTML = `<div class="bancos-empty">Sin cuentas. Añadí hasta 3.</div>`;
-  } else {
-    cont.innerHTML = list.slice(0, 3).map((b, i) => bancoItemHTML(b || {}, i)).join('');
-  }
-  document.getElementById('addBancoBtn').disabled = count >= 3;
-}
-
-function bancoItemHTML(b, i) {
-  return `<div class="banco-item" data-idx="${i}">
-    <div class="banco-item-header">
-      <span class="banco-item-title">Cuenta ${i + 1}</span>
-      <button type="button" class="btn-icon" onclick="removeBanco(${i})" title="Eliminar cuenta" style="color:var(--zb-danger)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
-      </button>
-    </div>
-    <div class="b-row field-row">
-      <input class="field-input b-banco" placeholder="Banco" value="${esc(b.banco || '')}">
-      <input class="field-input b-tipo" placeholder="Tipo (Ahorros / Corriente)" value="${esc(b.tipo || '')}">
-    </div>
-    <div class="b-row field-row">
-      <input class="field-input b-numero" placeholder="Número / Convenio" value="${esc(b.numero || b.convenio || '')}">
-      <input class="field-input b-titular" placeholder="Titular" value="${esc(b.titular || '')}">
-    </div>
-    <div class="b-row field-row">
-      <input class="field-input b-nit" placeholder="NIT (opcional)" value="${esc(b.nit || '')}">
-      <input class="field-input b-ref" placeholder="Referencia (opcional)" value="${esc(b.ref || '')}">
-    </div>
-  </div>`;
-}
-
-function readBancos() {
-  const out = [];
-  document.querySelectorAll('#bancosList .banco-item').forEach(item => {
-    const get = sel => item.querySelector(sel)?.value.trim() || '';
-    const banco   = get('.b-banco');
-    const tipo    = get('.b-tipo');
-    const numero  = get('.b-numero');
-    const titular = get('.b-titular');
-    const nit     = get('.b-nit');
-    const ref     = get('.b-ref');
-    if (banco || numero || titular) out.push({ banco, tipo, numero, titular, nit, ref });
-  });
-  return out;
-}
-
-function addBanco() {
-  const curr = readBancos();
-  if (curr.length >= 3) return;
-  curr.push({});
-  renderBancos(curr);
-  // mantener el dropdown abierto al añadir
-  document.getElementById('bancosSection').classList.add('open');
-}
-
-function removeBanco(i) {
-  const curr = readBancos();
-  curr.splice(i, 1);
-  renderBancos(curr);
 }
 
 function handleOverlayClick(e) {
@@ -1085,7 +866,6 @@ async function guardarAgencia() {
     whatsapp_activo: document.getElementById('fWhatsappActivo').checked,
     epayco:        document.getElementById('fEpayco').checked,
     transferencia: document.getElementById('fTransferencia').checked,
-    banco:         readBancos(),
   };
 
   const btn = document.getElementById('btnGuardar');
