@@ -1195,6 +1195,7 @@ async function cargarDatos() {
         peso: g.peso || '',
         valor: g.valor || '',
         pago: g.pago || 'SIN PAGO',
+        cod: g.cod,                         // boolean: true=cobrar Epayco, false=ya cobró en destino
         sq: g.sq || 'PENDIENTE',
         sq_system_id: g.sq_system_id || '',
         actualizado: g.actualizado || '',  // De hoja CASILLERO
