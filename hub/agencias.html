@@ -8,21 +8,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ── ZenderBox Design System tokens ─────────────────────────────── */
 :root {
   --zb-cyan:    #029ECB;
   --zb-cyan-lt: #E6F5FB;
   --zb-navy:    #004B72;
   --zb-lime:    #CCD32A;
   --zb-ink:     #0D1C29;
+  --zb-ink-500: #666666;
   --zb-ink-200: #6B7A8D;
   --zb-ink-100: #A8B5C2;
   --zb-surface: #F6F6F6;
   --zb-line:    #E2E8EF;
   --zb-white:   #FFFFFF;
-  --zb-ok:      #1EB980;
-  --zb-warn:    #F59E0B;
-  --zb-danger:  #EF4444;
+  --zb-ok:      #008C31;
+  --zb-ok-bg:   #E8F4ED;
+  --zb-warn:    #B7791F;
+  --zb-warn-bg: #FBF0DA;
+  --zb-danger:  #F32735;
   --radius-sm:  6px;
   --radius-md:  10px;
   --radius-lg:  14px;
@@ -37,15 +39,15 @@ body {
   min-height: 100vh;
 }
 
-/* ── Layout ──────────────────────────────────────────────────────── */
+/* ── Layout ── */
 main {
-  margin-left: 220px;
+  margin-left: 232px;
   padding: 32px 36px;
   max-width: 1280px;
 }
 @media (max-width: 768px) { main { margin-left: 0; padding: 20px 16px; } }
 
-/* ── Page header ─────────────────────────────────────────────────── */
+/* ── Page header ── */
 .page-header {
   display: flex;
   align-items: center;
@@ -67,7 +69,7 @@ main {
   font-weight: 500;
 }
 
-/* ── Buttons ─────────────────────────────────────────────────────── */
+/* ── Buttons ── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -103,10 +105,10 @@ main {
 }
 .btn-icon:hover { background: var(--zb-surface); color: var(--zb-navy); }
 
-/* ── Stats strip ─────────────────────────────────────────────────── */
+/* ── Stats strip ── */
 .stats-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 14px;
   margin-bottom: 24px;
 }
@@ -114,7 +116,7 @@ main {
   background: var(--zb-white);
   border: 1px solid var(--zb-line);
   border-radius: var(--radius-lg);
-  padding: 18px 20px;
+  padding: 16px 20px;
   box-shadow: var(--shadow-sm);
 }
 .stat-card .val {
@@ -131,15 +133,16 @@ main {
   color: var(--zb-ink-200);
   margin-top: 5px;
 }
-.stat-card.ok .val  { color: var(--zb-ok); }
+.stat-card.ok   .val { color: var(--zb-ok); }
 .stat-card.warn .val { color: var(--zb-warn); }
 
-/* ── Filters bar ─────────────────────────────────────────────────── */
+/* ── Filters bar ── */
 .filters-bar {
   display: flex;
   gap: 10px;
   margin-bottom: 18px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .search-wrap {
   position: relative;
@@ -156,22 +159,22 @@ main {
 }
 .search-input {
   width: 100%;
-  padding: 10px 12px 10px 38px;
+  padding: 9px 12px 9px 38px;
   background: var(--zb-white);
   border: 1px solid var(--zb-line);
   border-radius: var(--radius-sm);
-  font: 14px 'Plus Jakarta Sans', sans-serif;
+  font: 13px 'Plus Jakarta Sans', sans-serif;
   color: var(--zb-ink);
   transition: border-color .15s;
 }
 .search-input:focus { outline: none; border-color: var(--zb-cyan); }
 .search-input::placeholder { color: var(--zb-ink-100); }
 .filter-select {
-  padding: 10px 32px 10px 12px;
+  padding: 9px 30px 9px 12px;
   background: var(--zb-white);
   border: 1px solid var(--zb-line);
   border-radius: var(--radius-sm);
-  font: 14px 'Plus Jakarta Sans', sans-serif;
+  font: 13px 'Plus Jakarta Sans', sans-serif;
   color: var(--zb-ink);
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -181,7 +184,7 @@ main {
 }
 .filter-select:focus { outline: none; border-color: var(--zb-cyan); }
 
-/* ── Table card ──────────────────────────────────────────────────── */
+/* ── Table card ── */
 .table-card {
   background: var(--zb-white);
   border: 1px solid var(--zb-line);
@@ -203,29 +206,29 @@ main {
   white-space: nowrap;
 }
 .table-card td {
-  padding: 13px 16px;
+  padding: 12px 16px;
   font-size: 13px;
   border-bottom: 1px solid var(--zb-line);
   color: var(--zb-ink);
   vertical-align: middle;
 }
 .table-card tr:last-child td { border-bottom: none; }
-.table-card tr:hover td { background: #FAFBFF; }
+.table-card tr:hover td { background: #FAFCFE; cursor: pointer; }
 
-/* ── Agency cell ─────────────────────────────────────────────────── */
+/* ── Agency cell ── */
 .ag-cell {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 .ag-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   flex-shrink: 0;
   color: #fff;
@@ -239,35 +242,73 @@ main {
   padding: 4px;
 }
 .ag-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--zb-navy);
 }
 .ag-slug {
   font-size: 11px;
   color: var(--zb-ink-200);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: monospace;
   font-weight: 500;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
-/* ── Color dot ───────────────────────────────────────────────────── */
-.color-dot {
+/* ── País badge ── */
+.pais-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--zb-ink-200);
-}
-.color-dot .dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(0,0,0,.1);
-  flex-shrink: 0;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--zb-surface);
+  color: var(--zb-ink-500);
+  border: 1px solid var(--zb-line);
+  white-space: nowrap;
 }
 
-/* ── Badges ──────────────────────────────────────────────────────── */
+/* ── ID WMS tag ── */
+.id-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: monospace;
+  background: var(--zb-cyan-lt);
+  color: var(--zb-navy);
+}
+.id-tag.empty {
+  background: var(--zb-surface);
+  color: var(--zb-ink-100);
+  font-weight: 500;
+}
+
+/* ── Features icons ── */
+.features {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.feat {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: transform .1s;
+}
+.feat.on  { background: var(--zb-ok-bg); }
+.feat.off { background: var(--zb-surface); opacity: .4; }
+.feat svg { width: 13px; height: 13px; }
+.feat.on  svg { color: var(--zb-ok); }
+.feat.off svg { color: var(--zb-ink-200); }
+
+/* ── Status badge ── */
 .badge {
   display: inline-block;
   padding: 3px 9px;
@@ -276,32 +317,13 @@ main {
   font-weight: 700;
   letter-spacing: .3px;
 }
-.badge-ok   { background: #ECFDF5; color: var(--zb-ok); }
-.badge-off  { background: #F3F4F6; color: var(--zb-ink-200); }
-.badge-warn { background: #FFFBEB; color: var(--zb-warn); }
+.badge-ok   { background: var(--zb-ok-bg);   color: var(--zb-ok); }
+.badge-off  { background: #F3F4F6;             color: var(--zb-ink-200); }
 
-/* ── Feature icons row ───────────────────────────────────────────── */
-.features {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.feat {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-}
-.feat.on  { background: #ECFDF5; }
-.feat.off { background: #F3F4F6; opacity: .45; }
-
-/* ── Actions column ──────────────────────────────────────────────── */
+/* ── Actions ── */
 .actions { display: flex; gap: 4px; }
 
-/* ── Empty & loading states ──────────────────────────────────────── */
+/* ── Empty & loading states ── */
 .state-row td {
   text-align: center;
   padding: 60px 20px;
@@ -319,7 +341,7 @@ main {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Modal ───────────────────────────────────────────────────────── */
+/* ── Modal ── */
 .overlay {
   position: fixed;
   inset: 0;
@@ -335,7 +357,7 @@ main {
   background: var(--zb-white);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 540px;
+  max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-md);
@@ -346,6 +368,10 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--zb-white);
+  z-index: 1;
 }
 .modal-header h2 {
   font-size: 16px;
@@ -359,36 +385,55 @@ main {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  position: sticky;
+  bottom: 0;
+  background: var(--zb-white);
 }
 
-/* ── Form fields ─────────────────────────────────────────────────── */
-.field-group { margin-bottom: 18px; }
+/* ── Form fields ── */
+.field-group { margin-bottom: 16px; }
 .field-group label {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--zb-navy);
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   text-transform: uppercase;
   letter-spacing: .5px;
 }
-.field-input {
+.field-input, .field-select {
   width: 100%;
-  padding: 10px 13px;
+  padding: 9px 12px;
   background: var(--zb-white);
   border: 1px solid var(--zb-line);
   border-radius: var(--radius-sm);
-  font: 14px 'Plus Jakarta Sans', sans-serif;
+  font: 13px 'Plus Jakarta Sans', sans-serif;
   color: var(--zb-ink);
   transition: border-color .15s;
 }
-.field-input:focus { outline: none; border-color: var(--zb-cyan); }
+.field-input:focus, .field-select:focus { outline: none; border-color: var(--zb-cyan); }
+.field-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A8D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 .field-hint {
   font-size: 11px;
   color: var(--zb-ink-200);
   margin-top: 4px;
 }
+
+/* section divider inside modal */
+.form-section {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--zb-ink-200);
+  margin: 20px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--zb-line);
+}
+
+/* ── Toggle ── */
 .toggle-row {
   display: flex;
   align-items: center;
@@ -399,7 +444,6 @@ main {
 .toggle-row:last-child { border-bottom: none; }
 .toggle-label { font-size: 13px; font-weight: 600; color: var(--zb-ink); }
 .toggle-desc  { font-size: 11px; color: var(--zb-ink-200); margin-top: 2px; }
-/* Toggle switch */
 .toggle {
   position: relative;
   width: 40px;
@@ -418,10 +462,8 @@ main {
 .toggle-slider::after {
   content: '';
   position: absolute;
-  left: 3px;
-  top: 3px;
-  width: 16px;
-  height: 16px;
+  left: 3px; top: 3px;
+  width: 16px; height: 16px;
   background: #fff;
   border-radius: 50%;
   transition: transform .2s;
@@ -430,25 +472,10 @@ main {
 .toggle input:checked + .toggle-slider { background: var(--zb-cyan); }
 .toggle input:checked + .toggle-slider::after { transform: translateX(18px); }
 
-/* ── Color preview strip ─────────────────────────────────────────── */
-.color-preview {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  align-items: center;
-}
-.color-swatch {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--zb-line);
-}
-
-/* ── Toast ───────────────────────────────────────────────────────── */
+/* ── Toast ── */
 .toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 24px; right: 24px;
   background: var(--zb-navy);
   color: #fff;
   padding: 12px 20px;
@@ -468,16 +495,14 @@ main {
 </head>
 <body>
 
-<!-- Sidebar placeholder — sidebar.js lo popula -->
 <div id="wms-sidebar"></div>
 <script src="sidebar.js"></script>
 
 <main>
-  <!-- ── Page header ── -->
   <div class="page-header">
     <div>
       <div class="breadcrumb">Configuración → Agencias</div>
-      <h1>Agencias</h1>
+      <h1>Agencias de Rastreo</h1>
     </div>
     <button class="btn btn-primary" onclick="openModal()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -485,7 +510,7 @@ main {
     </button>
   </div>
 
-  <!-- ── Stats strip ── -->
+  <!-- Stats -->
   <div class="stats-strip">
     <div class="stat-card">
       <div class="val" id="statTotal">—</div>
@@ -503,41 +528,50 @@ main {
       <div class="val" id="statWA">—</div>
       <div class="lbl">Con WhatsApp</div>
     </div>
+    <div class="stat-card">
+      <div class="val" id="statEpayco">—</div>
+      <div class="lbl">Con ePayco</div>
+    </div>
   </div>
 
-  <!-- ── Filters bar ── -->
+  <!-- Filters -->
   <div class="filters-bar">
     <div class="search-wrap">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
       </svg>
       <input type="search" class="search-input" id="searchInput"
-        placeholder="Buscar por nombre o slug…" oninput="filterTable()">
+        placeholder="Buscar por nombre, slug…" oninput="filterTable()">
     </div>
+    <select class="filter-select" id="filterPais" onchange="filterTable()">
+      <option value="">Todos los países</option>
+      <option value="CR">🇨🇷 Costa Rica</option>
+      <option value="COL">🇨🇴 Colombia</option>
+      <option value="USA">🇺🇸 Estados Unidos</option>
+    </select>
     <select class="filter-select" id="filterEstado" onchange="filterTable()">
-      <option value="">Todas</option>
+      <option value="">Todos los estados</option>
       <option value="activa">Activas</option>
       <option value="inactiva">Inactivas</option>
     </select>
   </div>
 
-  <!-- ── Agencies table ── -->
+  <!-- Table -->
   <div class="table-card">
     <table>
       <thead>
         <tr>
           <th>Agencia</th>
-          <th>Color</th>
-          <th>WhatsApp</th>
-          <th>ePayco</th>
-          <th>Transferencia</th>
+          <th>País</th>
+          <th>ID WMS</th>
+          <th>Funcionalidades</th>
           <th>Estado</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="agenciasBody">
         <tr class="state-row">
-          <td colspan="7">
+          <td colspan="6">
             <div class="spinner"></div>
             Cargando agencias…
           </td>
@@ -547,7 +581,7 @@ main {
   </div>
 </main>
 
-<!-- ── Modal Nueva / Editar Agencia ── -->
+<!-- Modal -->
 <div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
   <div class="modal" id="modal">
     <div class="modal-header">
@@ -561,11 +595,13 @@ main {
     <div class="modal-body">
       <input type="hidden" id="editSlugOriginal">
 
+      <!-- Identidad -->
+      <div class="form-section">Identidad</div>
       <div class="field-row">
         <div class="field-group">
           <label>Slug <span style="color:var(--zb-danger)">*</span></label>
           <input class="field-input" id="fSlug" placeholder="expressmailco" autocomplete="off">
-          <div class="field-hint">Identificador único, sin espacios</div>
+          <div class="field-hint">Único, sin espacios ni tildes</div>
         </div>
         <div class="field-group">
           <label>Nombre <span style="color:var(--zb-danger)">*</span></label>
@@ -573,33 +609,50 @@ main {
         </div>
       </div>
 
+      <div class="field-row">
+        <div class="field-group">
+          <label>País</label>
+          <select class="field-select" id="fPais">
+            <option value="">— Sin asignar —</option>
+            <option value="CR">🇨🇷 Costa Rica</option>
+            <option value="COL">🇨🇴 Colombia</option>
+            <option value="USA">🇺🇸 Estados Unidos</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>ID WMS</label>
+          <input class="field-input" id="fAgenciaId" placeholder="01" maxlength="5" autocomplete="off">
+          <div class="field-hint">01=COL · 02=CR · 03=XpressMail…</div>
+        </div>
+      </div>
+
       <div class="field-group">
         <label>Logo URL</label>
         <input class="field-input" id="fLogo" placeholder="https://…/logo.png" autocomplete="off">
-        <div class="field-hint">URL de imagen pública (PNG/SVG recomendado, fondo transparente)</div>
+        <div class="field-hint">PNG/SVG con fondo transparente</div>
       </div>
 
       <div class="field-row">
         <div class="field-group">
           <label>Color primario</label>
-          <input class="field-input" id="fColorPrimary" type="color" value="#029ECB" style="height:42px;padding:4px 8px;cursor:pointer">
+          <input class="field-input" id="fColorPrimary" type="color" value="#029ECB" style="height:40px;padding:4px 8px;cursor:pointer">
         </div>
         <div class="field-group">
           <label>Color acento</label>
-          <input class="field-input" id="fColorAccent" type="color" value="#004B72" style="height:42px;padding:4px 8px;cursor:pointer">
+          <input class="field-input" id="fColorAccent" type="color" value="#004B72" style="height:40px;padding:4px 8px;cursor:pointer">
         </div>
       </div>
 
+      <!-- Contacto -->
+      <div class="form-section">Contacto & Pagos</div>
       <div class="field-group">
         <label>WhatsApp</label>
         <input class="field-input" id="fWhatsapp" placeholder="+50688887777" autocomplete="off">
-        <div class="field-hint">Número con código de país (ej: +506…)</div>
+        <div class="field-hint">Número con código de país</div>
       </div>
 
-      <div style="margin-top:18px;margin-bottom:8px">
-        <label style="font-size:12px;font-weight:700;color:var(--zb-navy);text-transform:uppercase;letter-spacing:.5px">Funcionalidades</label>
-      </div>
-
+      <!-- Funcionalidades -->
+      <div class="form-section">Funcionalidades</div>
       <div class="toggle-row">
         <div>
           <div class="toggle-label">Agencia activa</div>
@@ -610,14 +663,14 @@ main {
       <div class="toggle-row">
         <div>
           <div class="toggle-label">WhatsApp activo</div>
-          <div class="toggle-desc">Envía notificaciones por WhatsApp</div>
+          <div class="toggle-desc">Envía notificaciones automáticas</div>
         </div>
         <label class="toggle"><input type="checkbox" id="fWhatsappActivo"><span class="toggle-slider"></span></label>
       </div>
       <div class="toggle-row">
         <div>
           <div class="toggle-label">ePayco</div>
-          <div class="toggle-desc">Acepta pagos online via ePayco</div>
+          <div class="toggle-desc">Acepta pagos online vía ePayco</div>
         </div>
         <label class="toggle"><input type="checkbox" id="fEpayco"><span class="toggle-slider"></span></label>
       </div>
@@ -638,18 +691,30 @@ main {
   </div>
 </div>
 
-<!-- ── Toast ── -->
 <div class="toast" id="toast"></div>
 
 <script>
 'use strict';
 
-const WEBHOOK_LIST  = 'https://hub.zenderbox.com/webhook/agencias-list';
-const WEBHOOK_SAVE  = 'https://hub.zenderbox.com/webhook/agencia-save';
+const WEBHOOK_LIST = 'https://hub.zenderbox.com/webhook/agencias-list';
+const WEBHOOK_SAVE = 'https://hub.zenderbox.com/webhook/agencia-save';
+
+const PAIS_LABELS = {
+  CR:  '🇨🇷 CR',
+  COL: '🇨🇴 COL',
+  USA: '🇺🇸 USA',
+};
 
 let allAgencias = [];
 
-// ── Data loading ──────────────────────────────────────────────────
+// ── SVG icons for features column ────────────────────────────────────
+const FEAT_ICONS = {
+  wa:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>',
+  pay:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+  bank:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>',
+};
+
+// ── Load ──────────────────────────────────────────────────────────────
 async function loadAgencias() {
   try {
     const res = await fetch(WEBHOOK_LIST);
@@ -660,61 +725,61 @@ async function loadAgencias() {
     renderTable(allAgencias);
   } catch (e) {
     document.getElementById('agenciasBody').innerHTML = `
-      <tr class="state-row">
-        <td colspan="7" style="color:var(--zb-danger)">
-          Error cargando agencias: ${e.message}
-        </td>
-      </tr>`;
+      <tr class="state-row"><td colspan="6" style="color:var(--zb-danger)">
+        Error cargando agencias: ${e.message}
+      </td></tr>`;
   }
 }
 
-// ── Stats ─────────────────────────────────────────────────────────
+// ── Stats ─────────────────────────────────────────────────────────────
 function updateStats(list) {
   const activas   = list.filter(a => a.activa).length;
-  const inactivas = list.length - activas;
   const conWA     = list.filter(a => a.whatsapp_activo).length;
+  const conEpayco = list.filter(a => a.epayco).length;
   document.getElementById('statTotal').textContent    = list.length;
   document.getElementById('statActivas').textContent  = activas;
-  document.getElementById('statInactivas').textContent = inactivas;
+  document.getElementById('statInactivas').textContent = list.length - activas;
   document.getElementById('statWA').textContent       = conWA;
+  document.getElementById('statEpayco').textContent   = conEpayco;
 }
 
-// ── Filter ────────────────────────────────────────────────────────
+// ── Filter ────────────────────────────────────────────────────────────
 function filterTable() {
   const q      = document.getElementById('searchInput').value.toLowerCase();
+  const pais   = document.getElementById('filterPais').value;
   const estado = document.getElementById('filterEstado').value;
   const filtered = allAgencias.filter(a => {
     const matchQ = !q ||
       a.nombre?.toLowerCase().includes(q) ||
       a.slug?.toLowerCase().includes(q);
+    const matchP = !pais   || a.pais === pais;
     const matchE = !estado ||
-      (estado === 'activa' && a.activa) ||
+      (estado === 'activa'   &&  a.activa) ||
       (estado === 'inactiva' && !a.activa);
-    return matchQ && matchE;
+    return matchQ && matchP && matchE;
   });
   renderTable(filtered);
 }
 
-// ── Render table ──────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────
 function renderTable(list) {
   const tbody = document.getElementById('agenciasBody');
   if (!list.length) {
-    tbody.innerHTML = `
-      <tr class="state-row">
-        <td colspan="7">Sin resultados para los filtros aplicados.</td>
-      </tr>`;
+    tbody.innerHTML = `<tr class="state-row"><td colspan="6">Sin resultados para los filtros aplicados.</td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(a => {
-    const initials = (a.nombre || a.slug || '?').substring(0, 2).toUpperCase();
-    const avatarStyle = a.color_primary
-      ? `style="background:${a.color_primary}"`
-      : '';
+    const initials     = (a.nombre || a.slug || '?').substring(0, 2).toUpperCase();
+    const avatarStyle  = a.color_primary ? `style="background:${a.color_primary}"` : '';
     const avatarContent = a.logo
       ? `<img src="${esc(a.logo)}" alt="${esc(a.nombre)}" onerror="this.style.display='none'">`
       : initials;
+    const paisLabel = a.pais ? `<span class="pais-badge">${PAIS_LABELS[a.pais] || esc(a.pais)}</span>` : '<span style="color:var(--zb-ink-100);font-size:12px">—</span>';
+    const idTag     = a.agencia_id
+      ? `<span class="id-tag">${esc(a.agencia_id)}</span>`
+      : `<span class="id-tag empty">—</span>`;
     return `
-      <tr>
+      <tr onclick='openModal(${JSON.stringify(a)})'>
         <td>
           <div class="ag-cell">
             <div class="ag-avatar" ${avatarStyle}>${avatarContent}</div>
@@ -724,34 +789,18 @@ function renderTable(list) {
             </div>
           </div>
         </td>
+        <td>${paisLabel}</td>
+        <td>${idTag}</td>
         <td>
-          <div class="color-dot">
-            <div class="dot" style="background:${a.color_primary || '#ccc'}"></div>
-            <div class="dot" style="background:${a.color_accent  || '#ccc'}"></div>
+          <div class="features">
+            <div class="feat ${a.whatsapp_activo ? 'on' : 'off'}" title="WhatsApp">${FEAT_ICONS.wa}</div>
+            <div class="feat ${a.epayco        ? 'on' : 'off'}" title="ePayco">${FEAT_ICONS.pay}</div>
+            <div class="feat ${a.transferencia  ? 'on' : 'off'}" title="Transferencia">${FEAT_ICONS.bank}</div>
           </div>
         </td>
+        <td><span class="badge ${a.activa ? 'badge-ok' : 'badge-off'}">${a.activa ? 'Activa' : 'Inactiva'}</span></td>
         <td>
-          <span class="badge ${a.whatsapp_activo ? 'badge-ok' : 'badge-off'}">
-            ${a.whatsapp_activo ? '● Activo' : '○ Inactivo'}
-          </span>
-        </td>
-        <td>
-          <span class="badge ${a.epayco ? 'badge-ok' : 'badge-off'}">
-            ${a.epayco ? '● Sí' : '○ No'}
-          </span>
-        </td>
-        <td>
-          <span class="badge ${a.transferencia ? 'badge-ok' : 'badge-off'}">
-            ${a.transferencia ? '● Sí' : '○ No'}
-          </span>
-        </td>
-        <td>
-          <span class="badge ${a.activa ? 'badge-ok' : 'badge-off'}">
-            ${a.activa ? 'Activa' : 'Inactiva'}
-          </span>
-        </td>
-        <td>
-          <div class="actions">
+          <div class="actions" onclick="event.stopPropagation()">
             <button class="btn-icon" title="Editar" onclick='openModal(${JSON.stringify(a)})'>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -768,24 +817,25 @@ function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── Modal ─────────────────────────────────────────────────────────
+// ── Modal ─────────────────────────────────────────────────────────────
 function openModal(agencia) {
   const isEdit = !!agencia;
-  document.getElementById('modalTitle').textContent = isEdit ? 'Editar Agencia' : 'Nueva Agencia';
-  document.getElementById('editSlugOriginal').value = agencia?.slug || '';
-  document.getElementById('fSlug').value            = agencia?.slug            || '';
-  document.getElementById('fNombre').value          = agencia?.nombre          || '';
-  document.getElementById('fLogo').value            = agencia?.logo            || '';
-  document.getElementById('fColorPrimary').value    = agencia?.color_primary   || '#029ECB';
-  document.getElementById('fColorAccent').value     = agencia?.color_accent    || '#004B72';
-  document.getElementById('fWhatsapp').value        = agencia?.whatsapp        || '';
-  document.getElementById('fActiva').checked        = agencia?.activa          !== false;
-  document.getElementById('fWhatsappActivo').checked= !!agencia?.whatsapp_activo;
-  document.getElementById('fEpayco').checked        = !!agencia?.epayco;
-  document.getElementById('fTransferencia').checked = !!agencia?.transferencia;
-  // Slug no editable en modo edición
-  document.getElementById('fSlug').readOnly = isEdit;
-  document.getElementById('fSlug').style.opacity = isEdit ? '.5' : '1';
+  document.getElementById('modalTitle').textContent   = isEdit ? 'Editar Agencia' : 'Nueva Agencia';
+  document.getElementById('editSlugOriginal').value   = agencia?.slug         || '';
+  document.getElementById('fSlug').value              = agencia?.slug         || '';
+  document.getElementById('fNombre').value            = agencia?.nombre       || '';
+  document.getElementById('fPais').value              = agencia?.pais         || '';
+  document.getElementById('fAgenciaId').value         = agencia?.agencia_id   || '';
+  document.getElementById('fLogo').value              = agencia?.logo         || '';
+  document.getElementById('fColorPrimary').value      = agencia?.color_primary|| '#029ECB';
+  document.getElementById('fColorAccent').value       = agencia?.color_accent || '#004B72';
+  document.getElementById('fWhatsapp').value          = agencia?.whatsapp     || '';
+  document.getElementById('fActiva').checked          = agencia?.activa       !== false;
+  document.getElementById('fWhatsappActivo').checked  = !!agencia?.whatsapp_activo;
+  document.getElementById('fEpayco').checked          = !!agencia?.epayco;
+  document.getElementById('fTransferencia').checked   = !!agencia?.transferencia;
+  document.getElementById('fSlug').readOnly           = isEdit;
+  document.getElementById('fSlug').style.opacity      = isEdit ? '.5' : '1';
   document.getElementById('overlay').classList.add('open');
 }
 
@@ -797,7 +847,7 @@ function handleOverlayClick(e) {
   if (e.target === document.getElementById('overlay')) closeModal();
 }
 
-// ── Save ──────────────────────────────────────────────────────────
+// ── Save ──────────────────────────────────────────────────────────────
 async function guardarAgencia() {
   const slug   = document.getElementById('fSlug').value.trim();
   const nombre = document.getElementById('fNombre').value.trim();
@@ -806,7 +856,9 @@ async function guardarAgencia() {
   const payload = {
     slug,
     nombre,
-    logo:          document.getElementById('fLogo').value.trim() || null,
+    pais:          document.getElementById('fPais').value      || null,
+    agencia_id:    document.getElementById('fAgenciaId').value.trim() || null,
+    logo:          document.getElementById('fLogo').value.trim()      || null,
     color_primary: document.getElementById('fColorPrimary').value,
     color_accent:  document.getElementById('fColorAccent').value,
     whatsapp:      document.getElementById('fWhatsapp').value.trim(),
@@ -838,7 +890,7 @@ async function guardarAgencia() {
   }
 }
 
-// ── Toast ─────────────────────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────────────
 function showToast(msg, type = '') {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -846,7 +898,7 @@ function showToast(msg, type = '') {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// ── Init ──────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────
 loadAgencias().then(() => {
   if (new URLSearchParams(location.search).get('new') === '1') openModal();
 });
