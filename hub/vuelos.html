@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aéreo · Control de Vuelos · ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --zb-cyan:    #029ECB;
+  --zb-cyan-dk: #007B9F;
+  --zb-cyan-lt: #E6F5FB;
+  --zb-navy:    #004B72;
+  --zb-lime:    #CCD32A;
+  --zb-lime-lt: #F7F8DE;
+  --zb-ink:     #0D1C29;
+  --zb-ink-700: #333333;
+  --zb-ink-500: #666666;
+  --zb-ink-300: #8A8A8A;
+  --zb-ink-200: #B8B8B8;
+  --zb-ink-100: #DBDBDB;
+  --zb-line:    #E2E8EF;
+  --zb-surface: #F6F6F6;
+  --zb-white:   #FFFFFF;
+  --zb-success: #008C31;
+  --zb-success-bg: #E8F4ED;
+  --zb-warn:    #B7791F;
+  --zb-warn-bg: #FBF0DA;
+  --zb-error:   #F32735;
+  --zb-error-bg: #FBEAEC;
+  --zb-gradient: linear-gradient(45deg, #029ECB 0%, #CCD32A 85%);
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-pill: 99px;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg:  0 12px 32px rgba(39,39,39,.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--zb-surface);
+  color: var(--zb-ink-700);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ───── Layout ───── */
+main {
+  margin-left: 220px;
+  padding: 28px 32px 80px;
+  max-width: 1600px;
+}
+@media (max-width: 768px) { main { margin-left: 0; padding: 18px 14px 60px; } }
+
+/* ───── Page header ───── */
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+.page-header h1 { font-size: 24px; font-weight: 800; color: var(--zb-navy); letter-spacing: -.4px; }
+.page-header p  { font-size: 13px; color: var(--zb-ink-500); margin-top: 4px; font-weight: 500; }
+.page-actions   { display: flex; gap: 8px; }
+
+/* ───── Buttons ───── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; border: 0;
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  font: 700 13px/1 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+  text-decoration: none; transition: filter .15s, transform .1s, box-shadow .15s, background .15s, border-color .15s;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--zb-gradient); color: #fff; }
+.btn-primary:hover { filter: brightness(1.06); box-shadow: 0 4px 12px rgba(2,158,203,.25); }
+.btn-secondary { background: var(--zb-cyan); color: #fff; }
+.btn-secondary:hover { filter: brightness(1.06); }
+.btn-ghost { background: var(--zb-white); color: var(--zb-navy); border: 1px solid var(--zb-line); }
+.btn-ghost:hover { background: var(--zb-surface); border-color: var(--zb-cyan); color: var(--zb-cyan-dk); }
+.btn-sm { padding: 7px 12px; font-size: 12px; }
+.btn-icon-only { padding: 8px; }
+
+/* ───── KPIs ───── */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+@media (max-width: 980px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .kpis { grid-template-columns: 1fr; } }
+.kpi {
+  background: var(--zb-white); border: 1px solid var(--zb-line); border-radius: var(--radius-md);
+  padding: 16px 18px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+}
+.kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--zb-ink-500); }
+.kpi-value { font-size: 28px; font-weight: 800; color: var(--zb-navy); margin-top: 6px; line-height: 1.1; letter-spacing: -.5px; }
+.kpi-sub   { font-size: 12px; color: var(--zb-ink-500); margin-top: 4px; font-weight: 500; }
+.kpi-icon  {
+  position: absolute; top: 14px; right: 14px; width: 32px; height: 32px;
+  border-radius: var(--radius-sm); background: var(--zb-cyan-lt); color: var(--zb-cyan);
+  display: flex; align-items: center; justify-content: center;
+}
+.kpi-icon svg { width: 16px; height: 16px; }
+.kpi.alert .kpi-icon { background: var(--zb-warn-bg); color: var(--zb-warn); }
+.kpi.alert .kpi-value { color: var(--zb-warn); }
+.kpi.success .kpi-icon { background: var(--zb-success-bg); color: var(--zb-success); }
+
+/* ───── Toolbar (filters) ───── */
+.toolbar {
+  background: var(--zb-white); border: 1px solid var(--zb-line); border-radius: var(--radius-md);
+  padding: 14px; margin-bottom: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.search-box { position: relative; flex: 1; min-width: 220px; }
+.search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--zb-ink-300); width: 14px; height: 14px; }
+.search-box input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid var(--zb-line); border-radius: var(--radius-sm); font: 500 13px 'Plus Jakarta Sans', sans-serif; background: var(--zb-white); color: var(--zb-ink-700); }
+.search-box input:focus { outline: 0; border-color: var(--zb-cyan); box-shadow: 0 0 0 3px rgba(2,158,203,.12); }
+
+.field { display: inline-flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--zb-ink-500); }
+.field select, .field input[type="date"] {
+  padding: 8px 10px; border: 1px solid var(--zb-line); border-radius: var(--radius-sm);
+  font: 500 13px 'Plus Jakarta Sans', sans-serif; background: var(--zb-white); color: var(--zb-ink-700); min-width: 120px;
+}
+.field select:focus, .field input[type="date"]:focus { outline: 0; border-color: var(--zb-cyan); }
+
+.toolbar-spacer { flex: 1; }
+
+/* ───── Vuelos table ───── */
+.table-wrap {
+  background: var(--zb-white); border: 1px solid var(--zb-line); border-radius: var(--radius-md);
+  overflow: hidden; box-shadow: var(--shadow-sm);
+}
+table.vuelos { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.vuelos thead th {
+  background: var(--zb-surface); text-align: left; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px; color: var(--zb-ink-500);
+  padding: 12px 14px; border-bottom: 1px solid var(--zb-line); white-space: nowrap;
+}
+table.vuelos tbody td {
+  padding: 13px 14px; border-bottom: 1px solid var(--zb-line); vertical-align: middle;
+  font-weight: 500; color: var(--zb-ink-700);
+}
+table.vuelos tbody tr { cursor: pointer; transition: background .12s; }
+table.vuelos tbody tr:hover { background: #FAFCFE; }
+table.vuelos tbody tr:last-child td { border-bottom: 0; }
+.master-cell { font-weight: 700; color: var(--zb-navy); font-variant-numeric: tabular-nums; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.num.diff-pos { color: var(--zb-success); font-weight: 700; }
+.num.diff-neg { color: var(--zb-error); font-weight: 700; }
+
+.carrier-tag {
+  display: inline-block; padding: 3px 8px; border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 700; letter-spacing: .3px;
+  background: var(--zb-cyan-lt); color: var(--zb-cyan-dk);
+}
+.carrier-tag.atlas { background: #FFF1E5; color: #B45309; }
+.carrier-tag.air7  { background: #EEF0FF; color: #3D3F9E; }
+.carrier-tag.dhl   { background: #FFF8DB; color: #92760E; }
+
+/* ───── Status pill ───── */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: .2px;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.transit  { background: var(--zb-cyan-lt); color: var(--zb-cyan-dk); }
+.pill.warn     { background: var(--zb-warn-bg); color: var(--zb-warn); }
+.pill.success  { background: var(--zb-success-bg); color: var(--zb-success); }
+.pill.blocked  { background: var(--zb-warn-bg); color: var(--zb-warn); border-color: #E9C77A; }
+.pill.blocked::before { background: var(--zb-warn); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ───── Empty state ───── */
+.empty {
+  padding: 60px 20px; text-align: center; color: var(--zb-ink-500);
+}
+.empty svg { width: 48px; height: 48px; color: var(--zb-ink-200); margin-bottom: 12px; }
+.empty h3 { font-size: 16px; font-weight: 700; color: var(--zb-ink-700); margin-bottom: 4px; }
+
+/* ───── Drawer (peso por agencia) ───── */
+.drawer-backdrop {
+  position: fixed; inset: 0; background: rgba(13,28,41,.45); backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 90;
+}
+.drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(1100px, 92vw);
+  background: var(--zb-white); box-shadow: var(--shadow-lg); z-index: 100;
+  transform: translateX(100%); transition: transform .25s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head {
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--zb-line);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+.drawer-head h2 { font-size: 18px; font-weight: 800; color: var(--zb-navy); letter-spacing: -.2px; }
+.drawer-head .meta { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
+.drawer-head .meta span { font-size: 12px; color: var(--zb-ink-500); font-weight: 500; }
+.drawer-head .meta strong { color: var(--zb-ink-700); font-weight: 700; }
+.drawer-close {
+  background: var(--zb-surface); border: 1px solid var(--zb-line); border-radius: var(--radius-sm);
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--zb-ink-500); transition: all .15s;
+}
+.drawer-close:hover { background: var(--zb-error-bg); color: var(--zb-error); border-color: var(--zb-error-bg); }
+
+.drawer-body { padding: 20px 24px; overflow: auto; flex: 1; }
+.drawer-section { margin-bottom: 24px; }
+.drawer-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--zb-ink-500); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+}
+.drawer-section-title button { font-size: 11px; }
+
+/* status selector dentro del drawer */
+.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.status-opt {
+  border: 1px solid var(--zb-line); background: var(--zb-white); border-radius: var(--radius-sm);
+  padding: 10px 12px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--zb-ink-700);
+  display: flex; align-items: center; gap: 8px; transition: all .12s; text-align: left;
+}
+.status-opt:hover { border-color: var(--zb-cyan); background: var(--zb-cyan-lt); }
+.status-opt.active { border-color: var(--zb-cyan); background: var(--zb-cyan-lt); color: var(--zb-cyan-dk); box-shadow: inset 0 0 0 1px var(--zb-cyan); }
+.status-opt .dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-opt[data-trigger]::after {
+  content: attr(data-trigger); font-size: 10px; font-weight: 600; color: var(--zb-warn);
+  margin-left: auto; padding: 2px 6px; background: var(--zb-warn-bg); border-radius: var(--radius-sm);
+}
+
+/* tabla de pesos por agencia (grilla ancha estilo excel) */
+.pesos-table-wrap { overflow-x: auto; border: 1px solid var(--zb-line); border-radius: var(--radius-md); }
+table.pesos {
+  border-collapse: collapse; min-width: 100%; font-size: 12px;
+}
+table.pesos thead th {
+  position: sticky; top: 0; background: var(--zb-surface); z-index: 1;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+  color: var(--zb-ink-500); padding: 10px 12px; text-align: left;
+  border-bottom: 1px solid var(--zb-line); border-right: 1px solid var(--zb-line); white-space: nowrap;
+}
+table.pesos thead th:last-child { border-right: 0; }
+table.pesos thead th.agency-h {
+  text-align: center; background: var(--zb-cyan-lt); color: var(--zb-cyan-dk);
+  font-weight: 700; border-bottom: 1px solid var(--zb-cyan);
+}
+table.pesos thead tr.svcrow th {
+  background: #FAFCFE; font-size: 9px; padding: 6px 10px; color: var(--zb-ink-500);
+  font-weight: 600;
+}
+table.pesos tbody td {
+  padding: 0; border-bottom: 1px solid var(--zb-line); border-right: 1px solid var(--zb-line);
+  vertical-align: middle;
+}
+table.pesos tbody td:last-child { border-right: 0; }
+table.pesos tbody td.label-cell { padding: 10px 12px; font-weight: 600; color: var(--zb-ink-700); white-space: nowrap; background: var(--zb-surface); position: sticky; left: 0; z-index: 1; }
+table.pesos input.peso {
+  width: 100%; min-width: 70px; padding: 10px 12px; border: 0; background: transparent;
+  font: 500 12px 'Plus Jakarta Sans', sans-serif; color: var(--zb-ink-700);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+table.pesos input.peso:focus { outline: 0; background: var(--zb-cyan-lt); box-shadow: inset 0 0 0 2px var(--zb-cyan); }
+table.pesos tbody tr.totals td { background: #FBFBFB; font-weight: 700; color: var(--zb-navy); padding: 10px 12px; font-variant-numeric: tabular-nums; text-align: right; }
+table.pesos tbody tr.totals td.label-cell { text-align: left; }
+
+.totales-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.totales-strip .tot { background: var(--zb-surface); border: 1px solid var(--zb-line); border-radius: var(--radius-sm); padding: 10px 12px; }
+.totales-strip .tot label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--zb-ink-500); }
+.totales-strip .tot .v { font-size: 18px; font-weight: 800; color: var(--zb-navy); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.totales-strip .tot.diff .v.pos { color: var(--zb-success); }
+.totales-strip .tot.diff .v.neg { color: var(--zb-error); }
+
+/* ───── Modal nuevo vuelo ───── */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(13,28,41,.45); backdrop-filter: blur(2px);
+  display: none; align-items: center; justify-content: center; z-index: 110;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--zb-white); border-radius: var(--radius-lg); width: min(560px, 92vw);
+  box-shadow: var(--shadow-lg); overflow: hidden;
+}
+.modal-head { padding: 20px 24px 12px; border-bottom: 1px solid var(--zb-line); }
+.modal-head h2 { font-size: 17px; font-weight: 800; color: var(--zb-navy); }
+.modal-head p  { font-size: 12px; color: var(--zb-ink-500); margin-top: 4px; font-weight: 500; }
+.modal-body { padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.modal-body .field { display: flex; flex-direction: column; gap: 6px; }
+.modal-body .field.full { grid-column: 1 / -1; }
+.modal-body input, .modal-body select {
+  padding: 10px 12px; border: 1px solid var(--zb-line); border-radius: var(--radius-sm);
+  font: 500 13px 'Plus Jakarta Sans', sans-serif; background: var(--zb-white); color: var(--zb-ink-700);
+}
+.modal-body input:focus, .modal-body select:focus { outline: 0; border-color: var(--zb-cyan); box-shadow: 0 0 0 3px rgba(2,158,203,.12); }
+.modal-foot { padding: 14px 24px 18px; display: flex; justify-content: flex-end; gap: 8px; background: var(--zb-surface); border-top: 1px solid var(--zb-line); }
+
+/* ───── Toast ───── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--zb-navy); color: #fff; padding: 12px 18px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; box-shadow: var(--shadow-md); opacity: 0; pointer-events: none;
+  transition: all .25s; z-index: 200;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="wms-sidebar"></div>
+<script src="sidebar.js"></script>
+
+<main>
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Control de Vuelos</h1>
+      <p>Operación aérea · masters, pesos por agencia y estatus de despacho</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-ghost btn-sm" id="btnRefresh" title="Refrescar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/></svg>
+        Refrescar
+      </button>
+      <button class="btn btn-primary btn-sm" id="btnNuevoVuelo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo Vuelo
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
+      </div>
+      <div class="kpi-label">Vuelos Activos</div>
+      <div class="kpi-value" id="kpiActivos">0</div>
+      <div class="kpi-sub">en operación · todos los destinos</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+      </div>
+      <div class="kpi-label">Kg en Tránsito</div>
+      <div class="kpi-value" id="kpiKg">0</div>
+      <div class="kpi-sub">total agencias · vuelos no liquidados</div>
+    </div>
+    <div class="kpi alert">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>
+      </div>
+      <div class="kpi-label">Esperando Reajustes</div>
+      <div class="kpi-value" id="kpiReaj">0</div>
+      <div class="kpi-sub">despacho bloqueado hasta planilla</div>
+    </div>
+    <div class="kpi success">
+      <div class="kpi-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </div>
+      <div class="kpi-label">Diferencia Acumulada</div>
+      <div class="kpi-value" id="kpiDiff">0</div>
+      <div class="kpi-sub">kg pagados − kg agencias</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar por master, guía, destino, consolidado…">
+    </div>
+    <div class="field">
+      <label>Estatus</label>
+      <select id="filterStatus"><option value="">Todos</option></select>
+    </div>
+    <div class="field">
+      <label>Destino</label>
+      <select id="filterDest"><option value="">Todos</option></select>
+    </div>
+    <div class="field">
+      <label>Carrier</label>
+      <select id="filterCarrier">
+        <option value="">Todos</option>
+        <option value="UPS">UPS</option>
+        <option value="ATLAS">ATLAS</option>
+        <option value="7AIR">7AIR</option>
+        <option value="DHL">DHL</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Desde</label>
+      <input type="date" id="filterFrom">
+    </div>
+    <div class="field">
+      <label>Hasta</label>
+      <input type="date" id="filterTo">
+    </div>
+  </div>
+
+  <!-- Tabla de vuelos -->
+  <div class="table-wrap">
+    <table class="vuelos">
+      <thead>
+        <tr>
+          <th>Master</th>
+          <th>Fecha</th>
+          <th>Destino</th>
+          <th>Carrier</th>
+          <th>Estatus</th>
+          <th class="num">Piezas</th>
+          <th class="num">Kg Agencias</th>
+          <th class="num">Kg Pagados</th>
+          <th class="num">Diferencia</th>
+        </tr>
+      </thead>
+      <tbody id="vuelosBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <h3>Sin resultados</h3>
+      <p>Probá ajustando los filtros o el término de búsqueda.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ───── Drawer (detalle vuelo + pesos) ───── -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawerTitle">—</h2>
+      <div class="meta" id="drawerMeta"></div>
+    </div>
+    <button class="drawer-close" id="drawerClose" title="Cerrar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body">
+    <!-- Estatus -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">
+        <span>Estatus del Vuelo</span>
+      </div>
+      <div class="status-grid" id="statusGrid"></div>
+    </div>
+
+    <!-- Pesos por agencia -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">
+        <span>Pesos por Agencia</span>
+        <button class="btn btn-ghost btn-sm" id="btnAddAgencia">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar agencia
+        </button>
+      </div>
+      <div class="pesos-table-wrap">
+        <table class="pesos" id="pesosTable"></table>
+      </div>
+      <div class="totales-strip">
+        <div class="tot"><label>Total Kg Agencias</label><div class="v" id="totAgencias">0</div></div>
+        <div class="tot"><label>Kg Pagados al Carrier</label><div class="v" id="totPagados">0</div></div>
+        <div class="tot diff"><label>Diferencia</label><div class="v" id="totDiff">0</div></div>
+        <div class="tot"><label>Piezas</label><div class="v" id="totPiezas">0</div></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ───── Modal nuevo vuelo ───── -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Nuevo Vuelo</h2>
+      <p>Cargá la master y los datos básicos. Los pesos por agencia se llenan luego.</p>
+    </div>
+    <div class="modal-body">
+      <div class="field full">
+        <label class="zb-label">Master (AWB)</label>
+        <input type="text" id="nvMaster" placeholder="976-30462876">
+      </div>
+      <div class="field">
+        <label class="zb-label">Fecha</label>
+        <input type="date" id="nvFecha">
+      </div>
+      <div class="field">
+        <label class="zb-label">Carrier</label>
+        <select id="nvCarrier">
+          <option value="UPS">UPS</option>
+          <option value="ATLAS">ATLAS</option>
+          <option value="7AIR">7AIR</option>
+          <option value="DHL">DHL</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label class="zb-label">Destino</label>
+        <input type="text" id="nvDestino" placeholder="BOG - turkish · SJO - avianca · UIO - LATAM">
+      </div>
+      <div class="field">
+        <label class="zb-label">Piezas</label>
+        <input type="text" id="nvPiezas" placeholder="4 PALLETS">
+      </div>
+      <div class="field">
+        <label class="zb-label">Consolidados</label>
+        <input type="text" id="nvCons" placeholder="2365CAS-2366Ag">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" id="nvCancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="nvSave">Crear vuelo</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+ * Aéreo · Control de Vuelos — FASE 1 (mock data, sin backend)
+ * ============================================================ */
+
+// ─────── Catálogos ───────
+const STATUS_LIST = [
+  { id: 'mia-bog',    label: 'MIA - BOG',          group: 'transit', dot: '#029ECB' },
+  { id: 'mia-cr',     label: 'MIA - CR',           group: 'transit', dot: '#029ECB' },
+  { id: 'mia-uio',    label: 'MIA - UIO',          group: 'transit', dot: '#029ECB' },
+  { id: 'aerolinea',  label: 'Aerolínea MIA',      group: 'transit', dot: '#029ECB' },
+  { id: 'retraso',    label: 'Retraso Aerolínea',  group: 'warn',    dot: '#B7791F' },
+  { id: 'aeropuerto', label: 'Aeropuerto destino', group: 'transit', dot: '#029ECB' },
+  { id: 'bodega',     label: 'Bodega destino',     group: 'success', dot: '#008C31', trigger: 'habilita despacho' },
+  { id: 'reajustes',  label: 'Bodega - reajustes', group: 'blocked', dot: '#B7791F', trigger: 'bloquea despacho' },
+];
+const STATUS_MAP = Object.fromEntries(STATUS_LIST.map(s => [s.id, s]));
+
+const AGENCIAS_DEFAULT = [
+  'Movi', 'JL', 'MSL', 'LACS', 'Damak', 'Aerocasilleros',
+  'Globus', 'Pressex', 'Lockerbox', 'Josué', 'ZenderBox', 'Aeropostal'
+];
+const SERVICIOS = ['comercial', 'casillero'];
+
+// ─────── Mock data ───────
+const VUELOS = [
+  mkVuelo('976-30462876', '2025-12-23', 'SJO - AVIANCA - CHATERLINES', 'UPS', '5 PALLETS', '2359CAS', 'bodega',    1154.5, 1237, { Movi:[0,1050], JL:[0,0],   MSL:[0,0],   LACS:[0,101], Damak:[0,0], Pressex:[0,0], 'ZenderBox':[104.5, 0] }),
+  mkVuelo('235-83367351', '2025-12-23', 'BOG - turkish',              'ATLAS','4 PALLETS', '2356Ag-2357Ag-2358Com-2360Cas', 'bodega', 1139.5, 1192, { 'COMERCIAL MOVI':[474,0], JL:[0,86.18], MSL:[0,0], LACS:[0,0], Pressex:[0,0], 'ZenderBox AGENCIAS':[105,0], 'ZenderBox CASILLERO':[335,0], 'ZENDERBOX COMERCIAL':[138,0]}),
+  mkVuelo('235-83448002', '2025-12-26', 'BOG - turkish',              'ATLAS','6 PALLETS', '2361Ag-2362Com-2363Cas', 'bodega', 1540.2, 1655, { 'COMERCIAL MOVI':[52.16,0], Movi:[0,387.4], JL:[0,101.15], 'ZenderBox AGENCIAS':[609,0], 'ZenderBox CASILLERO':[203,0], 'ZENDERBOX COMERCIAL':[186.9,0] }),
+  mkVuelo('235-83949611', '2026-03-01', 'BOG - TURKISH - PRESSEX',    'ATLAS','4 pallets', '2365CAS-2366Ag', 'aeropuerto', 878.3, 942, { Movi:[0,209], JL:[0,38.1], 'ZenderBox AGENCIAS':[261.2,0], 'ZenderBox CASILLERO':[369.9,0]}),
+  mkVuelo('235-83949902', '2026-03-01', 'BOG - TURKISH - PRESSEX',    'ATLAS','4 pallets', '2367Ag-2368Com-2369Cas', 'aerolinea', 1037.5, 1082, { Movi:[0,261.3], JL:[0,70.3], 'ZenderBox AGENCIAS':[390,0], 'ZenderBox COMERCIAL':[37,0], 'ZenderBox CASILLERO':[194.2,0], Pressex:[0,84.6]}),
+  mkVuelo('406-44592004', '2026-01-04', 'UPS - 0.40 ENEXCOL',         'UPS',  '3 PALLETS', '2371Ag-2372Cas',           'reajustes', 645.0, 720, { Movi:[0,180], LACS:[0,55], JL:[0,40], 'ZenderBox CASILLERO':[200,0], Pressex:[0,30] }),
+  mkVuelo('976-30474883', '2026-04-15', 'BOG - LATAM',                'UPS',  '4 PALLETS', '2380Com-2381Cas',           'mia-bog',  820.0, 0, { 'COMERCIAL MOVI':[120,0], Movi:[0,180], JL:[40,80], MSL:[0,60], 'ZenderBox AGENCIAS':[210,0], 'ZenderBox CASILLERO':[130,0] }),
+  mkVuelo('406-02950990', '2026-04-22', 'CR - AVIANCA',               '7AIR', '2 PALLETS', '2390CAS-2391Ag',            'aerolinea', 412.0, 0,    { LACS:[0,80], Damak:[0,40], JL:[0,60], 'ZenderBox CASILLERO':[150,0], Pressex:[40,42] }),
+  mkVuelo('235-84001122', '2026-04-25', 'UIO - LATAM',                'ATLAS','3 PALLETS', '2400Ag-2401Com',            'mia-uio',  580.0, 0,    { 'COMERCIAL MOVI':[80,0], Movi:[0,140], 'ZenderBox AGENCIAS':[160,0], 'ZenderBox CASILLERO':[200,0] }),
+  mkVuelo('976-30501100', '2026-04-28', 'BOG - turkish',              'UPS',  '5 PALLETS', '2410Cas-2411Ag-2412Com',    'retraso',  995.0, 0,    { 'COMERCIAL MOVI':[200,0], Movi:[0,250], JL:[60,90], MSL:[0,80], 'ZenderBox AGENCIAS':[145,0], 'ZenderBox CASILLERO':[170,0] }),
+  mkVuelo('235-84012233', '2026-05-01', 'SJO - AVIANCA',              'UPS',  '4 PALLETS', '2420Ag-2421Cas',            'mia-cr',   745.0, 0,    { LACS:[0,120], Movi:[0,180], JL:[50,70], 'ZenderBox CASILLERO':[180,0], Pressex:[0,145] }),
+  mkVuelo('406-44693311', '2026-05-02', 'BOG - turkish',              'DHL',   '2 PALLETS', '2430Cas',                   'mia-bog',  280.0, 0,    { Movi:[0,80], JL:[0,40], 'ZenderBox CASILLERO':[100,0], Pressex:[0,60] }),
+];
+
+function mkVuelo(master, fecha, destino, carrier, piezas, cons, status, kgAgencias, kgPagados, pesos) {
+  return { master, fecha, destino, carrier, piezas, cons, status, kgAgencias, kgPagados, pesos };
+}
+
+// ─────── Helpers ───────
+const $  = (sel, ctx=document) => ctx.querySelector(sel);
+const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+const fmt = n => (n == null || n === 0) ? '—' : Number(n).toLocaleString('es-CO', { maximumFractionDigits: 1 });
+const fmtNum = n => Number(n||0).toLocaleString('es-CO', { maximumFractionDigits: 1 });
+function pillFor(statusId) {
+  const s = STATUS_MAP[statusId]; if (!s) return '';
+  return `<span class="pill ${s.group}">${s.label}</span>`;
+}
+function carrierTag(c) {
+  const cls = ({ UPS:'', ATLAS:'atlas', '7AIR':'air7', DHL:'dhl' })[c] || '';
+  return `<span class="carrier-tag ${cls}">${c}</span>`;
+}
+
+// ─────── Render: tabla principal ───────
+function renderTable() {
+  const term = $('#searchInput').value.toLowerCase().trim();
+  const fStatus = $('#filterStatus').value;
+  const fDest = $('#filterDest').value;
+  const fCarrier = $('#filterCarrier').value;
+  const fFrom = $('#filterFrom').value;
+  const fTo = $('#filterTo').value;
+
+  const rows = VUELOS.filter(v => {
+    if (fStatus && v.status !== fStatus) return false;
+    if (fDest && v.destino !== fDest) return false;
+    if (fCarrier && v.carrier !== fCarrier) return false;
+    if (fFrom && v.fecha < fFrom) return false;
+    if (fTo && v.fecha > fTo) return false;
+    if (term) {
+      const blob = `${v.master} ${v.destino} ${v.cons} ${v.piezas}`.toLowerCase();
+      if (!blob.includes(term)) return false;
+    }
+    return true;
+  });
+
+  const tbody = $('#vuelosBody');
+  if (rows.length === 0) {
+    tbody.innerHTML = '';
+    $('#emptyState').style.display = 'block';
+  } else {
+    $('#emptyState').style.display = 'none';
+    tbody.innerHTML = rows.map(v => {
+      const diff = (v.kgPagados || 0) - (v.kgAgencias || 0);
+      const diffCls = diff > 5 ? 'diff-pos' : diff < -5 ? 'diff-neg' : '';
+      return `
+        <tr data-master="${v.master}">
+          <td class="master-cell">${v.master}</td>
+          <td>${formatFecha(v.fecha)}</td>
+          <td>${v.destino}</td>
+          <td>${carrierTag(v.carrier)}</td>
+          <td>${pillFor(v.status)}</td>
+          <td class="num">${v.piezas || '—'}</td>
+          <td class="num">${fmt(v.kgAgencias)}</td>
+          <td class="num">${fmt(v.kgPagados)}</td>
+          <td class="num ${diffCls}">${v.kgPagados ? (diff>0?'+':'') + fmtNum(diff) : '—'}</td>
+        </tr>`;
+    }).join('');
+    $$('#vuelosBody tr').forEach(tr => tr.addEventListener('click', () => openDrawer(tr.dataset.master)));
+  }
+  renderKPIs();
+}
+
+function formatFecha(iso) {
+  if (!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+}
+
+function renderKPIs() {
+  const activos  = VUELOS.filter(v => v.status !== 'liquidado').length;
+  const kg       = VUELOS.filter(v => !['liquidado'].includes(v.status)).reduce((s,v)=>s + (v.kgAgencias||0), 0);
+  const reaj     = VUELOS.filter(v => v.status === 'reajustes').length;
+  const diff     = VUELOS.reduce((s,v) => s + ((v.kgPagados||0) - (v.kgAgencias||0)), 0);
+  $('#kpiActivos').textContent = activos;
+  $('#kpiKg').textContent = fmtNum(kg);
+  $('#kpiReaj').textContent = reaj;
+  $('#kpiDiff').textContent = (diff>0?'+':'') + fmtNum(diff);
+}
+
+// ─────── Filtros: poblar selects ───────
+function populateFilters() {
+  const statusSel = $('#filterStatus');
+  STATUS_LIST.forEach(s => {
+    const o = document.createElement('option'); o.value = s.id; o.textContent = s.label; statusSel.appendChild(o);
+  });
+  const dests = [...new Set(VUELOS.map(v => v.destino))].sort();
+  const destSel = $('#filterDest');
+  dests.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; destSel.appendChild(o); });
+}
+
+// ─────── Drawer: detalle vuelo ───────
+let currentVuelo = null;
+
+function openDrawer(master) {
+  const v = VUELOS.find(x => x.master === master); if (!v) return;
+  currentVuelo = v;
+  $('#drawerTitle').textContent = v.master;
+  $('#drawerMeta').innerHTML = `
+    <span>📅 <strong>${formatFecha(v.fecha)}</strong></span>
+    <span>📍 <strong>${v.destino}</strong></span>
+    <span>✈ <strong>${v.carrier}</strong></span>
+    <span>📦 <strong>${v.piezas || '—'}</strong></span>
+    <span>🔢 Cons. <strong>${v.cons || '—'}</strong></span>
+  `;
+  renderStatusGrid(v);
+  renderPesosTable(v);
+  $('#drawer').classList.add('open');
+  $('#drawerBackdrop').classList.add('open');
+  $('#drawer').setAttribute('aria-hidden', 'false');
+}
+function closeDrawer() {
+  $('#drawer').classList.remove('open');
+  $('#drawerBackdrop').classList.remove('open');
+  $('#drawer').setAttribute('aria-hidden', 'true');
+  currentVuelo = null;
+}
+
+function renderStatusGrid(v) {
+  $('#statusGrid').innerHTML = STATUS_LIST.map(s => `
+    <button class="status-opt ${v.status === s.id ? 'active' : ''}" data-status="${s.id}" ${s.trigger ? `data-trigger="${s.trigger}"` : ''}>
+      <span class="dot" style="background:${s.dot}"></span>
+      ${s.label}
+    </button>
+  `).join('');
+  $$('#statusGrid .status-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      v.status = btn.dataset.status;
+      renderStatusGrid(v);
+      renderTable();
+      toast(`Estatus actualizado a "${STATUS_MAP[v.status].label}"`);
+    });
+  });
+}
+
+function renderPesosTable(v) {
+  const agencias = Object.keys(v.pesos).length ? Object.keys(v.pesos) : AGENCIAS_DEFAULT.slice(0, 6);
+  agencias.forEach(a => { if (!v.pesos[a]) v.pesos[a] = [0, 0]; });
+
+  const t = $('#pesosTable');
+  let head = `<thead>
+    <tr>
+      <th rowspan="2" style="position:sticky;left:0;z-index:2;background:var(--zb-surface)">Agencia</th>
+      ${agencias.map(a => `<th class="agency-h" colspan="${SERVICIOS.length}">${a}</th>`).join('')}
+      <th rowspan="2" class="num">Total</th>
+    </tr>
+    <tr class="svcrow">
+      ${agencias.map(() => SERVICIOS.map(s => `<th>${s}</th>`).join('')).join('')}
+    </tr>
+  </thead>`;
+
+  // Una sola fila editable: kg por (agencia × servicio). Si quisiéramos múltiples masters por vuelo, sería N filas.
+  const cells = agencias.map(a => {
+    const [com, cas] = v.pesos[a] || [0,0];
+    return `
+      <td><input class="peso" data-ag="${a}" data-svc="0" type="number" step="0.1" value="${com || ''}"></td>
+      <td><input class="peso" data-ag="${a}" data-svc="1" type="number" step="0.1" value="${cas || ''}"></td>
+    `;
+  }).join('');
+  const totalRow = agencias.reduce((s,a) => s + (v.pesos[a][0]||0) + (v.pesos[a][1]||0), 0);
+
+  t.innerHTML = head + `
+    <tbody>
+      <tr>
+        <td class="label-cell">Kg por agencia</td>
+        ${cells}
+        <td class="num" id="rowTotal" style="background:#FBFBFB;font-weight:700;color:var(--zb-navy);padding:10px 12px">${fmtNum(totalRow)}</td>
+      </tr>
+    </tbody>
+  `;
+
+  $$('#pesosTable input.peso').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const a = inp.dataset.ag, idx = +inp.dataset.svc;
+      v.pesos[a][idx] = parseFloat(inp.value) || 0;
+      const total = agencias.reduce((s,ag) => s + v.pesos[ag][0] + v.pesos[ag][1], 0);
+      v.kgAgencias = total;
+      $('#rowTotal').textContent = fmtNum(total);
+      renderTotales(v);
+      renderTable();
+    });
+  });
+
+  renderTotales(v);
+}
+
+function renderTotales(v) {
+  const agTot = v.kgAgencias || 0;
+  const pgTot = v.kgPagados || 0;
+  const diff  = pgTot - agTot;
+  $('#totAgencias').textContent = fmtNum(agTot);
+  $('#totPagados').textContent  = pgTot ? fmtNum(pgTot) : '—';
+  const dEl = $('#totDiff');
+  dEl.textContent = pgTot ? (diff>0?'+':'') + fmtNum(diff) : '—';
+  dEl.className = 'v ' + (diff>0?'pos':diff<0?'neg':'');
+  $('#totPiezas').textContent = v.piezas || '—';
+}
+
+// ─────── Add agencia (al drawer) ───────
+$('#btnAddAgencia').addEventListener('click', () => {
+  if (!currentVuelo) return;
+  const name = prompt('Nombre de la agencia (ej: Cargo Express)');
+  if (!name) return;
+  if (currentVuelo.pesos[name]) { toast('Esa agencia ya está cargada'); return; }
+  currentVuelo.pesos[name] = [0, 0];
+  renderPesosTable(currentVuelo);
+  toast(`Agencia "${name}" agregada`);
+});
+
+// ─────── Modal nuevo vuelo ───────
+$('#btnNuevoVuelo').addEventListener('click', () => {
+  $('#nvFecha').value = new Date().toISOString().slice(0,10);
+  $('#modalBackdrop').classList.add('open');
+});
+$('#nvCancel').addEventListener('click', () => $('#modalBackdrop').classList.remove('open'));
+$('#nvSave').addEventListener('click', () => {
+  const m = $('#nvMaster').value.trim();
+  if (!m) { toast('Falta el master'); return; }
+  if (VUELOS.some(v => v.master === m)) { toast('Ya existe ese master'); return; }
+  VUELOS.unshift(mkVuelo(m, $('#nvFecha').value, $('#nvDestino').value || '—', $('#nvCarrier').value, $('#nvPiezas').value, $('#nvCons').value, 'mia-bog', 0, 0, {}));
+  $('#modalBackdrop').classList.remove('open');
+  ['nvMaster','nvDestino','nvPiezas','nvCons'].forEach(id => $('#'+id).value = '');
+  populateFilters(); // por si hay nuevo destino
+  renderTable();
+  toast('Vuelo creado');
+  setTimeout(() => openDrawer(m), 200);
+});
+$('#modalBackdrop').addEventListener('click', e => { if (e.target.id === 'modalBackdrop') $('#modalBackdrop').classList.remove('open'); });
+
+// ─────── Listeners ───────
+['searchInput','filterStatus','filterDest','filterCarrier','filterFrom','filterTo'].forEach(id => {
+  $('#'+id).addEventListener('input', renderTable);
+  $('#'+id).addEventListener('change', renderTable);
+});
+$('#drawerClose').addEventListener('click', closeDrawer);
+$('#drawerBackdrop').addEventListener('click', closeDrawer);
+$('#btnRefresh').addEventListener('click', () => { renderTable(); toast('Actualizado'); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if ($('#modalBackdrop').classList.contains('open')) $('#modalBackdrop').classList.remove('open');
+    else if ($('#drawer').classList.contains('open')) closeDrawer();
+  }
+});
+
+// ─────── Toast ───────
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─────── Init ───────
+populateFilters();
+renderTable();
+</script>
+
+</body>
+</html>
