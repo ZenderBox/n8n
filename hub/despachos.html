@@ -176,13 +176,30 @@
         min-width: 0;
     }
     .wh-dot {
-        width: 8px; height: 8px;
+        width: 7px; height: 7px;
         border-radius: 50%;
         background: var(--zb-success);
-        margin-right: 14px;
+        margin-right: 8px;
         flex-shrink: 0;
     }
     .wh-dot.t { background: var(--zb-warn); }
+    .wh-flow-link {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px; height: 28px;
+        margin-right: 8px;
+        border-radius: 6px;
+        color: var(--zb-ink-300);
+        text-decoration: none;
+        font-size: 14px;
+        transition: background .12s, color .12s;
+    }
+    .wh-flow-link:hover {
+        background: rgba(2,158,203,0.10);
+        color: var(--zb-cyan);
+    }
 
     /* ---------- Steps Nav ---------- */
     .steps-nav {
@@ -541,14 +558,28 @@
 
         <div class="webhooks">
             <div class="wh-row">
-                <div class="wh-lbl">Webhook Ejecutar</div>
+                <div class="wh-lbl">Ejecutar Motor</div>
                 <input class="wh-url" id="urlE" readonly value="https://hub.zenderbox.com/webhook/cr-despachos">
                 <div class="wh-dot" id="dotE"></div>
+                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/pzttcsfegxtCxWgE" target="_blank" title="Ver flujo n8n">⧉</a>
             </div>
             <div class="wh-row">
-                <div class="wh-lbl">Webhook Descargar</div>
+                <div class="wh-lbl">SmartQuick</div>
+                <input class="wh-url" id="urlSQ" readonly value="https://hub.zenderbox.com/webhook/crear-guias-smartquick">
+                <div class="wh-dot" id="dotSQ"></div>
+                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/tQiNAGZJrxwcuLLz" target="_blank" title="Ver flujo n8n">⧉</a>
+            </div>
+            <div class="wh-row">
+                <div class="wh-lbl">Sync Casilleros</div>
+                <input class="wh-url" id="urlSync" readonly value="https://hub.zenderbox.com/webhook/sync-casilleros-cr">
+                <div class="wh-dot" id="dotSync"></div>
+                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/HIdE835AzPnEQl3b" target="_blank" title="Ver flujo n8n">⧉</a>
+            </div>
+            <div class="wh-row">
+                <div class="wh-lbl">Descargar CSV</div>
                 <input class="wh-url" id="urlD" readonly value="https://hub.zenderbox.com/webhook/cr-descargar-despachos">
                 <div class="wh-dot" id="dotD"></div>
+                <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/1h8dz0jYSYatqrwd" target="_blank" title="Ver flujo n8n">⧉</a>
             </div>
         </div>
 
@@ -650,14 +681,16 @@
     const PIN = '1234';
     const URLS = {
         prod: {
-            e:  'https://hub.zenderbox.com/webhook/cr-despachos',
-            d:  'https://hub.zenderbox.com/webhook/cr-descargar-despachos',
-            sq: 'https://hub.zenderbox.com/webhook/crear-guias-smartquick'
+            e:    'https://hub.zenderbox.com/webhook/cr-despachos',
+            d:    'https://hub.zenderbox.com/webhook/cr-descargar-despachos',
+            sq:   'https://hub.zenderbox.com/webhook/crear-guias-smartquick',
+            sync: 'https://hub.zenderbox.com/webhook/sync-casilleros-cr'
         },
         test: {
-            e:  'https://hub.zenderbox.com/webhook-test/cr-despachos',
-            d:  'https://hub.zenderbox.com/webhook-test/cr-descargar-despachos',
-            sq: 'https://hub.zenderbox.com/webhook-test/crear-guias-smartquick'
+            e:    'https://hub.zenderbox.com/webhook-test/cr-despachos',
+            d:    'https://hub.zenderbox.com/webhook-test/cr-descargar-despachos',
+            sq:   'https://hub.zenderbox.com/webhook-test/crear-guias-smartquick',
+            sync: 'https://hub.zenderbox.com/webhook-test/sync-casilleros-cr'
         }
     };
     let env = 'prod';
@@ -721,11 +754,12 @@
         const st = document.getElementById('envStatus');
         st.className = p ? 'env-status' : 'env-status ta';
         st.innerHTML = `<span class="dot"></span>${p ? 'Producción activa' : 'Ambiente de pruebas activo'}`;
-        document.getElementById('urlE').value = URLS[e].e;
-        document.getElementById('urlD').value = URLS[e].d;
+        document.getElementById('urlE').value    = URLS[e].e;
+        document.getElementById('urlD').value    = URLS[e].d;
+        document.getElementById('urlSQ').value   = URLS[e].sq;
+        document.getElementById('urlSync').value = URLS[e].sync;
         const dc = p ? 'wh-dot' : 'wh-dot t';
-        document.getElementById('dotE').className = dc;
-        document.getElementById('dotD').className = dc;
+        ['dotE','dotD','dotSQ','dotSync'].forEach(id => document.getElementById(id).className = dc);
     }
     function sl(ic, lb, vl, cl) {
         return `<div class="sl"><span>${ic}</span><span class="sl-lbl">${lb}</span><span class="sl-val ${cl || ''}">${vl}</span></div>`;
@@ -927,6 +961,21 @@ async function enviarSQ() {
       </div>
       <div>
         <a href="https://docs.google.com/spreadsheets/d/1UedzkG59CAOv7jdcU9Tm0HCIegSmeXpWTptM7rfMv5Y/edit?gid=503489634#gid=503489634" target="_blank" class="sheet-link drive">📊 Abrir Drive</a>
+      </div>
+    </div>
+
+    <div class="webhooks">
+      <div class="wh-row">
+        <div class="wh-lbl">Generar Despachos</div>
+        <input class="wh-url" readonly value="https://hub.zenderbox.com/webhook/despachos">
+        <div class="wh-dot"></div>
+        <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/y0PT0QqGUn8QLLhz" target="_blank" title="Ver flujo n8n">⧉</a>
+      </div>
+      <div class="wh-row">
+        <div class="wh-lbl">Borrar TCC HOY</div>
+        <input class="wh-url" readonly value="https://hub.zenderbox.com/webhook/borrar-tcc">
+        <div class="wh-dot"></div>
+        <a class="wh-flow-link" href="https://hub.zenderbox.com/workflow/y3M4kmc4PBjWGidR" target="_blank" title="Ver flujo n8n">⧉</a>
       </div>
     </div>
 
