@@ -30,6 +30,14 @@ const WMS_NAV = [
     ]
   },
   {
+    section: 'AEREO',
+    collapsible: true,
+    id: 'aereo-section',
+    items: [
+      { icon: 'plane-take', label: 'Vuelos', href: 'vuelos.html', id: 'vuelos' },
+    ]
+  },
+  {
     section: 'COMUNICACIONES',
     collapsible: true,
     id: 'comunicaciones-section',
@@ -122,6 +130,7 @@ const ICONS = {
   dollar:        '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a2 2 0 010 4h-3a2 2 0 000 4H15"/>',
   bank:          '<path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v3"/><path d="M12 14v3"/><path d="M16 14v3"/>',
   plane:         '<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>',
+  'plane-take':  '<path d="M2 16s0-1 1-1l4.5.5L12 4l1.5 1-3 8 4.5.5 2-3 1.5.5-1 4s-.5 1-1.5.5L3 16.5c-1-.5-1-1-1-1z"/><path d="M2 20h20"/>',
   gear:          '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
   chevron:       '<polyline points="6 9 12 15 18 9"/>',
   check:         '<polyline points="20 6 9 17 4 12"/>',
