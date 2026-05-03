@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transportadores · Configuración Aéreo · ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --zb-cyan:#029ECB;--zb-cyan-dk:#007B9F;--zb-cyan-lt:#E6F5FB;--zb-navy:#004B72;--zb-lime:#CCD32A;--zb-ink-700:#333;--zb-ink-500:#666;--zb-ink-300:#8A8A8A;--zb-ink-200:#B8B8B8;--zb-line:#E2E8EF;--zb-surface:#F6F6F6;--zb-white:#fff;--zb-success:#008C31;--zb-success-bg:#E8F4ED;--zb-warn:#B7791F;--zb-warn-bg:#FBF0DA;--zb-error:#F32735;--zb-error-bg:#FBEAEC;--zb-gradient:linear-gradient(45deg,#029ECB 0%,#CCD32A 85%);--radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-pill:99px;--shadow-sm:0 1px 4px rgba(0,0,0,.06)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--zb-surface);color:var(--zb-ink-700);min-height:100vh;-webkit-font-smoothing:antialiased}
+main{margin-left:220px;padding:28px 32px 80px;max-width:1380px}@media(max-width:768px){main{margin-left:0;padding:18px 14px 60px}}
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}.page-header h1{font-size:24px;font-weight:800;color:var(--zb-navy);letter-spacing:-.4px}.page-header p{font-size:13px;color:var(--zb-ink-500);margin-top:4px;font-weight:500}
+.crumbs{font-size:12px;color:var(--zb-ink-500);font-weight:600;margin-bottom:4px}.crumbs a{color:var(--zb-cyan-dk);text-decoration:none}.crumbs a:hover{text-decoration:underline}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-sm);padding:10px 16px;font:700 13px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;text-decoration:none;transition:filter .15s,transform .1s,box-shadow .15s;white-space:nowrap}.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--zb-gradient);color:#fff}.btn-primary:hover{filter:brightness(1.06);box-shadow:0 4px 12px rgba(2,158,203,.25)}
+.btn-ghost{background:var(--zb-white);color:var(--zb-navy);border:1px solid var(--zb-line)}.btn-ghost:hover{background:var(--zb-surface);border-color:var(--zb-cyan);color:var(--zb-cyan-dk)}.btn-sm{padding:7px 12px;font-size:12px}
+.toolbar{background:var(--zb-white);border:1px solid var(--zb-line);border-radius:var(--radius-md);padding:14px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-box{position:relative;flex:1;min-width:220px}.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--zb-ink-300);width:14px;height:14px}.search-box input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:500 13px 'Plus Jakarta Sans',sans-serif;background:var(--zb-white);color:var(--zb-ink-700)}
+.table-wrap{background:var(--zb-white);border:1px solid var(--zb-line);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px}
+thead th{background:var(--zb-surface);text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--zb-ink-500);padding:12px 14px;border-bottom:1px solid var(--zb-line);white-space:nowrap}
+tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align:middle;font-weight:500;color:var(--zb-ink-700)}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#FAFCFE}
+.code-cell{font-weight:800;color:var(--zb-navy);letter-spacing:.5px}.muted{color:var(--zb-ink-500);font-size:12px}.num{text-align:right;font-variant-numeric:tabular-nums}
+.actions{text-align:right;white-space:nowrap;display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{border:1px solid var(--zb-line);background:var(--zb-white);border-radius:var(--radius-sm);width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--zb-ink-500);transition:all .12s}
+.icon-btn svg{width:14px;height:14px}.icon-btn:hover{border-color:var(--zb-cyan);color:var(--zb-cyan-dk)}.icon-btn.danger:hover{border-color:var(--zb-error);color:var(--zb-error);background:var(--zb-error-bg)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:var(--radius-pill);font-size:11px;font-weight:700;background:var(--zb-success-bg);color:var(--zb-success)}.pill.off{background:#F3F4F6;color:var(--zb-ink-500)}.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.modal-backdrop{position:fixed;inset:0;background:rgba(13,28,41,.45);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:110}.modal-backdrop.open{display:flex}
+.modal{background:var(--zb-white);border-radius:var(--radius-lg);width:min(720px,92vw);box-shadow:0 12px 32px rgba(39,39,39,.12);overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
+.modal-head{padding:18px 22px 12px;border-bottom:1px solid var(--zb-line)}.modal-head h2{font-size:17px;font-weight:800;color:var(--zb-navy)}.modal-head p{font-size:12px;color:var(--zb-ink-500);margin-top:4px;font-weight:500}
+.modal-body{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;overflow:auto}
+.field{display:flex;flex-direction:column;gap:6px}.field.col2{grid-column:span 2}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700;color:var(--zb-ink-700)}
+.field input,.field select{padding:10px 12px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:500 13px 'Plus Jakarta Sans',sans-serif;background:var(--zb-white);color:var(--zb-ink-700)}.field input:focus,.field select:focus{outline:0;border-color:var(--zb-cyan);box-shadow:0 0 0 3px rgba(2,158,203,.12)}.field input::placeholder{color:var(--zb-ink-200);font-style:italic;font-weight:400}
+.modal-foot{padding:14px 22px 18px;display:flex;justify-content:flex-end;gap:8px;background:var(--zb-surface);border-top:1px solid var(--zb-line)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--zb-navy);color:#fff;padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(39,39,39,.08);opacity:0;pointer-events:none;transition:all .25s;z-index:200}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.banner-mock{background:var(--zb-warn-bg);border:1px solid #E9C77A;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--zb-warn);font-weight:600}
+.section-divider{grid-column:1/-1;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--zb-ink-500);padding:6px 0 0;border-top:1px dashed var(--zb-line);margin-top:6px}
+</style>
+</head>
+<body>
+
+<div id="wms-sidebar"></div>
+<script src="sidebar.js"></script>
+
+<main>
+  <div class="page-header">
+    <div>
+      <div class="crumbs"><a href="aereo-config.html">Configuración Aéreo</a> · Transportadores</div>
+      <h1>Transportadores</h1>
+      <p>Couriers de última milla. UPS, USPS, FEDEX, DHL, AMAZON. Asociados a un FFW (Freight Forwarder / Agente Emisor).</p>
+    </div>
+    <div><button class="btn btn-primary btn-sm" id="btnNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nuevo transportador</button></div>
+  </div>
+
+  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-transportadores-list</code>, <code>/aereo-transportador-save</code>, <code>/aereo-transportador-delete</code>.</div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, ciudad, contacto…">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Transportador</th><th>FFW</th><th>Dirección / Ciudad</th><th>Teléfono</th><th class="num">Freight</th><th class="num">Mov</th><th class="num">Tax</th><th class="num">Aran</th><th>Tracking</th><th>Estado</th><th class="actions">Acciones</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">Nuevo transportador</h2><p>Datos del transportador (courier última milla).</p></div>
+    <div class="modal-body">
+      <div class="field col2"><label>Nombre *</label><input type="text" id="fNombre" placeholder="ej. UPS"></div>
+      <div class="field"><label>FFW</label><select id="fFfw"></select></div>
+      <div class="field full"><label>Dirección</label><input type="text" id="fDir" placeholder="ej. 8454 NW 70 ST"></div>
+      <div class="field"><label>Ciudad</label><input type="text" id="fCiudad" placeholder="Atlanta"></div>
+      <div class="field"><label>Estado</label><input type="text" id="fEstado" placeholder="GA"></div>
+      <div class="field"><label>Zip</label><input type="text" id="fZip" placeholder="30303"></div>
+      <div class="field"><label>País</label><input type="text" id="fPais" placeholder="US" maxlength="3" style="text-transform:uppercase"></div>
+      <div class="field"><label>Teléfono</label><input type="text" id="fTel" placeholder="7865856806"></div>
+      <div class="field"><label>Fax</label><input type="text" id="fFax" placeholder=""></div>
+      <div class="field full"><label>Contacto</label><input type="text" id="fContacto" placeholder="ej. Juan Pérez"></div>
+
+      <div class="section-divider">Tarifas base (informativas)</div>
+      <div class="field"><label>Freight</label><input type="number" step="0.01" id="fFreight" value="0"></div>
+      <div class="field"><label>Mov</label><input type="number" step="0.01" id="fMov" value="0"></div>
+      <div class="field"><label>Tax</label><input type="number" step="0.01" id="fTax" value="0"></div>
+      <div class="field"><label>Aran</label><input type="number" step="0.01" id="fAran" value="0"></div>
+
+      <div class="field full"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="fTrack"> Ingreso de tracking habilitado</label></div>
+      <div class="field full"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="fActivo" checked> Activo</label></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" id="btnCancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="btnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const FETCH_REAL=false; const API_BASE='https://hub.zenderbox.com/webhook';
+const FFW_OPTS = [
+  { id:1, nombre:'Acuna & Caro Investments LLC DBA' },
+  { id:2, nombre:'ZenderBox Cargo Inc' },
+];
+let DATA = [
+  { id:1, nombre:'UPS',           ffw_id:2, direccion:null, ciudad:'Atlanta',  estado:'GA', zip:null, pais:'US', telefono:null, fax:null, contacto:null, freight:0, mov:0, tax:0, aran:0, ingreso_tracking:true,  activo:true },
+  { id:2, nombre:'USPS',          ffw_id:2, direccion:null, ciudad:'Washington',estado:'DC',zip:null, pais:'US', telefono:null, fax:null, contacto:null, freight:0, mov:0, tax:0, aran:0, ingreso_tracking:true,  activo:true },
+  { id:3, nombre:'FEDEX',         ffw_id:2, direccion:null, ciudad:'Memphis',  estado:'TN', zip:null, pais:'US', telefono:null, fax:null, contacto:null, freight:0, mov:0, tax:0, aran:0, ingreso_tracking:true,  activo:true },
+  { id:4, nombre:'DHL',           ffw_id:2, direccion:null, ciudad:'Bonn',     estado:null, zip:null, pais:'DE', telefono:null, fax:null, contacto:null, freight:0, mov:0, tax:0, aran:0, ingreso_tracking:true,  activo:true },
+  { id:5, nombre:'AMAZON',        ffw_id:2, direccion:null, ciudad:'Seattle',  estado:'WA', zip:null, pais:'US', telefono:null, fax:null, contacto:null, freight:0, mov:0, tax:0, aran:0, ingreso_tracking:true,  activo:true },
+  { id:6, nombre:'FAST BOX CARGO',ffw_id:1, direccion:'ALAJUELA RIO SEGUNDO', ciudad:'Alajuela',estado:null, zip:null, pais:'CR', telefono:'50685519304', fax:null, contacto:null, freight:0, mov:0, tax:0, aran:0, ingreso_tracking:false, activo:true },
+  { id:7, nombre:'LASERSHIP',     ffw_id:2, direccion:null, ciudad:'Miami',    estado:'FL', zip:null, pais:'US', telefono:null, fax:null, contacto:null, freight:0, mov:0, tax:0, aran:0, ingreso_tracking:true,  activo:true },
+];
+let editingId=null;
+const $=(s,c=document)=>c.querySelector(s); const $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
+async function load(){ if(FETCH_REAL){try{DATA=await(await fetch(`${API_BASE}/aereo-transportadores-list`)).json();}catch(e){toast(e.message);}} render(); }
+function ffwName(id){ const f=FFW_OPTS.find(x=>x.id===id); return f?f.nombre:'—'; }
+function render(){
+  const term=$('#searchInput').value.toLowerCase().trim();
+  const rows=DATA.filter(d=>!term||`${d.nombre} ${d.ciudad||''} ${d.contacto||''} ${d.telefono||''}`.toLowerCase().includes(term));
+  $('#tbody').innerHTML=rows.map(d=>`
+    <tr data-id="${d.id}">
+      <td><div class="code-cell">${d.nombre}</div><div class="muted">${d.contacto||''}</div></td>
+      <td>${ffwName(d.ffw_id)}</td>
+      <td>${d.direccion||''}<div class="muted">${d.ciudad||'—'}${d.estado?', '+d.estado:''} · ${d.pais||'—'}</div></td>
+      <td>${d.telefono||'—'}</td>
+      <td class="num">${d.freight||0}</td><td class="num">${d.mov||0}</td><td class="num">${d.tax||0}</td><td class="num">${d.aran||0}</td>
+      <td>${d.ingreso_tracking?'<span class="pill">Sí</span>':'<span class="pill off">No</span>'}</td>
+      <td><span class="pill ${d.activo?'':'off'}">${d.activo?'Activo':'Inactivo'}</span></td>
+      <td class="actions">
+        <button class="icon-btn" data-act="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="icon-btn danger" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+      </td>
+    </tr>`).join('');
+  $$('tbody [data-act]').forEach(b=>b.addEventListener('click',()=>{const id=+b.closest('tr').dataset.id; if(b.dataset.act==='edit') openEdit(id); else del(id);}));
+}
+function populateFfw(){ $('#fFfw').innerHTML='<option value="">—</option>'+FFW_OPTS.map(f=>`<option value="${f.id}">${f.nombre}</option>`).join(''); }
+function clearForm(){ ['fNombre','fDir','fCiudad','fEstado','fZip','fPais','fTel','fFax','fContacto'].forEach(id=>$('#'+id).value=''); ['fFreight','fMov','fTax','fAran'].forEach(id=>$('#'+id).value='0'); $('#fFfw').value=''; $('#fTrack').checked=false; $('#fActivo').checked=true; }
+function openNew(){ editingId=null; $('#modalTitle').textContent='Nuevo transportador'; clearForm(); $('#modalBackdrop').classList.add('open'); setTimeout(()=>$('#fNombre').focus(),50); }
+function openEdit(id){
+  const d=DATA.find(x=>x.id===id); if(!d) return;
+  editingId=id; $('#modalTitle').textContent=`Editar ${d.nombre}`;
+  $('#fNombre').value=d.nombre; $('#fFfw').value=d.ffw_id||''; $('#fDir').value=d.direccion||''; $('#fCiudad').value=d.ciudad||'';
+  $('#fEstado').value=d.estado||''; $('#fZip').value=d.zip||''; $('#fPais').value=d.pais||''; $('#fTel').value=d.telefono||'';
+  $('#fFax').value=d.fax||''; $('#fContacto').value=d.contacto||'';
+  $('#fFreight').value=d.freight||0; $('#fMov').value=d.mov||0; $('#fTax').value=d.tax||0; $('#fAran').value=d.aran||0;
+  $('#fTrack').checked=!!d.ingreso_tracking; $('#fActivo').checked=!!d.activo;
+  $('#modalBackdrop').classList.add('open');
+}
+async function save(){
+  const payload={ id:editingId, nombre:$('#fNombre').value.trim(), ffw_id:+$('#fFfw').value||null, direccion:$('#fDir').value.trim()||null, ciudad:$('#fCiudad').value.trim()||null, estado:$('#fEstado').value.trim()||null, zip:$('#fZip').value.trim()||null, pais:$('#fPais').value.trim().toUpperCase()||null, telefono:$('#fTel').value.trim()||null, fax:$('#fFax').value.trim()||null, contacto:$('#fContacto').value.trim()||null, freight:+$('#fFreight').value||0, mov:+$('#fMov').value||0, tax:+$('#fTax').value||0, aran:+$('#fAran').value||0, ingreso_tracking:$('#fTrack').checked, activo:$('#fActivo').checked };
+  if(!payload.nombre){toast('Falta el nombre');return;}
+  if(FETCH_REAL){try{await fetch(`${API_BASE}/aereo-transportador-save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); await load();}catch(e){toast(e.message);return;}}
+  else{if(editingId){const i=DATA.findIndex(d=>d.id===editingId); DATA[i]={...DATA[i],...payload};} else {const newId=(DATA.reduce((m,d)=>Math.max(m,d.id),0)||0)+1; DATA.push({...payload,id:newId});} render();}
+  $('#modalBackdrop').classList.remove('open'); toast(editingId?'Actualizado':'Creado');
+}
+async function del(id){const d=DATA.find(x=>x.id===id); if(!d) return; if(!confirm(`¿Eliminar transportador "${d.nombre}"?`)) return;
+  if(FETCH_REAL){try{await fetch(`${API_BASE}/aereo-transportador-delete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); await load();}catch(e){toast(e.message);return;}}
+  else{DATA=DATA.filter(x=>x.id!==id); render();} toast('Eliminado');
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200)}
+$('#btnNew').addEventListener('click',openNew);
+$('#btnCancel').addEventListener('click',()=>$('#modalBackdrop').classList.remove('open'));
+$('#btnSave').addEventListener('click',save);
+$('#modalBackdrop').addEventListener('click',e=>{if(e.target.id==='modalBackdrop')$('#modalBackdrop').classList.remove('open')});
+$('#searchInput').addEventListener('input',render);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modalBackdrop').classList.contains('open'))$('#modalBackdrop').classList.remove('open')});
+populateFfw(); load();
+</script>
+</body>
+</html>

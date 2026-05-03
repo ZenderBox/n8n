@@ -442,16 +442,18 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       <select id="filterStatus"><option value="">Todos</option></select>
     </div>
     <div class="field">
-      <label>Aeropuerto destino</label>
-      <select id="filterAirport"><option value="">Todos</option></select>
-    </div>
-    <div class="field">
-      <label>Consignatario</label>
+      <label>Destino</label>
       <select id="filterDest"><option value="">Todos</option></select>
     </div>
     <div class="field">
-      <label>Aerolínea</label>
-      <select id="filterCarrier"><option value="">Todas</option></select>
+      <label>Carrier</label>
+      <select id="filterCarrier">
+        <option value="">Todos</option>
+        <option value="UPS">UPS</option>
+        <option value="ATLAS">ATLAS</option>
+        <option value="7AIR">7AIR</option>
+        <option value="DHL">DHL</option>
+      </select>
     </div>
     <div class="field">
       <label>Desde</label>
@@ -474,8 +476,8 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <tr>
           <th>Master</th>
           <th>Fecha</th>
-          <th>Destino · Consignatario · Aeropuerto</th>
-          <th>Aerolínea</th>
+          <th>Destino</th>
+          <th>Carrier</th>
           <th>Estatus</th>
           <th class="num">Piezas</th>
           <th class="num">Kg Agencias</th>
@@ -561,7 +563,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <input type="date" id="nvFecha">
       </div>
       <div class="field">
-        <label class="zb-label">Aerolínea *</label>
+        <label class="zb-label">Carrier *</label>
         <select id="nvCarrier"></select>
       </div>
       <div class="field">
@@ -573,20 +575,8 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <input type="number" step="0.01" id="nvFactor" placeholder="0.40">
       </div>
       <div class="field">
-        <label class="zb-label">Aeropuerto origen *</label>
-        <select id="nvAeropOrig"></select>
-      </div>
-      <div class="field">
-        <label class="zb-label">Aeropuerto destino *</label>
-        <select id="nvAeropDest"></select>
-      </div>
-      <div class="field">
-        <label class="zb-label">Consignatario *</label>
+        <label class="zb-label">Destino *</label>
         <select id="nvDestinoCode"></select>
-      </div>
-      <div class="field">
-        <label class="zb-label">Transportador</label>
-        <select id="nvTransp"></select>
       </div>
       <div class="field">
         <label class="zb-label">Estatus *</label>
@@ -623,12 +613,10 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
               <th style="width:34px">#</th>
               <th class="req">Master</th>
               <th class="req">Fecha</th>
-              <th class="req">Aerolínea</th>
+              <th class="req">Carrier</th>
               <th>Tipo</th>
               <th>Factor</th>
-              <th class="req">Aerop. dest</th>
-              <th class="req">Consignatario</th>
-              <th>Transp.</th>
+              <th class="req">Destino</th>
               <th>Estatus</th>
               <th>Piezas</th>
               <th>Consolidados</th>
@@ -671,15 +659,10 @@ const STATUS_LIST = [
 ];
 const STATUS_MAP = Object.fromEntries(STATUS_LIST.map(s => [s.id, s]));
 
-// Catálogos (mock, vendrán de PG vía /webhook/aereo-bootstrap)
-const AEROLINEAS    = ['UPS', 'ATLAS', '7AIR', 'DHL'];
-const TIPOS_EMBARQUE= ['', 'AAD', 'AAY', 'SUELTA', 'PALLETS', 'ULD-AAD', 'ULD-AAY'];
-const AEROPUERTOS   = ['MIA', 'BOG', 'SJO', 'UIO', 'PTY']; // codigo IATA
-const CONSIGNATARIOS= ['ENEXCOL', '472', 'CR'];
-const TRANSPORTADORES = ['UPS', 'USPS', 'FEDEX', 'DHL', 'AMAZON', 'FAST BOX CARGO', 'LASERSHIP'];
-// Aeropuerto origen casi siempre MIA — se setea por default
-const AEROPUERTO_ORIGEN_DEFAULT = 'MIA';
-// Prefijo conocido del master por aerolínea (placeholder visual)
+const CARRIERS = ['UPS', 'ATLAS', '7AIR', 'DHL'];
+const TIPOS_EMBARQUE = ['', 'AAD', 'AAY', 'SUELTA'];
+const DESTINOS = ['ENEXCOL', '472', 'CR'];
+// Prefijo conocido del master por carrier (placeholder visual)
 const MASTER_PREFIX = { UPS: '406-XXXXXXXX', ATLAS: '369-XXXXXXXX', DHL: '992-XXXXXXXX', '7AIR': 'NNN-XXXXXXXX' };
 const masterPh = c => MASTER_PREFIX[c] || 'NNN-XXXXXXXX';
 
@@ -690,39 +673,34 @@ const AGENCIAS_DEFAULT = [
 const SERVICIOS = ['comercial', 'casillero'];
 
 // ─────── Mock data ───────
-// Modelo nuevo (alineado al schema aereo refactor V2):
-//   vuelo: master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen,
-//          aeropuertoDestino, consignatario, transportador (opcional), piezas,
-//          consolidados, status, kgAgencias, kgPagados, pesos{agencia:[com,cas]}
+// destino se compone de: carrier + tipoEmbarque (AAD/AAY/SUELTA) + factor + destinoCode (ENEXCOL/472/CR)
 const VUELOS = [
-  mkVuelo('406-44582134', '2026-04-27', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3538 - AGE 3539',  'bodega',    1154.5, 1237, { Movi:[0,1050], LACS:[0,101], 'ZenderBox':[104.5, 0] }),
-  mkVuelo('406-44582160', '2026-04-28', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3542 - AGE 3543',  'bodega',     780.0,  820, { Movi:[0,250], JL:[0,90], 'ZenderBox CASILLERO':[180,0], Pressex:[0,80] }),
-  mkVuelo('406-44582171', '2026-04-29', 'UPS',  'AAY',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3545 - AGE 3546',  'aeropuerto', 690.0,  720, { Movi:[0,210], LACS:[0,75], JL:[0,60], 'ZenderBox CASILLERO':[150,0] }),
-  mkVuelo('406-44582182', '2026-04-30', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3548 - AGE 3549',  'aeropuerto', 540.0,    0, { Movi:[0,180], 'ZenderBox CASILLERO':[140,0], Pressex:[0,90] }),
-  mkVuelo('406-44582193', '2026-05-01', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3551 - AGE 3552',  'aerolinea',  420.0,    0, { Movi:[0,150], JL:[0,40], 'ZenderBox CASILLERO':[120,0] }),
-  mkVuelo('406-44585111', '2026-04-28', 'UPS',  '',      0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '2',         'COM 3540 - DG 3541',   'aeropuerto', 880.0,  942, { 'COMERCIAL MOVI':[300,0], Movi:[0,180], 'ZenderBox AGENCIAS':[210,0], 'ZenderBox CASILLERO':[130,0] }),
-  mkVuelo('992-10535383', '2026-05-01', 'DHL',  '',      1.00, 'MIA','SJO','CR',      'DHL',  '5',         'CAS 3550',             'aerolinea',  650.0,    0, { LACS:[0,180], Damak:[0,90], 'ZenderBox CASILLERO':[200,0], Pressex:[0,120] }),
-  mkVuelo('406-44592004', '2026-05-01', 'UPS',  '',      0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '5',         'COM 3544 - DG 3547',   'aerolinea', 1037.5,    0, { 'COMERCIAL MOVI':[280,0], Movi:[0,300], JL:[60,90], 'ZenderBox AGENCIAS':[200,0], 'ZenderBox CASILLERO':[150,0] }),
-  mkVuelo('235-83949611', '2026-03-01', 'ATLAS','SUELTA',0.85, 'MIA','BOG','ENEXCOL', null,   '4 pallets', '2365CAS - 2366AG',     'bodega',     878.3,  942, { Movi:[0,209], JL:[0,38.1], 'ZenderBox AGENCIAS':[261.2,0], 'ZenderBox CASILLERO':[369.9,0]}),
-  mkVuelo('976-30462876', '2025-12-23', 'UPS',  'AAD',   0.40, 'MIA','BOG','472',     'UPS',  '5 PALLETS', '2359CAS',              'bodega',    1154.5, 1237, { Movi:[0,1050], LACS:[0,101], 'ZenderBox':[104.5, 0] }),
-  mkVuelo('406-44693311', '2026-05-02', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         '',                     'sin-estatus',  0,    0, {}),
-  mkVuelo('406-44693322', '2026-05-03', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         '',                     'sin-estatus',  0,    0, {}),
-  mkVuelo('406-44693333', '2026-05-04', 'UPS',  'AAY',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         '',                     'sin-estatus',  0,    0, {}),
+  mkVuelo('406-44582134', '2026-04-27', 'UPS', 'AAD',    0.40, 'ENEXCOL', '1',         'CAS 3538 - AGE 3539',     'bodega',    1154.5, 1237, { Movi:[0,1050], LACS:[0,101], 'ZenderBox':[104.5, 0] }),
+  mkVuelo('406-44582160', '2026-04-28', 'UPS', 'AAD',    0.40, 'ENEXCOL', '1',         'CAS 3542 - AGE 3543',     'bodega',     780.0,  820, { Movi:[0,250], JL:[0,90], 'ZenderBox CASILLERO':[180,0], Pressex:[0,80] }),
+  mkVuelo('406-44582171', '2026-04-29', 'UPS', 'AAY',    0.40, 'ENEXCOL', '1',         'CAS 3545 - AGE 3546',     'aeropuerto', 690.0,  720, { Movi:[0,210], LACS:[0,75], JL:[0,60], 'ZenderBox CASILLERO':[150,0] }),
+  mkVuelo('406-44582182', '2026-04-30', 'UPS', 'AAD',    0.40, 'ENEXCOL', '1',         'CAS 3548 - AGE 3549',     'aeropuerto', 540.0,    0, { Movi:[0,180], 'ZenderBox CASILLERO':[140,0], Pressex:[0,90] }),
+  mkVuelo('406-44582193', '2026-05-01', 'UPS', 'AAD',    0.40, 'ENEXCOL', '1',         'CAS 3551 - AGE 3552',     'aerolinea',  420.0,    0, { Movi:[0,150], JL:[0,40], 'ZenderBox CASILLERO':[120,0] }),
+  mkVuelo('406-44585111', '2026-04-28', 'UPS', '',       0.40, 'ENEXCOL', '2',         'COM 3540 - DG 3541',      'aeropuerto', 880.0,  942, { 'COMERCIAL MOVI':[300,0], Movi:[0,180], 'ZenderBox AGENCIAS':[210,0], 'ZenderBox CASILLERO':[130,0] }),
+  mkVuelo('992-10535383', '2026-05-01', 'DHL', '',       1.00, 'CR',      '5',         'CAS 3550',                'aerolinea',  650.0,    0, { LACS:[0,180], Damak:[0,90], 'ZenderBox CASILLERO':[200,0], Pressex:[0,120] }),
+  mkVuelo('406-44592004', '2026-05-01', 'UPS', '',       0.40, 'ENEXCOL', '5',         'COM 3544 - DG 3547',      'aerolinea', 1037.5,    0, { 'COMERCIAL MOVI':[280,0], Movi:[0,300], JL:[60,90], 'ZenderBox AGENCIAS':[200,0], 'ZenderBox CASILLERO':[150,0] }),
+  mkVuelo('235-83949611', '2026-03-01', 'ATLAS','SUELTA',0.85, 'ENEXCOL', '4 pallets', '2365CAS - 2366AG',        'bodega',     878.3,  942, { Movi:[0,209], JL:[0,38.1], 'ZenderBox AGENCIAS':[261.2,0], 'ZenderBox CASILLERO':[369.9,0]}),
+  mkVuelo('976-30462876', '2025-12-23', 'UPS', 'AAD',    0.40, '472',     '5 PALLETS', '2359CAS',                 'bodega',    1154.5, 1237, { Movi:[0,1050], LACS:[0,101], 'ZenderBox':[104.5, 0] }),
+  mkVuelo('406-44693311', '2026-05-02', 'UPS', 'AAD',    0.40, 'ENEXCOL', '1',         '',                        'sin-estatus',  0,    0, {}),
+  mkVuelo('406-44693322', '2026-05-03', 'UPS', 'AAD',    0.40, 'ENEXCOL', '1',         '',                        'sin-estatus',  0,    0, {}),
+  mkVuelo('406-44693333', '2026-05-04', 'UPS', 'AAY',    0.40, 'ENEXCOL', '1',         '',                        'sin-estatus',  0,    0, {}),
 ];
 
-function mkVuelo(master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen, aeropuertoDestino, consignatario, transportador, piezas, cons, status, kgAgencias, kgPagados, pesos) {
-  return { master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen, aeropuertoDestino, consignatario, transportador, piezas, cons, status, kgAgencias, kgPagados, pesos };
+function mkVuelo(master, fecha, carrier, tipoEmbarque, factor, destinoCode, piezas, cons, status, kgAgencias, kgPagados, pesos) {
+  return { master, fecha, carrier, tipoEmbarque, factor, destinoCode, piezas, cons, status, kgAgencias, kgPagados, pesos };
 }
 
-// Reconstruye el destino tipo "UPS - AAD - 0.40 ENEXCOL · BOG" desde sus partes
+// Reconstruye el destino tipo "UPS - AAD - 0.40 ENEXCOL" desde sus partes
 function composeDestino(v) {
-  const parts = [v.aerolinea];
+  const parts = [v.carrier];
   if (v.tipoEmbarque) parts.push(v.tipoEmbarque);
-  if (v.factor != null && v.factor !== '') parts.push(`${Number(v.factor).toFixed(2)} ${v.consignatario || ''}`.trim());
-  else if (v.consignatario) parts.push(v.consignatario);
-  let s = parts.filter(Boolean).join(' - ');
-  if (v.aeropuertoDestino) s += ` · ${v.aeropuertoDestino}`;
-  return s;
+  if (v.factor != null && v.factor !== '') parts.push(`${Number(v.factor).toFixed(2)} ${v.destinoCode || ''}`.trim());
+  else if (v.destinoCode) parts.push(v.destinoCode);
+  return parts.filter(Boolean).join(' - ');
 }
 
 // ─────── Helpers ───────
@@ -743,7 +721,6 @@ function carrierTag(c) {
 function renderTable() {
   const term = $('#searchInput').value.toLowerCase().trim();
   const fStatus = $('#filterStatus').value;
-  const fAirport = $('#filterAirport').value;
   const fDest = $('#filterDest').value;
   const fCarrier = $('#filterCarrier').value;
   const fFrom = $('#filterFrom').value;
@@ -753,15 +730,14 @@ function renderTable() {
   const week = weekOn ? currentWeekRange() : null;
 
   const rows = VUELOS.filter(v => {
-    if (fStatus  && v.status !== fStatus) return false;
-    if (fAirport && v.aeropuertoDestino !== fAirport) return false;
-    if (fDest    && v.consignatario !== fDest) return false;
-    if (fCarrier && v.aerolinea !== fCarrier) return false;
+    if (fStatus && v.status !== fStatus) return false;
+    if (fDest && v.destinoCode !== fDest) return false;
+    if (fCarrier && v.carrier !== fCarrier) return false;
     if (fFrom && v.fecha < fFrom) return false;
-    if (fTo   && v.fecha > fTo) return false;
+    if (fTo && v.fecha > fTo) return false;
     if (week && (v.fecha < week.from || v.fecha > week.to)) return false;
     if (term) {
-      const blob = `${v.master} ${composeDestino(v)} ${v.cons} ${v.piezas} ${v.tipoEmbarque||''} ${v.transportador||''}`.toLowerCase();
+      const blob = `${v.master} ${composeDestino(v)} ${v.cons} ${v.piezas} ${v.tipoEmbarque||''}`.toLowerCase();
       if (!blob.includes(term)) return false;
     }
     return true;
@@ -781,7 +757,7 @@ function renderTable() {
           <td class="master-cell">${v.master}</td>
           <td>${formatFecha(v.fecha)}</td>
           <td>${composeDestino(v)}</td>
-          <td>${carrierTag(v.aerolinea)}</td>
+          <td>${carrierTag(v.carrier)}</td>
           <td>${pillFor(v.status)}</td>
           <td class="num">${v.piezas || '—'}</td>
           <td class="num">${fmt(v.kgAgencias)}</td>
@@ -827,9 +803,8 @@ function populateFilters() {
   STATUS_LIST.forEach(s => {
     const o = document.createElement('option'); o.value = s.id; o.textContent = s.label; statusSel.appendChild(o);
   });
-  $('#filterAirport').innerHTML = '<option value="">Todos</option>' + AEROPUERTOS.map(a => `<option value="${a}">${a}</option>`).join('');
-  $('#filterDest').innerHTML    = '<option value="">Todos</option>' + CONSIGNATARIOS.map(d => `<option value="${d}">${d}</option>`).join('');
-  $('#filterCarrier').innerHTML = '<option value="">Todas</option>' + AEROLINEAS.map(a => `<option value="${a}">${a}</option>`).join('');
+  const destSel = $('#filterDest');
+  destSel.innerHTML = '<option value="">Todos</option>' + DESTINOS.map(d => `<option value="${d}">${d}</option>`).join('');
 }
 
 // ─────── Drawer: detalle vuelo ───────
@@ -841,10 +816,7 @@ function openDrawer(master) {
   $('#drawerTitle').textContent = v.master;
   $('#drawerMeta').innerHTML = `
     <span>📅 <strong>${formatFecha(v.fecha)}</strong></span>
-    <span>✈ <strong>${v.aerolinea}</strong></span>
-    <span>🛫 <strong>${v.aeropuertoOrigen || '—'} → ${v.aeropuertoDestino || '—'}</strong></span>
-    <span>📍 <strong>${v.consignatario || '—'}</strong></span>
-    ${v.transportador ? `<span>🚚 <strong>${v.transportador}</strong></span>` : ''}
+    <span>📍 <strong>${composeDestino(v)}</strong></span>
     <span>📦 <strong>${v.piezas || '—'}</strong></span>
     <span>🔢 Cons. <strong>${v.cons || '—'}</strong></span>
   `;
@@ -956,15 +928,11 @@ $('#btnAddAgencia').addEventListener('click', () => {
 let modalMode = 'single'; // 'single' | 'bulk'
 
 function populateModalSelects() {
-  $('#nvCarrier').innerHTML     = AEROLINEAS.map(c => `<option value="${c}">${c}</option>`).join('');
-  $('#nvTipo').innerHTML        = TIPOS_EMBARQUE.map(t => `<option value="${t}">${t || '—'}</option>`).join('');
-  $('#nvAeropOrig').innerHTML   = AEROPUERTOS.map(a => `<option value="${a}">${a}</option>`).join('');
-  $('#nvAeropDest').innerHTML   = `<option value="">—</option>` + AEROPUERTOS.filter(a => a !== AEROPUERTO_ORIGEN_DEFAULT).map(a => `<option value="${a}">${a}</option>`).join('');
-  $('#nvDestinoCode').innerHTML = `<option value="">—</option>` + CONSIGNATARIOS.map(d => `<option value="${d}">${d}</option>`).join('');
-  $('#nvTransp').innerHTML      = `<option value="">—</option>` + TRANSPORTADORES.map(t => `<option value="${t}">${t}</option>`).join('');
-  $('#nvStatus').innerHTML      = STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
-  $('#nvAeropOrig').value       = AEROPUERTO_ORIGEN_DEFAULT;
-  // Placeholder del master se ajusta a la aerolínea elegida
+  $('#nvCarrier').innerHTML = CARRIERS.map(c => `<option value="${c}">${c}</option>`).join('');
+  $('#nvTipo').innerHTML    = TIPOS_EMBARQUE.map(t => `<option value="${t}">${t || '—'}</option>`).join('');
+  $('#nvDestinoCode').innerHTML = `<option value="">—</option>` + DESTINOS.map(d => `<option value="${d}">${d}</option>`).join('');
+  $('#nvStatus').innerHTML  = STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+  // Placeholder del master se ajusta al carrier elegido
   $('#nvCarrier').addEventListener('change', () => { $('#nvMaster').placeholder = masterPh($('#nvCarrier').value); });
 }
 
@@ -998,12 +966,10 @@ function bulkRowHTML(idx) {
       <td>${idx + 1}</td>
       <td><input type="text" class="b-master" placeholder="${masterPh('UPS')}"></td>
       <td><input type="date" class="b-fecha" value="${today}"></td>
-      <td><select class="b-carrier">${AEROLINEAS.map(c => `<option value="${c}">${c}</option>`).join('')}</select></td>
+      <td><select class="b-carrier">${CARRIERS.map(c => `<option value="${c}">${c}</option>`).join('')}</select></td>
       <td><select class="b-tipo">${TIPOS_EMBARQUE.map(t => `<option value="${t}">${t || '—'}</option>`).join('')}</select></td>
       <td><input type="number" step="0.01" class="b-factor" placeholder="0.40"></td>
-      <td><select class="b-aerop"><option value="">—</option>${AEROPUERTOS.filter(a => a !== AEROPUERTO_ORIGEN_DEFAULT).map(a => `<option value="${a}">${a}</option>`).join('')}</select></td>
-      <td><select class="b-destino"><option value="">—</option>${CONSIGNATARIOS.map(d => `<option value="${d}">${d}</option>`).join('')}</select></td>
-      <td><select class="b-transp"><option value="">—</option>${TRANSPORTADORES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></td>
+      <td><select class="b-destino"><option value="">—</option>${DESTINOS.map(d => `<option value="${d}">${d}</option>`).join('')}</select></td>
       <td><select class="b-status">${STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}</select></td>
       <td><input type="text" class="b-piezas" placeholder="ej. 1"></td>
       <td><input type="text" class="b-cons" placeholder="ej. CAS xxxx - AGE xxxx"></td>
@@ -1021,10 +987,8 @@ function genBulkRows(n) {
     renumberBulk();
     updateModalFootInfo();
   }));
-  // Pre-seleccionar destino, aeropuerto, transportador y status default
-  $$('#bulkBody .b-aerop').forEach(s => s.value = 'BOG');
+  // Pre-seleccionar destino y status default
   $$('#bulkBody .b-destino').forEach(s => s.value = 'ENEXCOL');
-  $$('#bulkBody .b-transp').forEach(s => s.value = 'UPS');
   $$('#bulkBody .b-status').forEach(s => s.value = 'sin-estatus');
   $$('#bulkBody .b-factor').forEach(i => i.value = '0.40');
   // Placeholder del master cambia con el carrier de la fila
@@ -1059,20 +1023,15 @@ $('#nvSave').addEventListener('click', () => {
     const m = $('#nvMaster').value.trim();
     const f = $('#nvFecha').value;
     const dest = $('#nvDestinoCode').value;
-    const aerOrig = $('#nvAeropOrig').value;
-    const aerDest = $('#nvAeropDest').value;
     const st = $('#nvStatus').value;
-    if (!m)       { toast('Falta el master'); return; }
-    if (!f)       { toast('Falta la fecha'); return; }
-    if (!aerOrig) { toast('Falta el aeropuerto origen'); return; }
-    if (!aerDest) { toast('Falta el aeropuerto destino'); return; }
-    if (!dest)    { toast('Falta el consignatario'); return; }
-    if (!st)      { toast('Falta el estatus'); return; }
+    if (!m) { toast('Falta el master'); return; }
+    if (!f) { toast('Falta la fecha'); return; }
+    if (!dest) { toast('Falta el destino'); return; }
+    if (!st)   { toast('Falta el estatus'); return; }
     if (VUELOS.some(v => v.master === m)) { toast('Ya existe ese master'); return; }
     VUELOS.unshift(mkVuelo(
       m, f, $('#nvCarrier').value, $('#nvTipo').value,
-      parseFloat($('#nvFactor').value) || null,
-      aerOrig, aerDest, dest, $('#nvTransp').value || null,
+      parseFloat($('#nvFactor').value) || null, dest,
       $('#nvPiezas').value, $('#nvCons').value, st, 0, 0, {}
     ));
     $('#modalBackdrop').classList.remove('open');
@@ -1087,30 +1046,26 @@ $('#nvSave').addEventListener('click', () => {
     const errors = [];
     const created = [];
     rows.forEach((tr, i) => {
+      const get = sel => tr.querySelector(sel).value.trim ? tr.querySelector(sel).value.trim() : tr.querySelector(sel).value;
       const m = tr.querySelector('.b-master').value.trim();
       const f = tr.querySelector('.b-fecha').value;
       const car = tr.querySelector('.b-carrier').value;
-      const aero = tr.querySelector('.b-aerop').value;
       const dest = tr.querySelector('.b-destino').value;
       // marcar inválidas
-      tr.querySelectorAll('input.invalid, select.invalid').forEach(el => el.classList.remove('invalid'));
+      tr.querySelectorAll('input.invalid').forEach(el => el.classList.remove('invalid'));
       let bad = false;
       if (!m)    { tr.querySelector('.b-master').classList.add('invalid'); bad = true; }
       else if (VUELOS.some(v => v.master === m) || created.some(c => c.master === m)) {
         tr.querySelector('.b-master').classList.add('invalid'); errors.push(`Fila ${i+1}: master duplicado`); bad = true;
       }
       if (!f)    { tr.querySelector('.b-fecha').classList.add('invalid'); bad = true; }
-      if (!aero) { tr.querySelector('.b-aerop').classList.add('invalid'); bad = true; }
       if (!dest) { tr.querySelector('.b-destino').classList.add('invalid'); bad = true; }
       if (bad) { errors.push(`Fila ${i+1}: completá los obligatorios`); return; }
       created.push(mkVuelo(
         m, f, car,
         tr.querySelector('.b-tipo').value,
         parseFloat(tr.querySelector('.b-factor').value) || null,
-        AEROPUERTO_ORIGEN_DEFAULT,
-        aero,
         dest,
-        tr.querySelector('.b-transp').value || null,
         tr.querySelector('.b-piezas').value,
         tr.querySelector('.b-cons').value,
         tr.querySelector('.b-status').value || 'sin-estatus',
@@ -1128,7 +1083,7 @@ $('#nvSave').addEventListener('click', () => {
 $('#modalBackdrop').addEventListener('click', e => { if (e.target.id === 'modalBackdrop') $('#modalBackdrop').classList.remove('open'); });
 
 // ─────── Listeners ───────
-['searchInput','filterStatus','filterAirport','filterDest','filterCarrier','filterFrom','filterTo'].forEach(id => {
+['searchInput','filterStatus','filterDest','filterCarrier','filterFrom','filterTo'].forEach(id => {
   $('#'+id).addEventListener('input', renderTable);
   $('#'+id).addEventListener('change', renderTable);
 });

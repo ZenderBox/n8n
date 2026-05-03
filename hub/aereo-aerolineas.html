@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aerolíneas · Configuración Aéreo · ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --zb-cyan:#029ECB;--zb-cyan-dk:#007B9F;--zb-cyan-lt:#E6F5FB;--zb-navy:#004B72;--zb-lime:#CCD32A;--zb-ink-700:#333;--zb-ink-500:#666;--zb-ink-300:#8A8A8A;--zb-ink-200:#B8B8B8;--zb-line:#E2E8EF;--zb-surface:#F6F6F6;--zb-white:#fff;--zb-success:#008C31;--zb-success-bg:#E8F4ED;--zb-warn:#B7791F;--zb-warn-bg:#FBF0DA;--zb-error:#F32735;--zb-error-bg:#FBEAEC;--zb-gradient:linear-gradient(45deg,#029ECB 0%,#CCD32A 85%);--radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-pill:99px;--shadow-sm:0 1px 4px rgba(0,0,0,.06)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--zb-surface);color:var(--zb-ink-700);min-height:100vh;-webkit-font-smoothing:antialiased}
+main{margin-left:220px;padding:28px 32px 80px;max-width:1280px}@media(max-width:768px){main{margin-left:0;padding:18px 14px 60px}}
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}.page-header h1{font-size:24px;font-weight:800;color:var(--zb-navy);letter-spacing:-.4px}.page-header p{font-size:13px;color:var(--zb-ink-500);margin-top:4px;font-weight:500}
+.crumbs{font-size:12px;color:var(--zb-ink-500);font-weight:600;margin-bottom:4px}.crumbs a{color:var(--zb-cyan-dk);text-decoration:none}.crumbs a:hover{text-decoration:underline}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-sm);padding:10px 16px;font:700 13px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;text-decoration:none;transition:filter .15s,transform .1s,box-shadow .15s;white-space:nowrap}.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--zb-gradient);color:#fff}.btn-primary:hover{filter:brightness(1.06);box-shadow:0 4px 12px rgba(2,158,203,.25)}
+.btn-ghost{background:var(--zb-white);color:var(--zb-navy);border:1px solid var(--zb-line)}.btn-ghost:hover{background:var(--zb-surface);border-color:var(--zb-cyan);color:var(--zb-cyan-dk)}
+.btn-sm{padding:7px 12px;font-size:12px}
+.toolbar{background:var(--zb-white);border:1px solid var(--zb-line);border-radius:var(--radius-md);padding:14px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-box{position:relative;flex:1;min-width:220px}.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--zb-ink-300);width:14px;height:14px}.search-box input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:500 13px 'Plus Jakarta Sans',sans-serif;background:var(--zb-white);color:var(--zb-ink-700)}.search-box input:focus{outline:0;border-color:var(--zb-cyan);box-shadow:0 0 0 3px rgba(2,158,203,.12)}
+.table-wrap{background:var(--zb-white);border:1px solid var(--zb-line);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--zb-surface);text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--zb-ink-500);padding:12px 14px;border-bottom:1px solid var(--zb-line);white-space:nowrap}
+tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align:middle;font-weight:500;color:var(--zb-ink-700)}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#FAFCFE}
+.code-cell{font-weight:800;color:var(--zb-navy);letter-spacing:.5px}
+.actions{text-align:right;white-space:nowrap;display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{border:1px solid var(--zb-line);background:var(--zb-white);border-radius:var(--radius-sm);width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--zb-ink-500);transition:all .12s}
+.icon-btn svg{width:14px;height:14px}.icon-btn:hover{border-color:var(--zb-cyan);color:var(--zb-cyan-dk)}.icon-btn.danger:hover{border-color:var(--zb-error);color:var(--zb-error);background:var(--zb-error-bg)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:var(--radius-pill);font-size:11px;font-weight:700;background:var(--zb-success-bg);color:var(--zb-success)}.pill.off{background:#F3F4F6;color:var(--zb-ink-500)}.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.modal-backdrop{position:fixed;inset:0;background:rgba(13,28,41,.45);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:110}.modal-backdrop.open{display:flex}
+.modal{background:var(--zb-white);border-radius:var(--radius-lg);width:min(520px,92vw);box-shadow:0 12px 32px rgba(39,39,39,.12);overflow:hidden}
+.modal-head{padding:18px 22px 12px;border-bottom:1px solid var(--zb-line)}.modal-head h2{font-size:17px;font-weight:800;color:var(--zb-navy)}.modal-head p{font-size:12px;color:var(--zb-ink-500);margin-top:4px;font-weight:500}
+.modal-body{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700;color:var(--zb-ink-700)}
+.field input,.field select{padding:10px 12px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:500 13px 'Plus Jakarta Sans',sans-serif;background:var(--zb-white);color:var(--zb-ink-700)}.field input:focus,.field select:focus{outline:0;border-color:var(--zb-cyan);box-shadow:0 0 0 3px rgba(2,158,203,.12)}.field input::placeholder{color:var(--zb-ink-200);font-style:italic;font-weight:400}
+.modal-foot{padding:14px 22px 18px;display:flex;justify-content:flex-end;gap:8px;background:var(--zb-surface);border-top:1px solid var(--zb-line)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--zb-navy);color:#fff;padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(39,39,39,.08);opacity:0;pointer-events:none;transition:all .25s;z-index:200}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.banner-mock{background:var(--zb-warn-bg);border:1px solid #E9C77A;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--zb-warn);font-weight:600}
+.prefix-cell{font-family:ui-monospace,monospace;font-size:12px;color:var(--zb-ink-500)}
+</style>
+</head>
+<body>
+
+<div id="wms-sidebar"></div>
+<script src="sidebar.js"></script>
+
+<main>
+  <div class="page-header">
+    <div>
+      <div class="crumbs"><a href="aereo-config.html">Configuración Aéreo</a> · Aerolíneas</div>
+      <h1>Aerolíneas</h1>
+      <p>Carriers que emiten el master AWB. Incluye prefijo del master para placeholder en la UI.</p>
+    </div>
+    <div>
+      <button class="btn btn-primary btn-sm" id="btnNew">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva aerolínea
+      </button>
+    </div>
+  </div>
+
+  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-aerolineas-list</code>, <code>/aereo-aerolinea-save</code>, <code>/aereo-aerolinea-delete</code>.</div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar por código, label, prefijo de master…">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Label</th>
+          <th>Prefijo Master</th>
+          <th>Estado</th>
+          <th class="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Nueva aerolínea</h2>
+      <p id="modalDesc">Cargá el código, label y prefijo del master.</p>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Código *</label>
+        <input type="text" id="fCode" placeholder="UPS" maxlength="10" style="text-transform:uppercase">
+      </div>
+      <div class="field">
+        <label>Label *</label>
+        <input type="text" id="fLabel" placeholder="ej. UPS, Atlas Air">
+      </div>
+      <div class="field full">
+        <label>Prefijo Master AWB</label>
+        <input type="text" id="fPrefix" placeholder="ej. 406-XXXXXXXX">
+      </div>
+      <div class="field full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="fActivo" checked> Activo
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" id="btnCancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="btnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const FETCH_REAL = false;
+const API_BASE = 'https://hub.zenderbox.com/webhook';
+let DATA = [
+  { id: 1, code: 'UPS',   label: 'UPS',       master_prefix: '406-XXXXXXXX', activo: true },
+  { id: 2, code: 'ATLAS', label: 'Atlas Air', master_prefix: '369-XXXXXXXX', activo: true },
+  { id: 3, code: '7AIR',  label: '7Air',      master_prefix: 'NNN-XXXXXXXX', activo: true },
+  { id: 4, code: 'DHL',   label: 'DHL',       master_prefix: '992-XXXXXXXX', activo: true },
+];
+let editingId = null;
+const $ = (s,c=document)=>c.querySelector(s); const $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
+async function load() {
+  if (FETCH_REAL) { try { DATA = await (await fetch(`${API_BASE}/aereo-aerolineas-list`)).json(); } catch(e){ toast(e.message); } }
+  render();
+}
+function render() {
+  const term = $('#searchInput').value.toLowerCase().trim();
+  const rows = DATA.filter(d => !term || `${d.code} ${d.label} ${d.master_prefix}`.toLowerCase().includes(term));
+  $('#tbody').innerHTML = rows.map(d => `
+    <tr data-id="${d.id}">
+      <td class="code-cell">${d.code}</td>
+      <td>${d.label}</td>
+      <td class="prefix-cell">${d.master_prefix || '—'}</td>
+      <td><span class="pill ${d.activo?'':'off'}">${d.activo?'Activo':'Inactivo'}</span></td>
+      <td class="actions">
+        <button class="icon-btn" data-act="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="icon-btn danger" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+      </td>
+    </tr>`).join('');
+  $$('tbody [data-act]').forEach(b => b.addEventListener('click', () => {
+    const id = +b.closest('tr').dataset.id;
+    if (b.dataset.act === 'edit') openEdit(id); else del(id);
+  }));
+}
+function openNew() {
+  editingId = null; $('#modalTitle').textContent='Nueva aerolínea';
+  ['fCode','fLabel','fPrefix'].forEach(id=>$('#'+id).value=''); $('#fActivo').checked=true;
+  $('#modalBackdrop').classList.add('open'); setTimeout(()=>$('#fCode').focus(),50);
+}
+function openEdit(id) {
+  const d = DATA.find(x=>x.id===id); if(!d) return;
+  editingId=id; $('#modalTitle').textContent=`Editar ${d.code}`;
+  $('#fCode').value=d.code; $('#fLabel').value=d.label; $('#fPrefix').value=d.master_prefix||''; $('#fActivo').checked=!!d.activo;
+  $('#modalBackdrop').classList.add('open');
+}
+async function save() {
+  const payload = { id: editingId, code: $('#fCode').value.trim().toUpperCase(), label: $('#fLabel').value.trim(), master_prefix: $('#fPrefix').value.trim(), activo: $('#fActivo').checked };
+  if (!payload.code)  { toast('Falta código');  return; }
+  if (!payload.label) { toast('Falta label'); return; }
+  if (FETCH_REAL) {
+    try { await fetch(`${API_BASE}/aereo-aerolinea-save`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); await load(); }
+    catch(e){ toast(e.message); return; }
+  } else {
+    if (editingId) { const i=DATA.findIndex(d=>d.id===editingId); DATA[i]={...DATA[i],...payload}; }
+    else { const newId=(DATA.reduce((m,d)=>Math.max(m,d.id),0)||0)+1; DATA.push({...payload,id:newId}); }
+    render();
+  }
+  $('#modalBackdrop').classList.remove('open'); toast(editingId?'Actualizado':'Creado');
+}
+async function del(id) {
+  const d=DATA.find(x=>x.id===id); if(!d) return;
+  if(!confirm(`¿Eliminar aerolínea "${d.code}"?`)) return;
+  if (FETCH_REAL) { try { await fetch(`${API_BASE}/aereo-aerolinea-delete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); await load(); } catch(e){ toast(e.message); return; } }
+  else { DATA=DATA.filter(x=>x.id!==id); render(); }
+  toast('Eliminado');
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200)}
+$('#btnNew').addEventListener('click',openNew);
+$('#btnCancel').addEventListener('click',()=>$('#modalBackdrop').classList.remove('open'));
+$('#btnSave').addEventListener('click',save);
+$('#modalBackdrop').addEventListener('click',e=>{if(e.target.id==='modalBackdrop')$('#modalBackdrop').classList.remove('open')});
+$('#searchInput').addEventListener('input',render);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modalBackdrop').classList.contains('open'))$('#modalBackdrop').classList.remove('open')});
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aeropuertos · Configuración Aéreo · ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --zb-cyan:    #029ECB;
+  --zb-cyan-dk: #007B9F;
+  --zb-cyan-lt: #E6F5FB;
+  --zb-navy:    #004B72;
+  --zb-lime:    #CCD32A;
+  --zb-ink:     #0D1C29;
+  --zb-ink-700: #333333;
+  --zb-ink-500: #666666;
+  --zb-ink-300: #8A8A8A;
+  --zb-ink-200: #B8B8B8;
+  --zb-line:    #E2E8EF;
+  --zb-surface: #F6F6F6;
+  --zb-white:   #FFFFFF;
+  --zb-success: #008C31;
+  --zb-success-bg: #E8F4ED;
+  --zb-warn:    #B7791F;
+  --zb-warn-bg: #FBF0DA;
+  --zb-error:   #F32735;
+  --zb-error-bg: #FBEAEC;
+  --zb-gradient: linear-gradient(45deg, #029ECB 0%, #CCD32A 85%);
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-pill: 99px;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--zb-surface);
+  color: var(--zb-ink-700);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+main { margin-left: 220px; padding: 28px 32px 80px; max-width: 1280px; }
+@media (max-width: 768px) { main { margin-left: 0; padding: 18px 14px 60px; } }
+
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+.page-header h1 { font-size: 24px; font-weight: 800; color: var(--zb-navy); letter-spacing: -.4px; }
+.page-header p  { font-size: 13px; color: var(--zb-ink-500); margin-top: 4px; font-weight: 500; }
+.crumbs { font-size: 12px; color: var(--zb-ink-500); font-weight: 600; margin-bottom: 4px; }
+.crumbs a { color: var(--zb-cyan-dk); text-decoration: none; }
+.crumbs a:hover { text-decoration: underline; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; border: 0;
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  font: 700 13px/1 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+  text-decoration: none; transition: filter .15s, transform .1s, box-shadow .15s;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--zb-gradient); color: #fff; }
+.btn-primary:hover { filter: brightness(1.06); box-shadow: 0 4px 12px rgba(2,158,203,.25); }
+.btn-ghost { background: var(--zb-white); color: var(--zb-navy); border: 1px solid var(--zb-line); }
+.btn-ghost:hover { background: var(--zb-surface); border-color: var(--zb-cyan); color: var(--zb-cyan-dk); }
+.btn-sm { padding: 7px 12px; font-size: 12px; }
+.btn-danger { background: var(--zb-white); color: var(--zb-error); border: 1px solid var(--zb-line); }
+.btn-danger:hover { background: var(--zb-error-bg); border-color: var(--zb-error); }
+
+.toolbar {
+  background: var(--zb-white); border: 1px solid var(--zb-line); border-radius: var(--radius-md);
+  padding: 14px; margin-bottom: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.search-box { position: relative; flex: 1; min-width: 220px; }
+.search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--zb-ink-300); width: 14px; height: 14px; }
+.search-box input { width: 100%; padding: 9px 12px 9px 34px; border: 1px solid var(--zb-line); border-radius: var(--radius-sm); font: 500 13px 'Plus Jakarta Sans', sans-serif; background: var(--zb-white); color: var(--zb-ink-700); }
+.search-box input:focus { outline: 0; border-color: var(--zb-cyan); box-shadow: 0 0 0 3px rgba(2,158,203,.12); }
+
+.table-wrap {
+  background: var(--zb-white); border: 1px solid var(--zb-line); border-radius: var(--radius-md);
+  overflow: hidden; box-shadow: var(--shadow-sm);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: var(--zb-surface); text-align: left; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px; color: var(--zb-ink-500);
+  padding: 12px 14px; border-bottom: 1px solid var(--zb-line); white-space: nowrap;
+}
+tbody td { padding: 13px 14px; border-bottom: 1px solid var(--zb-line); vertical-align: middle; font-weight: 500; color: var(--zb-ink-700); }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: #FAFCFE; }
+.iata-cell { font-weight: 800; color: var(--zb-navy); letter-spacing: .5px; }
+.actions { text-align: right; white-space: nowrap; display: flex; gap: 6px; justify-content: flex-end; }
+.icon-btn {
+  border: 1px solid var(--zb-line); background: var(--zb-white); border-radius: var(--radius-sm);
+  width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--zb-ink-500); transition: all .12s;
+}
+.icon-btn svg { width: 14px; height: 14px; }
+.icon-btn:hover { border-color: var(--zb-cyan); color: var(--zb-cyan-dk); }
+.icon-btn.danger:hover { border-color: var(--zb-error); color: var(--zb-error); background: var(--zb-error-bg); }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 700;
+  background: var(--zb-success-bg); color: var(--zb-success);
+}
+.pill.off { background: #F3F4F6; color: var(--zb-ink-500); }
+.pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* Modal */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(13,28,41,.45); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 110; }
+.modal-backdrop.open { display: flex; }
+.modal { background: var(--zb-white); border-radius: var(--radius-lg); width: min(520px, 92vw); box-shadow: 0 12px 32px rgba(39,39,39,.12); overflow: hidden; }
+.modal-head { padding: 18px 22px 12px; border-bottom: 1px solid var(--zb-line); }
+.modal-head h2 { font-size: 17px; font-weight: 800; color: var(--zb-navy); }
+.modal-head p  { font-size: 12px; color: var(--zb-ink-500); margin-top: 4px; font-weight: 500; }
+.modal-body { padding: 18px 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: 11px; font-weight: 700; color: var(--zb-ink-700); }
+.field input, .field select {
+  padding: 10px 12px; border: 1px solid var(--zb-line); border-radius: var(--radius-sm);
+  font: 500 13px 'Plus Jakarta Sans', sans-serif; background: var(--zb-white); color: var(--zb-ink-700);
+}
+.field input:focus, .field select:focus { outline: 0; border-color: var(--zb-cyan); box-shadow: 0 0 0 3px rgba(2,158,203,.12); }
+.field input::placeholder { color: var(--zb-ink-200); font-style: italic; font-weight: 400; }
+.modal-foot { padding: 14px 22px 18px; display: flex; justify-content: flex-end; gap: 8px; background: var(--zb-surface); border-top: 1px solid var(--zb-line); }
+
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--zb-navy); color: #fff; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; box-shadow: 0 4px 16px rgba(39,39,39,.08); opacity: 0; pointer-events: none; transition: all .25s; z-index: 200; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.banner-mock {
+  background: var(--zb-warn-bg); border: 1px solid #E9C77A;
+  border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px;
+  font-size: 12px; color: var(--zb-warn); font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div id="wms-sidebar"></div>
+<script src="sidebar.js"></script>
+
+<main>
+  <div class="page-header">
+    <div>
+      <div class="crumbs"><a href="aereo-config.html">Configuración Aéreo</a> · Aeropuertos</div>
+      <h1>Aeropuertos</h1>
+      <p>Códigos IATA + ciudad + país. Origen y destino del vuelo.</p>
+    </div>
+    <div>
+      <button class="btn btn-primary btn-sm" id="btnNew">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo aeropuerto
+      </button>
+    </div>
+  </div>
+
+  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Cuando exista el webhook <code>/aereo-aeropuertos-list</code> y <code>/aereo-aeropuerto-save</code>, esta página los consume automáticamente.</div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar por código IATA, nombre, ciudad…">
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Código IATA</th>
+          <th>Nombre</th>
+          <th>Ciudad</th>
+          <th>País</th>
+          <th>Estado</th>
+          <th class="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Nuevo aeropuerto</h2>
+      <p id="modalDesc">Cargá los datos del aeropuerto.</p>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Código IATA *</label>
+        <input type="text" id="fIata" placeholder="BOG" maxlength="4" style="text-transform:uppercase">
+      </div>
+      <div class="field">
+        <label>País *</label>
+        <input type="text" id="fPais" placeholder="CO" maxlength="3" style="text-transform:uppercase">
+      </div>
+      <div class="field full">
+        <label>Nombre *</label>
+        <input type="text" id="fNombre" placeholder="ej. El Dorado">
+      </div>
+      <div class="field full">
+        <label>Ciudad *</label>
+        <input type="text" id="fCiudad" placeholder="ej. Bogotá">
+      </div>
+      <div class="field full">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="fActivo" checked> Activo
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" id="btnCancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="btnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+ * Aereo · Aeropuertos — patrón base CRUD
+ * Backend: GET /webhook/aereo-aeropuertos-list
+ *          POST /webhook/aereo-aeropuerto-save
+ *          POST /webhook/aereo-aeropuerto-delete
+ * Hoy en mock — cuando existan los webhooks, switchear FETCH_REAL=true
+ * ============================================================ */
+const FETCH_REAL = false; // ← flip a true cuando existan los webhooks
+const API_BASE   = 'https://hub.zenderbox.com/webhook';
+
+// Mock data inicial (espejo del seed de aereo.aeropuertos)
+let DATA = [
+  { id: 1, codigo_iata: 'MIA', nombre: 'Miami International Airport', ciudad: 'Miami',            pais: 'US', activo: true },
+  { id: 2, codigo_iata: 'BOG', nombre: 'El Dorado',                   ciudad: 'Bogotá',           pais: 'CO', activo: true },
+  { id: 3, codigo_iata: 'SJO', nombre: 'Juan Santamaría',             ciudad: 'San José',         pais: 'CR', activo: true },
+  { id: 4, codigo_iata: 'UIO', nombre: 'Mariscal Sucre',              ciudad: 'Quito',            pais: 'EC', activo: true },
+  { id: 5, codigo_iata: 'PTY', nombre: 'Tocumen',                     ciudad: 'Ciudad de Panamá', pais: 'PA', activo: true },
+];
+let editingId = null;
+
+const $ = (s, c=document) => c.querySelector(s);
+const $$= (s, c=document) => Array.from(c.querySelectorAll(s));
+
+async function load() {
+  if (FETCH_REAL) {
+    try {
+      const r = await fetch(`${API_BASE}/aereo-aeropuertos-list`);
+      DATA = await r.json();
+    } catch (e) { toast('Error cargando aeropuertos: ' + e.message); }
+  }
+  render();
+}
+
+function render() {
+  const term = $('#searchInput').value.toLowerCase().trim();
+  const rows = DATA.filter(d => !term || `${d.codigo_iata} ${d.nombre} ${d.ciudad} ${d.pais}`.toLowerCase().includes(term));
+  $('#tbody').innerHTML = rows.map(d => `
+    <tr data-id="${d.id}">
+      <td class="iata-cell">${d.codigo_iata}</td>
+      <td>${d.nombre}</td>
+      <td>${d.ciudad}</td>
+      <td>${d.pais}</td>
+      <td><span class="pill ${d.activo ? '' : 'off'}">${d.activo ? 'Activo' : 'Inactivo'}</span></td>
+      <td class="actions">
+        <button class="icon-btn" data-act="edit" title="Editar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="icon-btn danger" data-act="del" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </button>
+      </td>
+    </tr>`).join('');
+
+  $$('tbody [data-act]').forEach(b => b.addEventListener('click', () => {
+    const id = +b.closest('tr').dataset.id;
+    if (b.dataset.act === 'edit') openEdit(id);
+    else if (b.dataset.act === 'del') del(id);
+  }));
+}
+
+function openNew() {
+  editingId = null;
+  $('#modalTitle').textContent = 'Nuevo aeropuerto';
+  $('#modalDesc').textContent  = 'Cargá los datos del aeropuerto.';
+  ['fIata','fNombre','fCiudad','fPais'].forEach(id => $('#'+id).value = '');
+  $('#fActivo').checked = true;
+  $('#modalBackdrop').classList.add('open');
+  setTimeout(() => $('#fIata').focus(), 50);
+}
+function openEdit(id) {
+  const d = DATA.find(x => x.id === id); if (!d) return;
+  editingId = id;
+  $('#modalTitle').textContent = `Editar ${d.codigo_iata}`;
+  $('#modalDesc').textContent  = 'Modificá los datos y guardá.';
+  $('#fIata').value   = d.codigo_iata;
+  $('#fNombre').value = d.nombre;
+  $('#fCiudad').value = d.ciudad;
+  $('#fPais').value   = d.pais;
+  $('#fActivo').checked = !!d.activo;
+  $('#modalBackdrop').classList.add('open');
+}
+async function save() {
+  const payload = {
+    id: editingId,
+    codigo_iata: $('#fIata').value.trim().toUpperCase(),
+    nombre: $('#fNombre').value.trim(),
+    ciudad: $('#fCiudad').value.trim(),
+    pais:   $('#fPais').value.trim().toUpperCase(),
+    activo: $('#fActivo').checked
+  };
+  if (!payload.codigo_iata) { toast('Falta el código IATA'); return; }
+  if (!payload.nombre)      { toast('Falta el nombre');      return; }
+  if (!payload.ciudad)      { toast('Falta la ciudad');      return; }
+  if (!payload.pais)        { toast('Falta el país');        return; }
+
+  if (FETCH_REAL) {
+    try {
+      const r = await fetch(`${API_BASE}/aereo-aeropuerto-save`, {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      await load();
+    } catch (e) { toast('Error: ' + e.message); return; }
+  } else {
+    if (editingId) {
+      const idx = DATA.findIndex(d => d.id === editingId);
+      DATA[idx] = { ...DATA[idx], ...payload };
+    } else {
+      const newId = (DATA.reduce((m,d) => Math.max(m, d.id), 0) || 0) + 1;
+      DATA.push({ ...payload, id: newId });
+    }
+    render();
+  }
+  $('#modalBackdrop').classList.remove('open');
+  toast(editingId ? 'Aeropuerto actualizado' : 'Aeropuerto creado');
+}
+async function del(id) {
+  const d = DATA.find(x => x.id === id); if (!d) return;
+  if (!confirm(`¿Eliminar aeropuerto "${d.codigo_iata} · ${d.nombre}"?`)) return;
+  if (FETCH_REAL) {
+    try {
+      const r = await fetch(`${API_BASE}/aereo-aeropuerto-delete`, {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id })
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      await load();
+    } catch (e) { toast('Error: ' + e.message); return; }
+  } else {
+    DATA = DATA.filter(x => x.id !== id); render();
+  }
+  toast('Eliminado');
+}
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// Listeners
+$('#btnNew').addEventListener('click', openNew);
+$('#btnCancel').addEventListener('click', () => $('#modalBackdrop').classList.remove('open'));
+$('#btnSave').addEventListener('click', save);
+$('#modalBackdrop').addEventListener('click', e => { if (e.target.id === 'modalBackdrop') $('#modalBackdrop').classList.remove('open'); });
+$('#searchInput').addEventListener('input', render);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) $('#modalBackdrop').classList.remove('open'); });
+
+load();
+</script>
+</body>
+</html>

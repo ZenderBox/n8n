@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tarifas Aéreas · Configuración Aéreo · ZenderBox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --zb-cyan:#029ECB;--zb-cyan-dk:#007B9F;--zb-cyan-lt:#E6F5FB;--zb-navy:#004B72;--zb-lime:#CCD32A;--zb-ink-700:#333;--zb-ink-500:#666;--zb-ink-300:#8A8A8A;--zb-ink-200:#B8B8B8;--zb-line:#E2E8EF;--zb-surface:#F6F6F6;--zb-white:#fff;--zb-success:#008C31;--zb-success-bg:#E8F4ED;--zb-warn:#B7791F;--zb-warn-bg:#FBF0DA;--zb-error:#F32735;--zb-error-bg:#FBEAEC;--zb-gradient:linear-gradient(45deg,#029ECB 0%,#CCD32A 85%);--radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-pill:99px;--shadow-sm:0 1px 4px rgba(0,0,0,.06)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--zb-surface);color:var(--zb-ink-700);min-height:100vh;-webkit-font-smoothing:antialiased}
+main{margin-left:220px;padding:28px 32px 80px;max-width:1500px}@media(max-width:768px){main{margin-left:0;padding:18px 14px 60px}}
+.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}.page-header h1{font-size:24px;font-weight:800;color:var(--zb-navy);letter-spacing:-.4px}.page-header p{font-size:13px;color:var(--zb-ink-500);margin-top:4px;font-weight:500}
+.crumbs{font-size:12px;color:var(--zb-ink-500);font-weight:600;margin-bottom:4px}.crumbs a{color:var(--zb-cyan-dk);text-decoration:none}.crumbs a:hover{text-decoration:underline}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:var(--radius-sm);padding:10px 16px;font:700 13px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;text-decoration:none;transition:filter .15s,transform .1s,box-shadow .15s;white-space:nowrap}.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--zb-gradient);color:#fff}.btn-primary:hover{filter:brightness(1.06);box-shadow:0 4px 12px rgba(2,158,203,.25)}
+.btn-ghost{background:var(--zb-white);color:var(--zb-navy);border:1px solid var(--zb-line)}.btn-ghost:hover{background:var(--zb-surface);border-color:var(--zb-cyan);color:var(--zb-cyan-dk)}.btn-sm{padding:7px 12px;font-size:12px}
+.toolbar{background:var(--zb-white);border:1px solid var(--zb-line);border-radius:var(--radius-md);padding:14px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-box{position:relative;flex:1;min-width:220px}.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--zb-ink-300);width:14px;height:14px}.search-box input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:500 13px 'Plus Jakarta Sans',sans-serif;background:var(--zb-white);color:var(--zb-ink-700)}
+.field{display:inline-flex;flex-direction:column;gap:4px}.field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--zb-ink-500)}
+.field select{padding:8px 10px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:500 13px 'Plus Jakarta Sans',sans-serif;background:var(--zb-white);color:var(--zb-ink-700);min-width:130px}
+.table-wrap{background:var(--zb-white);border:1px solid var(--zb-line);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:1500px}
+thead th{background:var(--zb-surface);text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--zb-ink-500);padding:12px 12px;border-bottom:1px solid var(--zb-line);white-space:nowrap}
+tbody td{padding:13px 12px;border-bottom:1px solid var(--zb-line);vertical-align:middle;font-weight:500;color:var(--zb-ink-700)}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#FAFCFE}
+.code-cell{font-weight:800;color:var(--zb-navy)}.num{text-align:right;font-variant-numeric:tabular-nums}
+.actions{text-align:right;white-space:nowrap;display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{border:1px solid var(--zb-line);background:var(--zb-white);border-radius:var(--radius-sm);width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--zb-ink-500);transition:all .12s}
+.icon-btn svg{width:14px;height:14px}.icon-btn:hover{border-color:var(--zb-cyan);color:var(--zb-cyan-dk)}.icon-btn.danger:hover{border-color:var(--zb-error);color:var(--zb-error);background:var(--zb-error-bg)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:var(--radius-pill);font-size:11px;font-weight:700;background:var(--zb-success-bg);color:var(--zb-success)}.pill.expired{background:#F3F4F6;color:var(--zb-ink-500)}.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.modal-backdrop{position:fixed;inset:0;background:rgba(13,28,41,.45);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:110}.modal-backdrop.open{display:flex}
+.modal{background:var(--zb-white);border-radius:var(--radius-lg);width:min(820px,94vw);box-shadow:0 12px 32px rgba(39,39,39,.12);overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
+.modal-head{padding:18px 22px 12px;border-bottom:1px solid var(--zb-line)}.modal-head h2{font-size:17px;font-weight:800;color:var(--zb-navy)}.modal-head p{font-size:12px;color:var(--zb-ink-500);margin-top:4px;font-weight:500}
+.modal-body{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;overflow:auto}
+.field2{display:flex;flex-direction:column;gap:6px}.field2.full{grid-column:1/-1}.field2.col2{grid-column:span 2}.field2 label{font-size:11px;font-weight:700;color:var(--zb-ink-700)}
+.field2 input,.field2 select{padding:10px 12px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:500 13px 'Plus Jakarta Sans',sans-serif;background:var(--zb-white);color:var(--zb-ink-700)}.field2 input:focus,.field2 select:focus{outline:0;border-color:var(--zb-cyan);box-shadow:0 0 0 3px rgba(2,158,203,.12)}.field2 input::placeholder{color:var(--zb-ink-200);font-style:italic;font-weight:400}
+.modal-foot{padding:14px 22px 18px;display:flex;justify-content:flex-end;gap:8px;background:var(--zb-surface);border-top:1px solid var(--zb-line)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--zb-navy);color:#fff;padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(39,39,39,.08);opacity:0;pointer-events:none;transition:all .25s;z-index:200}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.banner-mock{background:var(--zb-warn-bg);border:1px solid #E9C77A;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--zb-warn);font-weight:600}
+.section-divider{grid-column:1/-1;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--zb-ink-500);padding:6px 0 0;border-top:1px dashed var(--zb-line);margin-top:6px}
+</style>
+</head>
+<body>
+
+<div id="wms-sidebar"></div>
+<script src="sidebar.js"></script>
+
+<main>
+  <div class="page-header">
+    <div>
+      <div class="crumbs"><a href="aereo-config.html">Configuración Aéreo</a> · Tarifas Aéreas</div>
+      <h1>Tarifas Aéreas</h1>
+      <p>Tarifa por aerolínea + destino + tipo + rango de peso. Versionada por fecha de vigencia.</p>
+    </div>
+    <div><button class="btn btn-primary btn-sm" id="btnNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nueva tarifa</button></div>
+  </div>
+
+  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-tarifas-list</code>, <code>/aereo-tarifa-save</code>, <code>/aereo-tarifa-delete</code>.</div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar por aerolínea, destino, tipo…">
+    </div>
+    <div class="field">
+      <label>Aerolínea</label>
+      <select id="filterAerolinea"><option value="">Todas</option></select>
+    </div>
+    <div class="field">
+      <label>Destino</label>
+      <select id="filterDestino"><option value="">Todos</option></select>
+    </div>
+    <div class="field">
+      <label>Vigentes</label>
+      <select id="filterVigente"><option value="">Todas</option><option value="1">Solo vigentes</option><option value="0">Solo expiradas</option></select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Aerolínea</th><th>Destino</th><th>Tipo</th><th class="num">Peso desde</th><th class="num">Peso hasta</th><th class="num">Tarifa</th><th class="num">Tarifa min.</th><th class="num">Combust.</th><th class="num">Comb. min.</th><th class="num">Seguridad</th><th class="num">Seg. min.</th><th class="num">Adic.</th><th class="num">Ad. min.</th><th>Vigencia</th><th>Estado</th><th class="actions">Acciones</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">Nueva tarifa</h2><p>Tarifa versionada por aerolínea + destino + tipo de carga.</p></div>
+    <div class="modal-body">
+      <div class="field2"><label>Aerolínea *</label><select id="fAerolinea"></select></div>
+      <div class="field2"><label>Aeropuerto destino *</label><select id="fDestino"></select></div>
+      <div class="field2"><label>Tipo de carga</label><select id="fTipo"></select></div>
+      <div class="field2"><label>Vigente desde *</label><input type="date" id="fDesde"></div>
+      <div class="field2"><label>Vigente hasta</label><input type="date" id="fHasta"></div>
+      <div class="field2"><label>Peso desde (kg)</label><input type="number" step="0.1" id="fPesoDesde" placeholder="0"></div>
+      <div class="field2"><label>Peso hasta (kg)</label><input type="number" step="0.1" id="fPesoHasta" placeholder="4000"></div>
+
+      <div class="section-divider">Tarifa base</div>
+      <div class="field2"><label>Tarifa *</label><input type="number" step="0.0001" id="fTarifa" placeholder="0.40"></div>
+      <div class="field2"><label>Tarifa mínima</label><input type="number" step="0.01" id="fTarifaMin" placeholder="160"></div>
+
+      <div class="section-divider">Recargos</div>
+      <div class="field2"><label>Combustible</label><input type="number" step="0.0001" id="fComb" placeholder="0.12"></div>
+      <div class="field2"><label>Combust. mín.</label><input type="number" step="0.01" id="fCombMin" placeholder="12"></div>
+      <div class="field2"><label>Seguridad</label><input type="number" step="0.0001" id="fSeg"></div>
+      <div class="field2"><label>Seg. mínima</label><input type="number" step="0.01" id="fSegMin"></div>
+      <div class="field2"><label>Tarifa adic.</label><input type="number" step="0.0001" id="fAdic"></div>
+      <div class="field2"><label>Adic. mínimo</label><input type="number" step="0.01" id="fAdicMin"></div>
+      <div class="field2 col2"><label>Concepto adicional</label><input type="text" id="fAdicConcepto" placeholder="ej. Manejo especial"></div>
+      <div class="field2"><label>Tarifa impresión</label><input type="number" step="0.0001" id="fImpresion"></div>
+      <div class="field2"><label>QB2 ID</label><input type="number" id="fQb2"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-sm" id="btnCancel">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="btnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const FETCH_REAL=false; const API_BASE='https://hub.zenderbox.com/webhook';
+const AEROLINEAS = [{id:1,code:'UPS'},{id:2,code:'ATLAS'},{id:3,code:'7AIR'},{id:4,code:'DHL'}];
+const AEROPUERTOS = [{id:1,code:'MIA'},{id:2,code:'BOG'},{id:3,code:'SJO'},{id:4,code:'UIO'},{id:5,code:'PTY'}];
+const TIPOS = [{id:1,code:'AAD'},{id:2,code:'AAY'},{id:3,code:'SUELTA'},{id:4,code:'PALLETS'},{id:5,code:'ULD-AAD'},{id:6,code:'ULD-AAY'}];
+
+let DATA = [
+  { id:1, aerolinea_id:1, destino_id:2, tipo_id:5, peso_desde:1, peso_hasta:4000, tarifa:0.80, tarifa_min:160, combustible:0.12, combustible_min:12, seguridad:null, seguridad_min:null, tarifa_adicional:null, adicional_min:null, ad_concepto:null, tarifa_impresion:null, qb2_id:null, vigencia_desde:'2026-01-01', vigencia_hasta:null },
+  { id:2, aerolinea_id:2, destino_id:2, tipo_id:4, peso_desde:null, peso_hasta:null, tarifa:0.90, tarifa_min:null, combustible:null, combustible_min:null, seguridad:null, seguridad_min:null, tarifa_adicional:null, adicional_min:null, ad_concepto:null, tarifa_impresion:null, qb2_id:null, vigencia_desde:'2026-01-01', vigencia_hasta:null },
+  { id:3, aerolinea_id:3, destino_id:2, tipo_id:4, peso_desde:null, peso_hasta:null, tarifa:1.15, tarifa_min:null, combustible:null, combustible_min:null, seguridad:null, seguridad_min:null, tarifa_adicional:null, adicional_min:null, ad_concepto:null, tarifa_impresion:null, qb2_id:null, vigencia_desde:'2026-01-01', vigencia_hasta:null },
+  { id:4, aerolinea_id:4, destino_id:3, tipo_id:3, peso_desde:null, peso_hasta:null, tarifa:1.00, tarifa_min:null, combustible:null, combustible_min:null, seguridad:null, seguridad_min:null, tarifa_adicional:null, adicional_min:null, ad_concepto:null, tarifa_impresion:null, qb2_id:null, vigencia_desde:'2026-01-01', vigencia_hasta:null },
+];
+let editingId=null;
+const $=(s,c=document)=>c.querySelector(s); const $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
+const lookup = (arr,id) => { const x=arr.find(a=>a.id===id); return x?x.code:'—'; };
+const fmt = n => (n==null||n==='') ? '—' : Number(n).toLocaleString('es-CO',{maximumFractionDigits:4});
+function isVigente(d){ const today=new Date().toISOString().slice(0,10); return d.vigencia_desde<=today && (!d.vigencia_hasta || d.vigencia_hasta>=today); }
+async function load(){ if(FETCH_REAL){try{DATA=await(await fetch(`${API_BASE}/aereo-tarifas-list`)).json();}catch(e){toast(e.message);}} render(); }
+function render(){
+  const term=$('#searchInput').value.toLowerCase().trim();
+  const fA=+$('#filterAerolinea').value||null;
+  const fD=+$('#filterDestino').value||null;
+  const fV=$('#filterVigente').value;
+  const rows=DATA.filter(d=>{
+    if(fA && d.aerolinea_id!==fA) return false;
+    if(fD && d.destino_id!==fD) return false;
+    if(fV==='1' && !isVigente(d)) return false;
+    if(fV==='0' && isVigente(d))  return false;
+    if(term && !`${lookup(AEROLINEAS,d.aerolinea_id)} ${lookup(AEROPUERTOS,d.destino_id)} ${lookup(TIPOS,d.tipo_id)}`.toLowerCase().includes(term)) return false;
+    return true;
+  });
+  $('#tbody').innerHTML=rows.map((d,i)=>`
+    <tr data-id="${d.id}">
+      <td>${i+1}</td>
+      <td class="code-cell">${lookup(AEROLINEAS,d.aerolinea_id)}</td>
+      <td>${lookup(AEROPUERTOS,d.destino_id)}</td>
+      <td>${lookup(TIPOS,d.tipo_id)}</td>
+      <td class="num">${fmt(d.peso_desde)}</td><td class="num">${fmt(d.peso_hasta)}</td>
+      <td class="num"><strong>${fmt(d.tarifa)}</strong></td><td class="num">${fmt(d.tarifa_min)}</td>
+      <td class="num">${fmt(d.combustible)}</td><td class="num">${fmt(d.combustible_min)}</td>
+      <td class="num">${fmt(d.seguridad)}</td><td class="num">${fmt(d.seguridad_min)}</td>
+      <td class="num">${fmt(d.tarifa_adicional)}</td><td class="num">${fmt(d.adicional_min)}</td>
+      <td>${d.vigencia_desde} → ${d.vigencia_hasta||'∞'}</td>
+      <td><span class="pill ${isVigente(d)?'':'expired'}">${isVigente(d)?'Vigente':'Expirada'}</span></td>
+      <td class="actions">
+        <button class="icon-btn" data-act="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="icon-btn danger" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+      </td>
+    </tr>`).join('');
+  $$('tbody [data-act]').forEach(b=>b.addEventListener('click',()=>{const id=+b.closest('tr').dataset.id; if(b.dataset.act==='edit') openEdit(id); else del(id);}));
+}
+function populateSelects(){
+  const aerOpts = AEROLINEAS.map(a=>`<option value="${a.id}">${a.code}</option>`).join('');
+  const desOpts = AEROPUERTOS.map(a=>`<option value="${a.id}">${a.code}</option>`).join('');
+  const tipOpts = `<option value="">—</option>` + TIPOS.map(t=>`<option value="${t.id}">${t.code}</option>`).join('');
+  $('#fAerolinea').innerHTML = aerOpts;
+  $('#fDestino').innerHTML   = desOpts;
+  $('#fTipo').innerHTML      = tipOpts;
+  $('#filterAerolinea').innerHTML = '<option value="">Todas</option>' + aerOpts;
+  $('#filterDestino').innerHTML   = '<option value="">Todos</option>' + desOpts;
+}
+function clearForm(){ ['fPesoDesde','fPesoHasta','fTarifa','fTarifaMin','fComb','fCombMin','fSeg','fSegMin','fAdic','fAdicMin','fAdicConcepto','fImpresion','fQb2','fHasta'].forEach(id=>$('#'+id).value=''); $('#fDesde').value=new Date().toISOString().slice(0,10); $('#fTipo').value=''; }
+function openNew(){ editingId=null; $('#modalTitle').textContent='Nueva tarifa'; clearForm(); $('#modalBackdrop').classList.add('open'); }
+function openEdit(id){
+  const d=DATA.find(x=>x.id===id); if(!d) return;
+  editingId=id; $('#modalTitle').textContent='Editar tarifa';
+  $('#fAerolinea').value=d.aerolinea_id; $('#fDestino').value=d.destino_id; $('#fTipo').value=d.tipo_id||'';
+  $('#fDesde').value=d.vigencia_desde||''; $('#fHasta').value=d.vigencia_hasta||'';
+  $('#fPesoDesde').value=d.peso_desde??''; $('#fPesoHasta').value=d.peso_hasta??'';
+  $('#fTarifa').value=d.tarifa??''; $('#fTarifaMin').value=d.tarifa_min??'';
+  $('#fComb').value=d.combustible??''; $('#fCombMin').value=d.combustible_min??'';
+  $('#fSeg').value=d.seguridad??''; $('#fSegMin').value=d.seguridad_min??'';
+  $('#fAdic').value=d.tarifa_adicional??''; $('#fAdicMin').value=d.adicional_min??'';
+  $('#fAdicConcepto').value=d.ad_concepto||''; $('#fImpresion').value=d.tarifa_impresion??''; $('#fQb2').value=d.qb2_id??'';
+  $('#modalBackdrop').classList.add('open');
+}
+const num = v => v===''?null:+v;
+async function save(){
+  const payload={ id:editingId, aerolinea_id:+$('#fAerolinea').value, destino_id:+$('#fDestino').value, tipo_id:+$('#fTipo').value||null, peso_desde:num($('#fPesoDesde').value), peso_hasta:num($('#fPesoHasta').value), tarifa:num($('#fTarifa').value), tarifa_min:num($('#fTarifaMin').value), combustible:num($('#fComb').value), combustible_min:num($('#fCombMin').value), seguridad:num($('#fSeg').value), seguridad_min:num($('#fSegMin').value), tarifa_adicional:num($('#fAdic').value), adicional_min:num($('#fAdicMin').value), ad_concepto:$('#fAdicConcepto').value.trim()||null, tarifa_impresion:num($('#fImpresion').value), qb2_id:num($('#fQb2').value), vigencia_desde:$('#fDesde').value, vigencia_hasta:$('#fHasta').value||null };
+  if(!payload.aerolinea_id){toast('Falta aerolínea');return;} if(!payload.destino_id){toast('Falta destino');return;} if(!payload.vigencia_desde){toast('Falta vigencia desde');return;} if(payload.tarifa==null){toast('Falta tarifa');return;}
+  if(FETCH_REAL){try{await fetch(`${API_BASE}/aereo-tarifa-save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); await load();}catch(e){toast(e.message);return;}}
+  else{if(editingId){const i=DATA.findIndex(d=>d.id===editingId); DATA[i]={...DATA[i],...payload};} else {const newId=(DATA.reduce((m,d)=>Math.max(m,d.id),0)||0)+1; DATA.push({...payload,id:newId});} render();}
+  $('#modalBackdrop').classList.remove('open'); toast(editingId?'Actualizada':'Creada');
+}
+async function del(id){const d=DATA.find(x=>x.id===id); if(!d) return; if(!confirm('¿Eliminar esta tarifa?')) return;
+  if(FETCH_REAL){try{await fetch(`${API_BASE}/aereo-tarifa-delete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}); await load();}catch(e){toast(e.message);return;}}
+  else{DATA=DATA.filter(x=>x.id!==id); render();} toast('Eliminada');
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200)}
+$('#btnNew').addEventListener('click',openNew);
+$('#btnCancel').addEventListener('click',()=>$('#modalBackdrop').classList.remove('open'));
+$('#btnSave').addEventListener('click',save);
+$('#modalBackdrop').addEventListener('click',e=>{if(e.target.id==='modalBackdrop')$('#modalBackdrop').classList.remove('open')});
+['searchInput','filterAerolinea','filterDestino','filterVigente'].forEach(id=>$('#'+id).addEventListener('input',render));
+['filterAerolinea','filterDestino','filterVigente'].forEach(id=>$('#'+id).addEventListener('change',render));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modalBackdrop').classList.contains('open'))$('#modalBackdrop').classList.remove('open')});
+populateSelects(); load();
+</script>
+</body>
+</html>
