@@ -60,7 +60,6 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
     </div>
   </div>
 
-  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-consignatarios-list</code>, <code>/aereo-consignatario-save</code>, <code>/aereo-consignatario-delete</code>.</div>
 
   <div class="toolbar">
     <div class="search-box">
@@ -115,7 +114,7 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
 <div id="toast"></div>
 
 <script>
-const FETCH_REAL = false;
+const FETCH_REAL = true;
 const API_BASE = 'https://hub.zenderbox.com/webhook';
 let DATA = [
   { id:1, codigo:'ENEXCOL', nombre_legal:'ENEXCOL S.A.S', nit:'800102527-1',

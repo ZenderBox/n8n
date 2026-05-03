@@ -54,7 +54,6 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
     <div><button class="btn btn-primary btn-sm" id="btnNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nuevo transportador</button></div>
   </div>
 
-  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-transportadores-list</code>, <code>/aereo-transportador-save</code>, <code>/aereo-transportador-delete</code>.</div>
 
   <div class="toolbar">
     <div class="search-box">
@@ -107,7 +106,7 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
 <div id="toast"></div>
 
 <script>
-const FETCH_REAL=false; const API_BASE='https://hub.zenderbox.com/webhook';
+const FETCH_REAL=true; const API_BASE='https://hub.zenderbox.com/webhook';
 const FFW_OPTS = [
   { id:1, nombre:'Acuna & Caro Investments LLC DBA' },
   { id:2, nombre:'ZenderBox Cargo Inc' },
