@@ -529,18 +529,9 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       <h2 id="drawerTitle">—</h2>
       <div class="meta" id="drawerMeta"></div>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost btn-sm" id="btnEditVuelo" title="Editar datos del vuelo">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Editar datos
-      </button>
-      <button class="btn btn-ghost btn-sm" id="btnDeleteVuelo" title="Eliminar vuelo" style="color:var(--zb-error)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-      </button>
-      <button class="drawer-close" id="drawerClose" title="Cerrar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
+    <button class="drawer-close" id="drawerClose" title="Cerrar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
   </div>
   <div class="drawer-body">
     <!-- Estatus -->
@@ -1099,9 +1090,8 @@ $('#calcSave').addEventListener('click', () => {
 });
 $('#calcBackdrop').addEventListener('click', e => { if (e.target.id === 'calcBackdrop') $('#calcBackdrop').classList.remove('open'); });
 
-// ─────── Modal nuevo vuelo / editar vuelo ───────
-let modalMode = 'single';   // 'single' | 'bulk'
-let editingMaster = null;   // master original cuando se está editando (null = creación)
+// ─────── Modal nuevo vuelo ───────
+let modalMode = 'single'; // 'single' | 'bulk'
 
 function populateModalSelects() {
   $('#nvCarrier').innerHTML     = AEROLINEAS.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -1122,85 +1112,21 @@ function setMode(mode) {
   $('#modeSingle').style.display = mode === 'single' ? 'grid' : 'none';
   $('#modeBulk').style.display   = mode === 'bulk'   ? 'block' : 'none';
   $('#modalEl').classList.toggle('bulk', mode === 'bulk');
-  if (editingMaster) {
-    $('#modalTitle').textContent = `Editar vuelo · ${editingMaster}`;
-    $('#modalDesc').textContent  = 'Modificá lo que necesites. Si cambiás el master, no debe coincidir con otro existente.';
-    $('#nvSave').textContent = 'Guardar cambios';
-  } else {
-    $('#modalTitle').textContent = mode === 'bulk' ? 'Crear vuelos en bulk' : 'Nuevo Vuelo';
-    $('#modalDesc').textContent  = mode === 'bulk'
-      ? 'Cargá varios vuelos a la vez (reservas semanales, etc.). Las celdas vacías quedan sin definir.'
-      : 'Cargá la master y los datos básicos. Los pesos por agencia se llenan luego.';
-    $('#nvSave').textContent = mode === 'bulk' ? 'Crear vuelos' : 'Crear vuelo';
-  }
+  $('#modalTitle').textContent = mode === 'bulk' ? 'Crear vuelos en bulk' : 'Nuevo Vuelo';
+  $('#modalDesc').textContent  = mode === 'bulk'
+    ? 'Cargá varios vuelos a la vez (reservas semanales, etc.). Las celdas vacías quedan sin definir.'
+    : 'Cargá la master y los datos básicos. Los pesos por agencia se llenan luego.';
+  $('#nvSave').textContent = mode === 'bulk' ? 'Crear vuelos' : 'Crear vuelo';
   updateModalFootInfo();
 }
 $$('#modeToggle button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
 
-function clearVueloForm() {
-  ['nvMaster','nvPiezas','nvCons','nvFactor'].forEach(id => $('#'+id).value = '');
-  $('#nvFecha').value = new Date().toISOString().slice(0,10);
-  $('#nvCarrier').value = AEROLINEAS[0];
-  $('#nvTipo').value = '';
-  $('#nvAeropOrig').value = AEROPUERTO_ORIGEN_DEFAULT;
-  $('#nvAeropDest').value = '';
-  $('#nvDestinoCode').value = '';
-  $('#nvTransp').value = '';
-  $('#nvStatus').value = 'sin-estatus';
-  $('#nvMaster').placeholder = masterPh($('#nvCarrier').value);
-}
-
-function openVueloForEdit(master) {
-  const v = VUELOS.find(x => x.master === master); if (!v) return;
-  editingMaster = master;
-  // Toggle bulk no aplica en edición
-  $('#modeToggle').style.display = 'none';
-  // Pre-llenar el form
-  $('#nvMaster').value      = v.master;
-  $('#nvFecha').value       = v.fecha;
-  $('#nvCarrier').value     = v.aerolinea;
-  $('#nvTipo').value        = v.tipoEmbarque || '';
-  $('#nvFactor').value      = v.factor != null ? v.factor : '';
-  $('#nvAeropOrig').value   = v.aeropuertoOrigen || AEROPUERTO_ORIGEN_DEFAULT;
-  $('#nvAeropDest').value   = v.aeropuertoDestino || '';
-  $('#nvDestinoCode').value = v.consignatario || '';
-  $('#nvTransp').value      = v.transportador || '';
-  $('#nvStatus').value      = v.status || 'sin-estatus';
-  $('#nvPiezas').value      = v.piezas || '';
-  $('#nvCons').value        = v.cons || '';
-  $('#nvMaster').placeholder = masterPh(v.aerolinea);
-  setMode('single');
-  $('#modalBackdrop').classList.add('open');
-  setTimeout(() => $('#nvMaster').focus(), 50);
-}
-
-$('#btnEditVuelo').addEventListener('click', () => {
-  if (!currentVuelo) return;
-  openVueloForEdit(currentVuelo.master);
-});
-$('#btnDeleteVuelo').addEventListener('click', () => {
-  if (!currentVuelo) return;
-  const m = currentVuelo.master;
-  if (!confirm(`¿Eliminar el vuelo ${m}? Esta acción no se puede deshacer.`)) return;
-  const idx = VUELOS.findIndex(x => x.master === m);
-  if (idx >= 0) VUELOS.splice(idx, 1);
-  closeDrawer();
-  renderTable();
-  toast(`Vuelo ${m} eliminado`);
-});
-
 $('#btnNuevoVuelo').addEventListener('click', () => {
-  editingMaster = null;
-  $('#modeToggle').style.display = '';
-  clearVueloForm();
+  $('#nvFecha').value = new Date().toISOString().slice(0,10);
   setMode('single');
   $('#modalBackdrop').classList.add('open');
 });
-$('#nvCancel').addEventListener('click', () => {
-  $('#modalBackdrop').classList.remove('open');
-  editingMaster = null;
-  $('#modeToggle').style.display = '';
-});
+$('#nvCancel').addEventListener('click', () => $('#modalBackdrop').classList.remove('open'));
 
 // ── Bulk: generador de filas ──
 function bulkRowHTML(idx) {
@@ -1280,60 +1206,18 @@ $('#nvSave').addEventListener('click', () => {
     if (!aerDest) { toast('Falta el aeropuerto destino'); return; }
     if (!dest)    { toast('Falta el consignatario'); return; }
     if (!st)      { toast('Falta el estatus'); return; }
-    // Validar duplicado de master (solo si es create o si cambió en edit)
-    if (m !== editingMaster && VUELOS.some(v => v.master === m)) {
-      toast('Ya existe ese master'); return;
-    }
-    if (editingMaster) {
-      // EDITAR
-      const v = VUELOS.find(x => x.master === editingMaster);
-      if (!v) { toast('No se encontró el vuelo a editar'); return; }
-      v.master            = m;
-      v.fecha             = f;
-      v.aerolinea         = $('#nvCarrier').value;
-      v.tipoEmbarque      = $('#nvTipo').value;
-      v.factor            = parseFloat($('#nvFactor').value) || null;
-      v.aeropuertoOrigen  = aerOrig;
-      v.aeropuertoDestino = aerDest;
-      v.consignatario     = dest;
-      v.transportador     = $('#nvTransp').value || null;
-      v.status            = st;
-      v.piezas            = $('#nvPiezas').value;
-      v.cons              = $('#nvCons').value;
-      $('#modalBackdrop').classList.remove('open');
-      $('#modeToggle').style.display = '';
-      const newMaster = m;
-      editingMaster = null;
-      // Refrescar drawer con los nuevos datos
-      currentVuelo = v;
-      $('#drawerTitle').textContent = v.master;
-      $('#drawerMeta').innerHTML = `
-        <span>📅 <strong>${formatFecha(v.fecha)}</strong></span>
-        <span>✈ <strong>${v.aerolinea}</strong></span>
-        <span>🛫 <strong>${v.aeropuertoOrigen || '—'} → ${v.aeropuertoDestino || '—'}</strong></span>
-        <span>📍 <strong>${v.consignatario || '—'}</strong></span>
-        ${v.transportador ? `<span>🚚 <strong>${v.transportador}</strong></span>` : ''}
-        <span>📦 <strong>${v.piezas || '—'}</strong></span>
-        <span>🔢 Cons. <strong>${v.cons || '—'}</strong></span>
-      `;
-      renderStatusGrid(v);
-      renderPesosTable(v);
-      renderTable();
-      toast(`Vuelo ${newMaster} actualizado`);
-    } else {
-      // CREAR
-      VUELOS.unshift(mkVuelo(
-        m, f, $('#nvCarrier').value, $('#nvTipo').value,
-        parseFloat($('#nvFactor').value) || null,
-        aerOrig, aerDest, dest, $('#nvTransp').value || null,
-        $('#nvPiezas').value, $('#nvCons').value, st, 0, 0, {}
-      ));
-      $('#modalBackdrop').classList.remove('open');
-      clearVueloForm();
-      renderTable();
-      toast('Vuelo creado');
-      setTimeout(() => openDrawer(m), 200);
-    }
+    if (VUELOS.some(v => v.master === m)) { toast('Ya existe ese master'); return; }
+    VUELOS.unshift(mkVuelo(
+      m, f, $('#nvCarrier').value, $('#nvTipo').value,
+      parseFloat($('#nvFactor').value) || null,
+      aerOrig, aerDest, dest, $('#nvTransp').value || null,
+      $('#nvPiezas').value, $('#nvCons').value, st, 0, 0, {}
+    ));
+    $('#modalBackdrop').classList.remove('open');
+    ['nvMaster','nvPiezas','nvCons','nvFactor'].forEach(id => $('#'+id).value = '');
+    renderTable();
+    toast('Vuelo creado');
+    setTimeout(() => openDrawer(m), 200);
   } else {
     // bulk
     const rows = $$('#bulkBody tr');
@@ -1379,13 +1263,7 @@ $('#nvSave').addEventListener('click', () => {
     toast(`${created.length} vuelo${created.length>1?'s':''} creado${created.length>1?'s':''}`);
   }
 });
-$('#modalBackdrop').addEventListener('click', e => {
-  if (e.target.id === 'modalBackdrop') {
-    $('#modalBackdrop').classList.remove('open');
-    editingMaster = null;
-    $('#modeToggle').style.display = '';
-  }
-});
+$('#modalBackdrop').addEventListener('click', e => { if (e.target.id === 'modalBackdrop') $('#modalBackdrop').classList.remove('open'); });
 
 // ─────── Listeners ───────
 ['searchInput','filterStatus','filterAirport','filterDest','filterCarrier','filterFrom','filterTo'].forEach(id => {
