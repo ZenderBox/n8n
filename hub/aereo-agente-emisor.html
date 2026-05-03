@@ -51,7 +51,6 @@ main{margin-left:220px;padding:28px 32px 80px;max-width:1280px}@media(max-width:
     <div><button class="btn btn-primary btn-sm" id="btnNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nuevo agente</button></div>
   </div>
 
-  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-agentes-list</code>, <code>/aereo-agente-save</code>, <code>/aereo-agente-delete</code>.</div>
 
   <div class="cards-grid" id="cards"></div>
 </main>
@@ -80,7 +79,7 @@ main{margin-left:220px;padding:28px 32px 80px;max-width:1280px}@media(max-width:
 <div id="toast"></div>
 
 <script>
-const FETCH_REAL=false; const API_BASE='https://hub.zenderbox.com/webhook';
+const FETCH_REAL=true; const API_BASE='https://hub.zenderbox.com/webhook';
 let DATA = [
   { id:1, nombre:'Acuna & Caro Investments LLC DBA', direccion:'10560 NW 78 Street unit 310', ciudad:'Doral', estado:'FL', zip:'33178', pais:'US', iata_code:null, cuenta:null, activo:true },
   { id:2, nombre:'ZenderBox Cargo Inc',              direccion:'1782 NW 82 Ave',              ciudad:'Doral', estado:'FL', zip:'33126', pais:'US', iata_code:null, cuenta:null, activo:true },

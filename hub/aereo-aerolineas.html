@@ -60,7 +60,6 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
     </div>
   </div>
 
-  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-aerolineas-list</code>, <code>/aereo-aerolinea-save</code>, <code>/aereo-aerolinea-delete</code>.</div>
 
   <div class="toolbar">
     <div class="search-box">
@@ -120,7 +119,7 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
 <div id="toast"></div>
 
 <script>
-const FETCH_REAL = false;
+const FETCH_REAL = true;
 const API_BASE = 'https://hub.zenderbox.com/webhook';
 let DATA = [
   { id: 1, code: 'UPS',   label: 'UPS',       master_prefix: '406-XXXXXXXX', activo: true },
