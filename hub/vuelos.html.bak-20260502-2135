@@ -279,12 +279,10 @@ table.pesos input.peso:focus { outline: 0; background: var(--zb-cyan-lt); box-sh
 table.pesos tbody tr.totals td { background: #FBFBFB; font-weight: 700; color: var(--zb-navy); padding: 10px 12px; font-variant-numeric: tabular-nums; text-align: right; }
 table.pesos tbody tr.totals td.label-cell { text-align: left; }
 
-.totales-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 14px; }
-@media (max-width: 980px) { .totales-strip { grid-template-columns: repeat(2, 1fr); } }
+.totales-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
 .totales-strip .tot { background: var(--zb-surface); border: 1px solid var(--zb-line); border-radius: var(--radius-sm); padding: 10px 12px; position: relative; }
 .totales-strip .tot label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--zb-ink-500); }
 .totales-strip .tot .v { font-size: 18px; font-weight: 800; color: var(--zb-navy); margin-top: 2px; font-variant-numeric: tabular-nums; }
-.totales-strip .tot .sub { font-size: 11px; color: var(--zb-ink-500); margin-top: 2px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .totales-strip .tot.diff .v.pos { color: var(--zb-success); }
 .totales-strip .tot.diff .v.neg { color: var(--zb-error); }
 .totales-strip .tot.editable { cursor: pointer; transition: all .15s; border: 1px dashed var(--zb-cyan); background: var(--zb-cyan-lt); }
@@ -586,15 +584,8 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <div class="tot"><label>Total Kg Agencias</label><div class="v" id="totAgencias">0</div></div>
         <div class="tot editable" id="totPagadosBtn" title="Click para desglosar el peso por pieza/pallet">
           <svg class="pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          <label>Kg Pagados (neto)</label>
+          <label>Kg Pagados al Carrier</label>
           <div class="v" id="totPagados">0</div>
-          <div class="sub" id="totPagadosSub">—</div>
-        </div>
-        <div class="tot editable" id="totMargenBtn" title="Click para ajustar margen de descuento (pallets, embalaje)">
-          <svg class="pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          <label>Margen / Descuento</label>
-          <div class="v" id="totMargen">5%</div>
-          <div class="sub" id="totMargenSub">—</div>
         </div>
         <div class="tot diff"><label>Diferencia</label><div class="v" id="totDiff">0</div></div>
         <div class="tot"><label>Piezas</label><div class="v" id="totPiezas">0</div></div>
@@ -602,40 +593,6 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
     </div>
   </div>
 </aside>
-
-<!-- ───── Modal margen / descuento ───── -->
-<div class="calc-modal-backdrop" id="margenBackdrop">
-  <div class="calc-modal" style="max-width:420px">
-    <div class="calc-modal-head">
-      <h3>Margen / Descuento sobre Kg Pagados</h3>
-      <p>Lo que se descuenta del peso facturado por el carrier (pallets, embalaje, etc.). Usá <strong>uno</strong> de los dos.</p>
-    </div>
-    <div class="calc-modal-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="field">
-          <label style="font-size:11px;font-weight:700;color:var(--zb-ink-700)">Porcentaje (%)</label>
-          <input type="number" step="0.5" id="mgPct" placeholder="5" style="padding:10px 12px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:600 14px 'Plus Jakarta Sans',sans-serif;text-align:right;font-variant-numeric:tabular-nums">
-        </div>
-        <div class="field">
-          <label style="font-size:11px;font-weight:700;color:var(--zb-ink-700)">o Kg fijos</label>
-          <input type="number" step="0.1" id="mgKg" placeholder="0" style="padding:10px 12px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:600 14px 'Plus Jakarta Sans',sans-serif;text-align:right;font-variant-numeric:tabular-nums">
-        </div>
-      </div>
-      <div class="calc-total" style="margin-top:18px">
-        <span class="l">Kg neto resultante</span>
-        <span class="v" id="mgPreview">—</span>
-      </div>
-    </div>
-    <div class="calc-modal-foot">
-      <div class="left">Bruto: <strong id="mgBruto">—</strong></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" id="mgClear">Sin margen</button>
-        <button class="btn btn-ghost btn-sm" id="mgCancel">Cancelar</button>
-        <button class="btn btn-primary btn-sm" id="mgSave">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ───── Modal calculadora kg pagados ───── -->
 <div class="calc-modal-backdrop" id="calcBackdrop">
@@ -925,8 +882,7 @@ function renderTable() {
   } else {
     $('#emptyState').style.display = 'none';
     tbody.innerHTML = rows.map(v => {
-      const neto = kgPagadosNeto(v);
-      const diff = neto - (v.kgAgencias || 0);
+      const diff = (v.kgPagados || 0) - (v.kgAgencias || 0);
       const diffCls = diff > 5 ? 'diff-pos' : diff < -5 ? 'diff-neg' : '';
       return `
         <tr data-master="${v.master}">
@@ -937,7 +893,7 @@ function renderTable() {
           <td>${pillFor(v.status)}</td>
           <td class="num">${v.piezas || '—'}</td>
           <td class="num">${fmt(v.kgAgencias)}</td>
-          <td class="num">${v.kgPagados ? fmtNum(neto) : '—'}</td>
+          <td class="num">${fmt(v.kgPagados)}</td>
           <td class="num ${diffCls}">${v.kgPagados ? (diff>0?'+':'') + fmtNum(diff) : '—'}</td>
         </tr>`;
     }).join('');
@@ -1098,48 +1054,15 @@ function renderPesosTable(v) {
   renderTotales(v);
 }
 
-// Calcula el descuento del margen en kg.
-// Si el vuelo tiene margenKg fijo, usa ese.
-// Si no, aplica margenPct (default 5) sobre el bruto.
-function margenKgDescuento(v) {
-  const bruto = +v.kgPagados || 0;
-  if (!bruto) return 0;
-  if (v.margenKg != null && v.margenKg !== '') return Math.min(+v.margenKg, bruto);
-  const pct = v.margenPct != null ? +v.margenPct : 5;
-  return +(bruto * pct / 100);
-}
-function kgPagadosNeto(v) {
-  return Math.max(0, (+v.kgPagados || 0) - margenKgDescuento(v));
-}
-
 function renderTotales(v) {
   const agTot = v.kgAgencias || 0;
-  const bruto = +v.kgPagados || 0;
-  const desc  = margenKgDescuento(v);
-  const neto  = kgPagadosNeto(v);
-  const diff  = neto - agTot;
-
+  const pgTot = v.kgPagados || 0;
+  const diff  = pgTot - agTot;
   $('#totAgencias').textContent = fmtNum(agTot);
-
-  // Kg pagados (neto) + sub con bruto y descuento
-  $('#totPagados').textContent = bruto ? fmtNum(neto) : '—';
-  $('#totPagadosSub').textContent = bruto
-    ? `bruto ${fmtNum(bruto)} · −${fmtNum(desc)} kg`
-    : 'sin desglose';
-
-  // Margen — muestra % o "X kg" + sub con kg descontado
-  const mgEl = $('#totMargen');
-  if (v.margenKg != null && v.margenKg !== '') {
-    mgEl.textContent = `${fmtNum(v.margenKg)} kg`;
-  } else {
-    mgEl.textContent = `${(v.margenPct != null ? v.margenPct : 5)}%`;
-  }
-  $('#totMargenSub').textContent = bruto ? `= −${fmtNum(desc)} kg` : '—';
-
+  $('#totPagados').textContent  = pgTot ? fmtNum(pgTot) : '—';
   const dEl = $('#totDiff');
-  dEl.textContent = bruto ? (diff>0?'+':'') + fmtNum(diff) : '—';
+  dEl.textContent = pgTot ? (diff>0?'+':'') + fmtNum(diff) : '—';
   dEl.className = 'v ' + (diff>0?'pos':diff<0?'neg':'');
-
   $('#totPiezas').textContent = v.piezas || '—';
 }
 
@@ -1202,62 +1125,6 @@ function updateCalcTotal() {
 }
 
 $('#totPagadosBtn').addEventListener('click', openCalcModal);
-
-// ─────── Modal de Margen / Descuento ───────
-function openMargenModal() {
-  if (!currentVuelo) return;
-  const v = currentVuelo;
-  const bruto = +v.kgPagados || 0;
-  $('#mgBruto').textContent = bruto ? fmtNum(bruto) + ' kg' : '—';
-  $('#mgPct').value = v.margenPct != null ? v.margenPct : (v.margenKg != null ? '' : 5);
-  $('#mgKg').value  = v.margenKg  != null ? v.margenKg  : '';
-  updateMargenPreview();
-  $('#margenBackdrop').classList.add('open');
-  setTimeout(() => $('#mgPct').focus(), 50);
-}
-function updateMargenPreview() {
-  const bruto = +currentVuelo.kgPagados || 0;
-  const kgVal = parseFloat($('#mgKg').value);
-  const pctVal = parseFloat($('#mgPct').value);
-  let desc = 0;
-  if (!isNaN(kgVal) && kgVal > 0) desc = Math.min(kgVal, bruto);
-  else if (!isNaN(pctVal) && pctVal > 0) desc = bruto * pctVal / 100;
-  $('#mgPreview').textContent = bruto ? fmtNum(Math.max(0, bruto - desc)) : '—';
-}
-// El kg fijo prevalece sobre el porcentaje cuando se edita
-$('#mgKg').addEventListener('input',  () => { if ($('#mgKg').value)  $('#mgPct').value = ''; updateMargenPreview(); });
-$('#mgPct').addEventListener('input', () => { if ($('#mgPct').value) $('#mgKg').value  = ''; updateMargenPreview(); });
-$('#totMargenBtn').addEventListener('click', openMargenModal);
-$('#mgCancel').addEventListener('click', () => $('#margenBackdrop').classList.remove('open'));
-$('#mgClear').addEventListener('click', () => {
-  if (!currentVuelo) return;
-  currentVuelo.margenPct = 0;
-  currentVuelo.margenKg  = null;
-  $('#margenBackdrop').classList.remove('open');
-  renderTotales(currentVuelo);
-  renderTable();
-  toast('Margen quitado');
-});
-$('#mgSave').addEventListener('click', () => {
-  if (!currentVuelo) return;
-  const kgVal  = parseFloat($('#mgKg').value);
-  const pctVal = parseFloat($('#mgPct').value);
-  if (!isNaN(kgVal) && kgVal > 0) {
-    currentVuelo.margenKg  = kgVal;
-    currentVuelo.margenPct = null;
-  } else if (!isNaN(pctVal) && pctVal >= 0) {
-    currentVuelo.margenPct = pctVal;
-    currentVuelo.margenKg  = null;
-  } else {
-    currentVuelo.margenPct = 0;
-    currentVuelo.margenKg  = null;
-  }
-  $('#margenBackdrop').classList.remove('open');
-  renderTotales(currentVuelo);
-  renderTable();
-  toast('Margen actualizado');
-});
-$('#margenBackdrop').addEventListener('click', e => { if (e.target.id === 'margenBackdrop') $('#margenBackdrop').classList.remove('open'); });
 $('#calcGen').addEventListener('click', () => {
   const n = parseInt($('#calcCount').value, 10);
   if (!n || n < 1) { toast('Cantidad inválida'); return; }
@@ -1586,10 +1453,9 @@ $('#drawerBackdrop').addEventListener('click', closeDrawer);
 $('#btnRefresh').addEventListener('click', () => { renderTable(); toast('Actualizado'); });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    if      ($('#margenBackdrop').classList.contains('open')) $('#margenBackdrop').classList.remove('open');
-    else if ($('#calcBackdrop').classList.contains('open'))   $('#calcBackdrop').classList.remove('open');
-    else if ($('#modalBackdrop').classList.contains('open'))  $('#modalBackdrop').classList.remove('open');
-    else if ($('#drawer').classList.contains('open'))         closeDrawer();
+    if ($('#calcBackdrop').classList.contains('open'))      $('#calcBackdrop').classList.remove('open');
+    else if ($('#modalBackdrop').classList.contains('open')) $('#modalBackdrop').classList.remove('open');
+    else if ($('#drawer').classList.contains('open'))        closeDrawer();
   }
 });
 
