@@ -263,39 +263,11 @@ table.pesos tbody tr.totals td { background: #FBFBFB; font-weight: 700; color: v
 table.pesos tbody tr.totals td.label-cell { text-align: left; }
 
 .totales-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
-.totales-strip .tot { background: var(--zb-surface); border: 1px solid var(--zb-line); border-radius: var(--radius-sm); padding: 10px 12px; position: relative; }
+.totales-strip .tot { background: var(--zb-surface); border: 1px solid var(--zb-line); border-radius: var(--radius-sm); padding: 10px 12px; }
 .totales-strip .tot label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--zb-ink-500); }
 .totales-strip .tot .v { font-size: 18px; font-weight: 800; color: var(--zb-navy); margin-top: 2px; font-variant-numeric: tabular-nums; }
 .totales-strip .tot.diff .v.pos { color: var(--zb-success); }
 .totales-strip .tot.diff .v.neg { color: var(--zb-error); }
-.totales-strip .tot.editable { cursor: pointer; transition: all .15s; border: 1px dashed var(--zb-cyan); background: var(--zb-cyan-lt); }
-.totales-strip .tot.editable:hover { background: #D6EEF7; box-shadow: var(--shadow-sm); }
-.totales-strip .tot.editable .pencil { position: absolute; top: 8px; right: 8px; width: 14px; height: 14px; color: var(--zb-cyan-dk); opacity: .6; }
-.totales-strip .tot.editable:hover .pencil { opacity: 1; }
-
-/* Modal calculadora de kg pagados */
-.calc-modal-backdrop { position: fixed; inset: 0; background: rgba(13,28,41,.45); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 130; }
-.calc-modal-backdrop.open { display: flex; }
-.calc-modal { background: var(--zb-white); border-radius: var(--radius-lg); width: min(440px, 92vw); box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
-.calc-modal-head { padding: 18px 22px 12px; border-bottom: 1px solid var(--zb-line); }
-.calc-modal-head h3 { font-size: 16px; font-weight: 800; color: var(--zb-navy); }
-.calc-modal-head p { font-size: 12px; color: var(--zb-ink-500); margin-top: 4px; font-weight: 500; }
-.calc-modal-body { padding: 16px 22px; overflow: auto; }
-.calc-controls { display: flex; gap: 8px; align-items: end; margin-bottom: 12px; }
-.calc-controls .field { display: flex; flex-direction: column; gap: 4px; }
-.calc-controls label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--zb-ink-500); }
-.calc-controls input[type="number"] { width: 80px; padding: 8px 10px; border: 1px solid var(--zb-line); border-radius: var(--radius-sm); font: 600 13px 'Plus Jakarta Sans', sans-serif; }
-.calc-rows { display: grid; grid-template-columns: 38px 1fr 70px; gap: 8px 10px; align-items: center; }
-.calc-rows .idx { font-size: 11px; font-weight: 700; color: var(--zb-ink-500); text-align: right; }
-.calc-rows .lbl { font-size: 12px; color: var(--zb-ink-700); font-weight: 600; }
-.calc-rows input.kg { padding: 8px 10px; border: 1px solid var(--zb-line); border-radius: var(--radius-sm); font: 500 13px 'Plus Jakarta Sans', sans-serif; text-align: right; font-variant-numeric: tabular-nums; }
-.calc-rows input.kg:focus { outline: 0; border-color: var(--zb-cyan); box-shadow: 0 0 0 3px rgba(2,158,203,.12); }
-.calc-rows input.kg::placeholder { color: var(--zb-ink-200); font-style: italic; font-weight: 400; }
-.calc-total { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding: 12px 14px; background: var(--zb-cyan-lt); border-radius: var(--radius-sm); }
-.calc-total .l { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--zb-cyan-dk); }
-.calc-total .v { font-size: 22px; font-weight: 800; color: var(--zb-navy); font-variant-numeric: tabular-nums; }
-.calc-modal-foot { padding: 12px 22px 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--zb-surface); border-top: 1px solid var(--zb-line); }
-.calc-modal-foot .left { font-size: 11px; color: var(--zb-ink-500); font-weight: 600; }
 
 /* ───── Modal nuevo vuelo ───── */
 .modal-backdrop {
@@ -556,53 +528,13 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       </div>
       <div class="totales-strip">
         <div class="tot"><label>Total Kg Agencias</label><div class="v" id="totAgencias">0</div></div>
-        <div class="tot editable" id="totPagadosBtn" title="Click para desglosar el peso por pieza/pallet">
-          <svg class="pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          <label>Kg Pagados al Carrier</label>
-          <div class="v" id="totPagados">0</div>
-        </div>
+        <div class="tot"><label>Kg Pagados al Carrier</label><div class="v" id="totPagados">0</div></div>
         <div class="tot diff"><label>Diferencia</label><div class="v" id="totDiff">0</div></div>
         <div class="tot"><label>Piezas</label><div class="v" id="totPiezas">0</div></div>
       </div>
     </div>
   </div>
 </aside>
-
-<!-- ───── Modal calculadora kg pagados ───── -->
-<div class="calc-modal-backdrop" id="calcBackdrop">
-  <div class="calc-modal">
-    <div class="calc-modal-head">
-      <h3>Desglose de Kg Pagados al Carrier</h3>
-      <p>Cargá el peso de cada pieza / pallet / tula. Se suman automáticamente.</p>
-    </div>
-    <div class="calc-modal-body">
-      <div class="calc-controls">
-        <div class="field">
-          <label>Cantidad de piezas</label>
-          <input type="number" id="calcCount" min="1" max="200" value="1">
-        </div>
-        <button class="btn btn-ghost btn-sm" id="calcGen" type="button">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5"/></svg>
-          Regenerar
-        </button>
-        <div style="flex:1"></div>
-        <div style="font-size:11px;color:var(--zb-ink-500);font-weight:600">Vacíos = 0</div>
-      </div>
-      <div class="calc-rows" id="calcRows"></div>
-      <div class="calc-total">
-        <span class="l">Total kg pagados</span>
-        <span class="v" id="calcTotal">0</span>
-      </div>
-    </div>
-    <div class="calc-modal-foot">
-      <div class="left" id="calcInfo">Master: <strong id="calcMaster">—</strong></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" id="calcCancel">Cancelar</button>
-        <button class="btn btn-primary btn-sm" id="calcSave">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ───── Modal nuevo vuelo ───── -->
 <div class="modal-backdrop" id="modalBackdrop">
@@ -1020,76 +952,6 @@ $('#btnAddAgencia').addEventListener('click', () => {
   toast(`Agencia "${name}" agregada`);
 });
 
-// ─────── Calculadora de Kg Pagados (modal) ───────
-// Cuando son N pallets/tulas/piezas, el operario ingresa el peso de cada uno.
-// Persiste sólo el TOTAL en kgPagados (los desgloses se guardan en el vuelo
-// como `kgPagadosBreakdown` por si después queremos auditarlos).
-function parsePiezasNum(piezas) {
-  if (!piezas) return 1;
-  const m = String(piezas).match(/(\d+)/);
-  return m ? Math.max(1, parseInt(m[1], 10)) : 1;
-}
-
-function openCalcModal() {
-  if (!currentVuelo) return;
-  const v = currentVuelo;
-  $('#calcMaster').textContent = v.master;
-  // Default: cantidad = piezas del vuelo o 1
-  const n = parsePiezasNum(v.piezas);
-  $('#calcCount').value = n;
-  // Si ya hay breakdown previo, lo precargamos. Si no, repartimos kgPagados / n
-  const prev = v.kgPagadosBreakdown && v.kgPagadosBreakdown.length === n
-    ? v.kgPagadosBreakdown
-    : (v.kgPagados ? Array(n).fill(+(v.kgPagados / n).toFixed(2)) : Array(n).fill(0));
-  renderCalcRows(n, prev);
-  $('#calcBackdrop').classList.add('open');
-  setTimeout(() => $('#calcRows input.kg').focus(), 50);
-}
-
-function renderCalcRows(n, values = []) {
-  const rowsEl = $('#calcRows');
-  let html = '';
-  for (let i = 0; i < n; i++) {
-    const val = values[i] != null ? values[i] : '';
-    html += `
-      <span class="idx">${i + 1}</span>
-      <span class="lbl">Pieza / pallet</span>
-      <input type="number" step="0.1" class="kg" data-i="${i}" value="${val || ''}" placeholder="0">
-    `;
-  }
-  rowsEl.innerHTML = html;
-  $$('#calcRows input.kg').forEach(inp => inp.addEventListener('input', updateCalcTotal));
-  updateCalcTotal();
-}
-
-function updateCalcTotal() {
-  const total = $$('#calcRows input.kg').reduce((s, i) => s + (parseFloat(i.value) || 0), 0);
-  $('#calcTotal').textContent = fmtNum(total);
-}
-
-$('#totPagadosBtn').addEventListener('click', openCalcModal);
-$('#calcGen').addEventListener('click', () => {
-  const n = parseInt($('#calcCount').value, 10);
-  if (!n || n < 1) { toast('Cantidad inválida'); return; }
-  if (n > 200) { toast('Máximo 200 piezas'); return; }
-  // Mantenemos los valores ya cargados que entren en el nuevo N
-  const prev = $$('#calcRows input.kg').map(i => parseFloat(i.value) || 0);
-  renderCalcRows(n, prev);
-});
-$('#calcCancel').addEventListener('click', () => $('#calcBackdrop').classList.remove('open'));
-$('#calcSave').addEventListener('click', () => {
-  if (!currentVuelo) return;
-  const breakdown = $$('#calcRows input.kg').map(i => parseFloat(i.value) || 0);
-  const total = breakdown.reduce((s, k) => s + k, 0);
-  currentVuelo.kgPagados = total;
-  currentVuelo.kgPagadosBreakdown = breakdown;
-  renderTotales(currentVuelo);
-  renderTable();
-  $('#calcBackdrop').classList.remove('open');
-  toast(`Kg pagados: ${fmtNum(total)} (${breakdown.length} pieza${breakdown.length>1?'s':''})`);
-});
-$('#calcBackdrop').addEventListener('click', e => { if (e.target.id === 'calcBackdrop') $('#calcBackdrop').classList.remove('open'); });
-
 // ─────── Modal nuevo vuelo ───────
 let modalMode = 'single'; // 'single' | 'bulk'
 
@@ -1279,9 +1141,8 @@ $('#drawerBackdrop').addEventListener('click', closeDrawer);
 $('#btnRefresh').addEventListener('click', () => { renderTable(); toast('Actualizado'); });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    if ($('#calcBackdrop').classList.contains('open'))      $('#calcBackdrop').classList.remove('open');
-    else if ($('#modalBackdrop').classList.contains('open')) $('#modalBackdrop').classList.remove('open');
-    else if ($('#drawer').classList.contains('open'))        closeDrawer();
+    if ($('#modalBackdrop').classList.contains('open')) $('#modalBackdrop').classList.remove('open');
+    else if ($('#drawer').classList.contains('open')) closeDrawer();
   }
 });
 
