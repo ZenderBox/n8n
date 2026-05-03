@@ -161,7 +161,6 @@ tbody tr:hover { background: #FAFCFE; }
     </div>
   </div>
 
-  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Cuando exista el webhook <code>/aereo-aeropuertos-list</code> y <code>/aereo-aeropuerto-save</code>, esta página los consume automáticamente.</div>
 
   <div class="toolbar">
     <div class="search-box">
@@ -234,7 +233,7 @@ tbody tr:hover { background: #FAFCFE; }
  *          POST /webhook/aereo-aeropuerto-delete
  * Hoy en mock — cuando existan los webhooks, switchear FETCH_REAL=true
  * ============================================================ */
-const FETCH_REAL = false; // ← flip a true cuando existan los webhooks
+const FETCH_REAL = true; // conectado a aereo.aeropuertos vía webhooks aereo-aeropuertos-*
 const API_BASE   = 'https://hub.zenderbox.com/webhook';
 
 // Mock data inicial (espejo del seed de aereo.aeropuertos)
