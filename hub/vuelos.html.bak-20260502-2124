@@ -140,8 +140,6 @@ table.vuelos tbody tr { cursor: pointer; transition: background .12s; }
 table.vuelos tbody tr:hover { background: #FAFCFE; }
 table.vuelos tbody tr:last-child td { border-bottom: 0; }
 .master-cell { font-weight: 700; color: var(--zb-navy); font-variant-numeric: tabular-nums; }
-.master-cell.reserva { color: var(--zb-ink-300); font-style: italic; font-weight: 600; }
-.master-cell.reserva::before { content: '⏱ '; font-style: normal; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .num.diff-pos { color: var(--zb-success); font-weight: 700; }
 .num.diff-neg { color: var(--zb-error); font-weight: 700; }
@@ -244,18 +242,7 @@ table.pesos thead th:last-child { border-right: 0; }
 table.pesos thead th.agency-h {
   text-align: center; background: var(--zb-cyan-lt); color: var(--zb-cyan-dk);
   font-weight: 700; border-bottom: 1px solid var(--zb-cyan);
-  position: relative;
 }
-table.pesos thead th.agency-h .ag-del {
-  position: absolute; top: 4px; right: 4px;
-  background: transparent; border: 0; width: 18px; height: 18px;
-  border-radius: 4px; cursor: pointer; color: var(--zb-cyan-dk); opacity: .35;
-  display: inline-flex; align-items: center; justify-content: center; padding: 0;
-  transition: all .12s;
-}
-table.pesos thead th.agency-h:hover .ag-del { opacity: 1; }
-table.pesos thead th.agency-h .ag-del:hover { background: var(--zb-error-bg); color: var(--zb-error); opacity: 1; }
-table.pesos thead th.agency-h .ag-del svg { width: 11px; height: 11px; }
 table.pesos thead tr.svcrow th {
   background: #FAFCFE; font-size: 9px; padding: 6px 10px; color: var(--zb-ink-500);
   font-weight: 600;
@@ -643,7 +630,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
     <!-- Modo Individual -->
     <div class="modal-body" id="modeSingle">
       <div class="field full">
-        <label class="zb-label">Master (AWB) <span style="color:var(--zb-ink-300);font-weight:500">(opcional — se asigna RES-… si está vacío)</span></label>
+        <label class="zb-label">Master (AWB) *</label>
         <input type="text" id="nvMaster" placeholder="406-XXXXXXXX">
       </div>
       <div class="field">
@@ -774,8 +761,8 @@ const MASTER_PREFIX = { UPS: '406-XXXXXXXX', ATLAS: '369-XXXXXXXX', DHL: '992-XX
 const masterPh = c => MASTER_PREFIX[c] || 'NNN-XXXXXXXX';
 
 const AGENCIAS_DEFAULT = [
-  'Movi', 'JL', 'LACS', 'Damak',
-  'ZenderBox CR', 'ZenderBox AGENCIAS', 'ZenderBox CASILLERO', 'ZenderBox COMERCIAL'
+  'Movi', 'JL', 'MSL', 'LACS', 'Damak', 'Aerocasilleros',
+  'Globus', 'Pressex', 'Lockerbox', 'Josué', 'ZenderBox', 'Aeropostal'
 ];
 const SERVICIOS = ['comercial', 'casillero'];
 
@@ -803,20 +790,6 @@ const VUELOS = [
 function mkVuelo(master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen, aeropuertoDestino, consignatario, transportador, piezas, cons, status, kgAgencias, kgPagados, pesos) {
   return { master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen, aeropuertoDestino, consignatario, transportador, piezas, cons, status, kgAgencias, kgPagados, pesos };
 }
-
-// Genera un código de reserva único cuando todavía no hay master AWB.
-// Formato: RES-YYYYMMDD-NNN  (NNN secuencial sobre lo ya cargado del día)
-function genReservaCode() {
-  const today = new Date().toISOString().slice(0,10).replaceAll('-','');
-  const prefix = `RES-${today}-`;
-  const usados = VUELOS
-    .filter(v => v.master && v.master.startsWith(prefix))
-    .map(v => parseInt(v.master.slice(prefix.length), 10))
-    .filter(n => !isNaN(n));
-  const next = (usados.length ? Math.max(...usados) : 0) + 1;
-  return prefix + String(next).padStart(3, '0');
-}
-const isReserva = m => typeof m === 'string' && m.startsWith('RES-');
 
 // Reconstruye el destino tipo "UPS - AAD - 0.40 ENEXCOL · BOG" desde sus partes
 function composeDestino(v) {
@@ -882,7 +855,7 @@ function renderTable() {
       const diffCls = diff > 5 ? 'diff-pos' : diff < -5 ? 'diff-neg' : '';
       return `
         <tr data-master="${v.master}">
-          <td class="master-cell ${isReserva(v.master) ? 'reserva' : ''}" title="${isReserva(v.master) ? 'Reserva temporal — falta master AWB real' : ''}">${v.master}</td>
+          <td class="master-cell">${v.master}</td>
           <td>${formatFecha(v.fecha)}</td>
           <td>${composeDestino(v)}</td>
           <td>${carrierTag(v.aerolinea)}</td>
@@ -983,14 +956,14 @@ function renderStatusGrid(v) {
 }
 
 function renderPesosTable(v) {
-  const agencias = Object.keys(v.pesos).length ? Object.keys(v.pesos) : AGENCIAS_DEFAULT.slice();
+  const agencias = Object.keys(v.pesos).length ? Object.keys(v.pesos) : AGENCIAS_DEFAULT.slice(0, 6);
   agencias.forEach(a => { if (!v.pesos[a]) v.pesos[a] = [0, 0]; });
 
   const t = $('#pesosTable');
   let head = `<thead>
     <tr>
       <th rowspan="2" style="position:sticky;left:0;z-index:2;background:var(--zb-surface)">Agencia</th>
-      ${agencias.map(a => `<th class="agency-h" colspan="${SERVICIOS.length}">${a}<button class="ag-del" data-ag="${a}" title="Quitar agencia del vuelo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></th>`).join('')}
+      ${agencias.map(a => `<th class="agency-h" colspan="${SERVICIOS.length}">${a}</th>`).join('')}
       <th rowspan="2" class="num">Total</th>
     </tr>
     <tr class="svcrow">
@@ -1029,23 +1002,6 @@ function renderPesosTable(v) {
       renderTable();
     });
   });
-
-  // × por agencia (header) — quita la columna del vuelo
-  $$('#pesosTable .ag-del').forEach(btn => btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const ag = btn.dataset.ag;
-    const [com, cas] = v.pesos[ag] || [0,0];
-    const tieneKg = (com || 0) + (cas || 0) > 0;
-    const msg = tieneKg
-      ? `Quitar "${ag}" del vuelo? Tiene ${fmtNum(com+cas)} kg cargados que se perderán.`
-      : `Quitar "${ag}" del vuelo?`;
-    if (!confirm(msg)) return;
-    delete v.pesos[ag];
-    v.kgAgencias = Object.values(v.pesos).reduce((s, [c, k]) => s + (c||0) + (k||0), 0);
-    renderPesosTable(v);
-    renderTable();
-    toast(`Agencia "${ag}" quitada`);
-  }));
 
   renderTotales(v);
 }
@@ -1312,20 +1268,18 @@ $('#bulkGen').addEventListener('click', () => {
 // ── Save ──
 $('#nvSave').addEventListener('click', () => {
   if (modalMode === 'single') {
-    let m = $('#nvMaster').value.trim();
+    const m = $('#nvMaster').value.trim();
     const f = $('#nvFecha').value;
     const dest = $('#nvDestinoCode').value;
     const aerOrig = $('#nvAeropOrig').value;
     const aerDest = $('#nvAeropDest').value;
     const st = $('#nvStatus').value;
+    if (!m)       { toast('Falta el master'); return; }
     if (!f)       { toast('Falta la fecha'); return; }
     if (!aerOrig) { toast('Falta el aeropuerto origen'); return; }
     if (!aerDest) { toast('Falta el aeropuerto destino'); return; }
     if (!dest)    { toast('Falta el consignatario'); return; }
     if (!st)      { toast('Falta el estatus'); return; }
-    // Master opcional: si vacío y es creación, asigno código de reserva
-    if (!m && !editingMaster) m = genReservaCode();
-    if (!m && editingMaster)  m = editingMaster; // en edit, vacío = no cambia
     // Validar duplicado de master (solo si es create o si cambió en edit)
     if (m !== editingMaster && VUELOS.some(v => v.master === m)) {
       toast('Ya existe ese master'); return;
@@ -1387,7 +1341,7 @@ $('#nvSave').addEventListener('click', () => {
     const errors = [];
     const created = [];
     rows.forEach((tr, i) => {
-      let m = tr.querySelector('.b-master').value.trim();
+      const m = tr.querySelector('.b-master').value.trim();
       const f = tr.querySelector('.b-fecha').value;
       const car = tr.querySelector('.b-carrier').value;
       const aero = tr.querySelector('.b-aerop').value;
@@ -1395,10 +1349,8 @@ $('#nvSave').addEventListener('click', () => {
       // marcar inválidas
       tr.querySelectorAll('input.invalid, select.invalid').forEach(el => el.classList.remove('invalid'));
       let bad = false;
-      // Master opcional — si vacío, asigno código de reserva
-      if (!m) {
-        m = `RES-${new Date().toISOString().slice(0,10).replaceAll('-','')}-${String((VUELOS.filter(v=>isReserva(v.master)).length + created.filter(c=>isReserva(c.master)).length + 1)).padStart(3,'0')}`;
-      } else if (VUELOS.some(v => v.master === m) || created.some(c => c.master === m)) {
+      if (!m)    { tr.querySelector('.b-master').classList.add('invalid'); bad = true; }
+      else if (VUELOS.some(v => v.master === m) || created.some(c => c.master === m)) {
         tr.querySelector('.b-master').classList.add('invalid'); errors.push(`Fila ${i+1}: master duplicado`); bad = true;
       }
       if (!f)    { tr.querySelector('.b-fecha').classList.add('invalid'); bad = true; }
