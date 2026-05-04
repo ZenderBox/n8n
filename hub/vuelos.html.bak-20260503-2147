@@ -831,14 +831,6 @@ let AGENCIAS_DEFAULT = [
   'Movi', 'JL', 'LACS', 'Damak',
   'ZenderBox CR', 'ZenderBox AGENCIAS', 'ZenderBox CASILLERO', 'ZenderBox COMERCIAL'
 ];
-// Mapa nombre → [serviciosIds] (1=comercial, 2=casillero). Se puebla con el bootstrap.
-let AGENCIAS_SERVICIOS = {};
-// Devuelve true si la agencia ofrece ese servicio (idx 0 = comercial, 1 = casillero)
-function agenciaTieneServicio(nombre, idx) {
-  const svcs = AGENCIAS_SERVICIOS[nombre];
-  if (!svcs) return true; // Agencia ad-hoc (no en catálogo): permitir ambos
-  return svcs.includes(idx + 1); // idx 0 → servicio_id 1, idx 1 → servicio_id 2
-}
 const SERVICIOS = ['comercial', 'casillero'];
 
 // Vuelos cargados desde PG via /aereo-bootstrap. Vacío hasta que termina la carga.
@@ -869,10 +861,7 @@ async function loadBootstrap() {
       }));
       STATUS_MAP = Object.fromEntries(STATUS_LIST.map(s => [s.id, s]));
     }
-    if (d.agencias) {
-      AGENCIAS_DEFAULT   = d.agencias.filter(a => a.activa !== false).map(a => a.nombre);
-      AGENCIAS_SERVICIOS = Object.fromEntries(d.agencias.map(a => [a.nombre, a.servicios || []]));
-    }
+    if (d.agencias) AGENCIAS_DEFAULT = d.agencias.filter(a => a.activa !== false).map(a => a.nombre);
 
     // Vuelos
     VUELOS = (d.vuelos || []).map(v => ({
@@ -1129,16 +1118,13 @@ function renderPesosTable(v) {
     </tr>
   </thead>`;
 
-  // Una sola fila editable: kg por (agencia × servicio). Celdas deshabilitadas si la
-  // agencia no ofrece ese servicio (ej: Damak solo casillero).
+  // Una sola fila editable: kg por (agencia × servicio). Si quisiéramos múltiples masters por vuelo, sería N filas.
   const cells = agencias.map(a => {
     const [com, cas] = v.pesos[a] || [0,0];
-    const tieneCom = agenciaTieneServicio(a, 0);
-    const tieneCas = agenciaTieneServicio(a, 1);
-    const td = (idx, val, tiene) => tiene
-      ? `<td><input class="peso" data-ag="${a}" data-svc="${idx}" type="number" step="0.1" value="${val || ''}"></td>`
-      : `<td title="Agencia no ofrece este servicio" style="background:#FAFAFA;color:var(--zb-ink-200);text-align:center;font-style:italic;font-size:11px">—</td>`;
-    return td(0, com, tieneCom) + td(1, cas, tieneCas);
+    return `
+      <td><input class="peso" data-ag="${a}" data-svc="0" type="number" step="0.1" value="${com || ''}"></td>
+      <td><input class="peso" data-ag="${a}" data-svc="1" type="number" step="0.1" value="${cas || ''}"></td>
+    `;
   }).join('');
   const totalRow = agencias.reduce((s,a) => s + (v.pesos[a][0]||0) + (v.pesos[a][1]||0), 0);
 
