@@ -759,10 +759,6 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <select id="nvDestinoCode"></select>
       </div>
       <div class="field">
-        <label class="zb-label">Transportador</label>
-        <select id="nvTransp"></select>
-      </div>
-      <div class="field">
         <label class="zb-label">Estatus *</label>
         <select id="nvStatus"></select>
       </div>
@@ -806,7 +802,6 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
               <th>Factor</th>
               <th class="req">Aerop. dest</th>
               <th class="req">Consignatario</th>
-              <th>Transp.</th>
               <th>Estatus</th>
               <th>Piezas</th>
               <th>Consolidados</th>
@@ -870,11 +865,14 @@ const masterPh = c => MASTER_PREFIX[c] || 'NNN-XXXXXXXX';
 
 // Defaults razonables por aerolínea (basado en patrón histórico)
 const CARRIER_DEFAULTS = {
-  UPS:    { aeropuerto: 'BOG', consignatario: 'ENEXCOL', transportador: 'UPS'   },
-  ATLAS:  { aeropuerto: 'BOG', consignatario: 'ENEXCOL', transportador: ''      },
-  DHL:    { aeropuerto: 'SJO', consignatario: 'CR',      transportador: 'DHL'   },
-  '7AIR': { aeropuerto: 'SJO', consignatario: 'CR',      transportador: ''      },
+  UPS:    { aeropuerto: 'BOG', consignatario: 'ENEXCOL', tipo: 'AAD' },
+  ATLAS:  { aeropuerto: 'BOG', consignatario: 'ENEXCOL', tipo: ''    },
+  DHL:    { aeropuerto: 'SJO', consignatario: 'CR',      tipo: ''    },
+  '7AIR': { aeropuerto: 'SJO', consignatario: 'CR',      tipo: ''    },
 };
+// Mapeo aeropuerto destino → status MIA-XXX (reserva pre-vuelo)
+const AEROPUERTO_TO_STATUS = { BOG: 'mia-bog', SJO: 'mia-cr', UIO: 'mia-uio' };
+
 // Aplica los defaults a un set de selects si los valores actuales coinciden con defaults
 // de OTRA aerolínea (es decir, el operario aún no eligió manualmente algo distinto)
 function applyCarrierDefaults(carrier, selects) {
@@ -883,7 +881,14 @@ function applyCarrierDefaults(carrier, selects) {
   const isDefaultOfAnother = (field, val) => !val || allDefaults.some(d => d[field] === val);
   if (selects.aeropuerto    && isDefaultOfAnother('aeropuerto',    selects.aeropuerto.value))    selects.aeropuerto.value    = def.aeropuerto;
   if (selects.consignatario && isDefaultOfAnother('consignatario', selects.consignatario.value)) selects.consignatario.value = def.consignatario;
-  if (selects.transportador && isDefaultOfAnother('transportador', selects.transportador.value)) selects.transportador.value = def.transportador;
+  if (selects.tipo          && isDefaultOfAnother('tipo',          selects.tipo.value))          selects.tipo.value          = def.tipo;
+  // Status sigue al aeropuerto destino
+  if (selects.status && selects.aeropuerto) {
+    const wantStatus = AEROPUERTO_TO_STATUS[selects.aeropuerto.value];
+    if (wantStatus && (!selects.status.value || Object.values(AEROPUERTO_TO_STATUS).includes(selects.status.value) || selects.status.value === 'sin-estatus')) {
+      selects.status.value = wantStatus;
+    }
+  }
 }
 
 let AGENCIAS_DEFAULT = [
@@ -1161,7 +1166,6 @@ function openDrawer(master) {
     <span>✈ <strong>${v.aerolinea}</strong></span>
     <span>🛫 <strong>${v.aeropuertoOrigen || '—'} → ${v.aeropuertoDestino || '—'}</strong></span>
     <span>📍 <strong>${v.consignatario || '—'}</strong></span>
-    ${v.transportador ? `<span>🚚 <strong>${v.transportador}</strong></span>` : ''}
     <span>📦 <strong>${v.piezas || '—'}</strong></span>
     <span>🔢 Cons. <strong>${v.cons || '—'}</strong></span>
   `;
@@ -1517,7 +1521,7 @@ function populateModalSelects() {
   $('#nvAeropOrig').innerHTML   = AEROPUERTOS.map(a => `<option value="${a}">${a}</option>`).join('');
   $('#nvAeropDest').innerHTML   = `<option value="">—</option>` + AEROPUERTOS.filter(a => a !== AEROPUERTO_ORIGEN_DEFAULT).map(a => `<option value="${a}">${a}</option>`).join('');
   $('#nvDestinoCode').innerHTML = `<option value="">—</option>` + CONSIGNATARIOS.map(d => `<option value="${d}">${d}</option>`).join('');
-  $('#nvTransp').innerHTML      = `<option value="">—</option>` + TRANSPORTADORES.map(t => `<option value="${t}">${t}</option>`).join('');
+  // Transportador removido — concepto migrado a fulfillment
   $('#nvStatus').innerHTML      = STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
   $('#nvAeropOrig').value       = AEROPUERTO_ORIGEN_DEFAULT;
   // Al cambiar aerolínea: pre-llenar master con el prefijo + actualizar placeholder + defaults + revalidar
@@ -1530,7 +1534,8 @@ function populateModalSelects() {
     applyCarrierDefaults(c, {
       aeropuerto:    $('#nvAeropDest'),
       consignatario: $('#nvDestinoCode'),
-      transportador: $('#nvTransp'),
+      tipo:          $('#nvTipo'),
+      status:        $('#nvStatus'),
     });
     validateMasterIndividual();
   });
@@ -1576,7 +1581,7 @@ function clearVueloForm() {
   $('#nvAeropOrig').value = AEROPUERTO_ORIGEN_DEFAULT;
   $('#nvAeropDest').value = '';
   $('#nvDestinoCode').value = '';
-  $('#nvTransp').value = '';
+  // nvTransp removido
   $('#nvStatus').value = 'sin-estatus';
   $('#nvMaster').placeholder = 'Elegí aerolínea para ver el prefijo';
 }
@@ -1595,7 +1600,7 @@ function openVueloForEdit(master) {
   $('#nvAeropOrig').value   = v.aeropuertoOrigen || AEROPUERTO_ORIGEN_DEFAULT;
   $('#nvAeropDest').value   = v.aeropuertoDestino || '';
   $('#nvDestinoCode').value = v.consignatario || '';
-  $('#nvTransp').value      = v.transportador || '';
+  // nvTransp removido — el campo transportador ya no aparece en el modal
   $('#nvStatus').value      = v.status || 'sin-estatus';
   $('#nvPiezas').value      = v.piezas || '';
   $('#nvCons').value        = v.cons || '';
@@ -1649,7 +1654,6 @@ function bulkRowHTML(idx) {
       <td><input type="number" step="0.01" class="b-factor" placeholder="0.40"></td>
       <td><select class="b-aerop"><option value="">—</option>${AEROPUERTOS.filter(a => a !== AEROPUERTO_ORIGEN_DEFAULT).map(a => `<option value="${a}">${a}</option>`).join('')}</select></td>
       <td><select class="b-destino"><option value="">—</option>${CONSIGNATARIOS.map(d => `<option value="${d}">${d}</option>`).join('')}</select></td>
-      <td><select class="b-transp"><option value="">—</option>${TRANSPORTADORES.map(t => `<option value="${t}">${t}</option>`).join('')}</select></td>
       <td><select class="b-status">${STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}</select></td>
       <td><input type="text" class="b-piezas" placeholder="ej. 1"></td>
       <td><input type="text" class="b-cons" placeholder="ej. CAS xxxx - AGE xxxx"></td>
@@ -1667,13 +1671,14 @@ function genBulkRows(n) {
     renumberBulk();
     updateModalFootInfo();
   }));
-  // Pre-seleccionar carrier (UPS), destino, aeropuerto, transportador y status default
+  // Defaults UPS por defecto (todos los campos)
   $$('#bulkBody .b-carrier').forEach(s => s.value = 'UPS');
+  $$('#bulkBody .b-tipo').forEach(s => s.value = 'AAD');
   $$('#bulkBody .b-aerop').forEach(s => s.value = 'BOG');
   $$('#bulkBody .b-destino').forEach(s => s.value = 'ENEXCOL');
-  $$('#bulkBody .b-transp').forEach(s => s.value = 'UPS');
-  $$('#bulkBody .b-status').forEach(s => s.value = 'sin-estatus');
+  $$('#bulkBody .b-status').forEach(s => s.value = 'mia-bog');
   $$('#bulkBody .b-factor').forEach(i => i.value = '0.40');
+  $$('#bulkBody .b-piezas').forEach(i => i.value = '1');
   // Master se pre-llena con el prefijo al cambiar la aerolínea de la fila + defaults + valida formato
   $$('#bulkBody tr').forEach(tr => {
     const carSel = tr.querySelector('.b-carrier');
@@ -1691,7 +1696,8 @@ function genBulkRows(n) {
       applyCarrierDefaults(carSel.value, {
         aeropuerto:    tr.querySelector('.b-aerop'),
         consignatario: tr.querySelector('.b-destino'),
-        transportador: tr.querySelector('.b-transp'),
+        tipo:          tr.querySelector('.b-tipo'),
+        status:        tr.querySelector('.b-status'),
       });
       validate();
     });
@@ -1743,11 +1749,12 @@ $('#bulkAddOne').addEventListener('click', () => {
     updateModalFootInfo();
   });
   tr.querySelector('.b-carrier').value = 'UPS';
+  tr.querySelector('.b-tipo').value = 'AAD';
   tr.querySelector('.b-aerop').value = 'BOG';
   tr.querySelector('.b-destino').value = 'ENEXCOL';
-  tr.querySelector('.b-transp').value = 'UPS';
-  tr.querySelector('.b-status').value = 'sin-estatus';
+  tr.querySelector('.b-status').value = 'mia-bog';
   tr.querySelector('.b-factor').value = '0.40';
+  tr.querySelector('.b-piezas').value = '1';
   const carSel = tr.querySelector('.b-carrier');
   const masterInp = tr.querySelector('.b-master');
   const validate = () => {
@@ -1763,7 +1770,8 @@ $('#bulkAddOne').addEventListener('click', () => {
     applyCarrierDefaults(carSel.value, {
       aeropuerto:    tr.querySelector('.b-aerop'),
       consignatario: tr.querySelector('.b-destino'),
-      transportador: tr.querySelector('.b-transp'),
+      tipo:          tr.querySelector('.b-tipo'),
+      status:        tr.querySelector('.b-status'),
     });
     validate();
   });
@@ -1803,7 +1811,7 @@ $('#nvSave').addEventListener('click', async () => {
     const vNew = mkVuelo(
       m, f, $('#nvCarrier').value, $('#nvTipo').value,
       parseFloat($('#nvFactor').value) || null,
-      aerOrig, aerDest, dest, $('#nvTransp').value || null,
+      aerOrig, aerDest, dest, null, // transportador removido del flujo de vuelos
       $('#nvPiezas').value, $('#nvCons').value, st,
       editingMaster ? (VUELOS.find(x=>x.master===editingMaster)?.kgAgencias || 0) : 0,
       editingMaster ? (VUELOS.find(x=>x.master===editingMaster)?.kgPagados || 0) : 0,
@@ -1828,7 +1836,6 @@ $('#nvSave').addEventListener('click', async () => {
         <span>✈ <strong>${vNew.aerolinea}</strong></span>
         <span>🛫 <strong>${vNew.aeropuertoOrigen || '—'} → ${vNew.aeropuertoDestino || '—'}</strong></span>
         <span>📍 <strong>${vNew.consignatario || '—'}</strong></span>
-        ${vNew.transportador ? `<span>🚚 <strong>${vNew.transportador}</strong></span>` : ''}
         <span>📦 <strong>${vNew.piezas || '—'}</strong></span>
         <span>🔢 Cons. <strong>${vNew.cons || '—'}</strong></span>
       `;
@@ -1879,7 +1886,7 @@ $('#nvSave').addEventListener('click', async () => {
         AEROPUERTO_ORIGEN_DEFAULT,
         aero,
         dest,
-        tr.querySelector('.b-transp').value || null,
+        null, // transportador removido del flujo de vuelos
         tr.querySelector('.b-piezas').value,
         tr.querySelector('.b-cons').value,
         tr.querySelector('.b-status').value || 'sin-estatus',
