@@ -58,7 +58,6 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
     <div><button class="btn btn-primary btn-sm" id="btnNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nueva agencia</button></div>
   </div>
 
-  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-agencias-list</code>, <code>/aereo-agencia-save</code>, <code>/aereo-agencia-delete</code>.</div>
 
   <div class="toolbar">
     <div class="search-box">
@@ -96,7 +95,7 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
 <div id="toast"></div>
 
 <script>
-const FETCH_REAL=false; const API_BASE='https://hub.zenderbox.com/webhook';
+const FETCH_REAL=true; const API_BASE='https://hub.zenderbox.com/webhook';
 const SERVICIOS = [{id:1,code:'comercial',label:'Comercial'},{id:2,code:'casillero',label:'Casillero'}];
 let DATA = [
   { id:1,  nombre:'Movi',           servicios:[1,2], activa:true },
