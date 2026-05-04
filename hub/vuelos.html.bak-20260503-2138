@@ -1368,16 +1368,8 @@ $('#calcBackdrop').addEventListener('click', e => { if (e.target.id === 'calcBac
 let modalMode = 'single';   // 'single' | 'bulk'
 let editingMaster = null;   // master original cuando se está editando (null = creación)
 
-// Devuelve el prefijo "corto" de una aerolínea (ej: "406-" para UPS).
-// Vacío si el prefijo es desconocido (NNN-...) o no existe.
-function shortPrefix(carrier) {
-  const full = MASTER_PREFIX[carrier] || '';
-  if (!full || full.includes('NNN')) return '';
-  return full.split(/X+/)[0] || '';
-}
-
 function populateModalSelects() {
-  $('#nvCarrier').innerHTML     = `<option value="">— Seleccionar aerolínea —</option>` + AEROLINEAS.map(c => `<option value="${c}">${c}</option>`).join('');
+  $('#nvCarrier').innerHTML     = AEROLINEAS.map(c => `<option value="${c}">${c}</option>`).join('');
   $('#nvTipo').innerHTML        = TIPOS_EMBARQUE.map(t => `<option value="${t}">${t || '—'}</option>`).join('');
   $('#nvAeropOrig').innerHTML   = AEROPUERTOS.map(a => `<option value="${a}">${a}</option>`).join('');
   $('#nvAeropDest').innerHTML   = `<option value="">—</option>` + AEROPUERTOS.filter(a => a !== AEROPUERTO_ORIGEN_DEFAULT).map(a => `<option value="${a}">${a}</option>`).join('');
@@ -1385,15 +1377,8 @@ function populateModalSelects() {
   $('#nvTransp').innerHTML      = `<option value="">—</option>` + TRANSPORTADORES.map(t => `<option value="${t}">${t}</option>`).join('');
   $('#nvStatus').innerHTML      = STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
   $('#nvAeropOrig').value       = AEROPUERTO_ORIGEN_DEFAULT;
-  // Al cambiar aerolínea: pre-llenar master con el prefijo + actualizar placeholder
-  $('#nvCarrier').addEventListener('change', () => {
-    const c = $('#nvCarrier').value;
-    $('#nvMaster').placeholder = masterPh(c);
-    // Solo pre-llenamos si el operario no tipeó algo distinto al prefijo de otra aerolínea
-    const cur = ($('#nvMaster').value || '').trim();
-    const isJustOldPrefix = !cur || AEROLINEAS.some(a => cur === shortPrefix(a));
-    if (isJustOldPrefix) $('#nvMaster').value = shortPrefix(c);
-  });
+  // Placeholder del master se ajusta a la aerolínea elegida
+  $('#nvCarrier').addEventListener('change', () => { $('#nvMaster').placeholder = masterPh($('#nvCarrier').value); });
 }
 
 function setMode(mode) {
@@ -1420,14 +1405,14 @@ $$('#modeToggle button').forEach(b => b.addEventListener('click', () => setMode(
 function clearVueloForm() {
   ['nvMaster','nvPiezas','nvCons','nvFactor'].forEach(id => $('#'+id).value = '');
   $('#nvFecha').value = new Date().toISOString().slice(0,10);
-  $('#nvCarrier').value = ''; // forzar a elegir aerolínea
+  $('#nvCarrier').value = AEROLINEAS[0];
   $('#nvTipo').value = '';
   $('#nvAeropOrig').value = AEROPUERTO_ORIGEN_DEFAULT;
   $('#nvAeropDest').value = '';
   $('#nvDestinoCode').value = '';
   $('#nvTransp').value = '';
   $('#nvStatus').value = 'sin-estatus';
-  $('#nvMaster').placeholder = 'Elegí aerolínea para ver el prefijo';
+  $('#nvMaster').placeholder = masterPh($('#nvCarrier').value);
 }
 
 function openVueloForEdit(master) {
@@ -1522,18 +1507,11 @@ function genBulkRows(n) {
   $$('#bulkBody .b-transp').forEach(s => s.value = 'UPS');
   $$('#bulkBody .b-status').forEach(s => s.value = 'sin-estatus');
   $$('#bulkBody .b-factor').forEach(i => i.value = '0.40');
-  // Master se pre-llena con el prefijo al cambiar la aerolínea de la fila
+  // Placeholder del master cambia con el carrier de la fila
   $$('#bulkBody tr').forEach(tr => {
     const carSel = tr.querySelector('.b-carrier');
     const masterInp = tr.querySelector('.b-master');
-    carSel.addEventListener('change', () => {
-      masterInp.placeholder = masterPh(carSel.value);
-      const cur = (masterInp.value || '').trim();
-      const isJustOldPrefix = !cur || AEROLINEAS.some(a => cur === shortPrefix(a));
-      if (isJustOldPrefix) masterInp.value = shortPrefix(carSel.value);
-    });
-    // Pre-llenar al generar las filas (carrier = UPS por default)
-    masterInp.value = shortPrefix(carSel.value);
+    carSel.addEventListener('change', () => { masterInp.placeholder = masterPh(carSel.value); });
   });
   updateModalFootInfo();
 }
@@ -1565,7 +1543,6 @@ $('#nvSave').addEventListener('click', async () => {
     const aerDest = $('#nvAeropDest').value;
     const st = $('#nvStatus').value;
     if (!f)       { toast('Falta la fecha'); return; }
-    if (!$('#nvCarrier').value) { toast('Falta la aerolínea'); return; }
     if (!aerOrig) { toast('Falta el aeropuerto origen'); return; }
     if (!aerDest) { toast('Falta el aeropuerto destino'); return; }
     if (!dest)    { toast('Falta el consignatario'); return; }
