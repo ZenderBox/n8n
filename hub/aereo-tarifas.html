@@ -56,7 +56,6 @@ tbody td{padding:13px 12px;border-bottom:1px solid var(--zb-line);vertical-align
     <div><button class="btn btn-primary btn-sm" id="btnNew"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Nueva tarifa</button></div>
   </div>
 
-  <div class="banner-mock">⚠ Mock UI · datos no se persisten. Webhooks pendientes: <code>/aereo-tarifas-list</code>, <code>/aereo-tarifa-save</code>, <code>/aereo-tarifa-delete</code>.</div>
 
   <div class="toolbar">
     <div class="search-box">
@@ -124,7 +123,7 @@ tbody td{padding:13px 12px;border-bottom:1px solid var(--zb-line);vertical-align
 <div id="toast"></div>
 
 <script>
-const FETCH_REAL=false; const API_BASE='https://hub.zenderbox.com/webhook';
+const FETCH_REAL=true; const API_BASE='https://hub.zenderbox.com/webhook';
 const AEROLINEAS = [{id:1,code:'UPS'},{id:2,code:'ATLAS'},{id:3,code:'7AIR'},{id:4,code:'DHL'}];
 const AEROPUERTOS = [{id:1,code:'MIA'},{id:2,code:'BOG'},{id:3,code:'SJO'},{id:4,code:'UIO'},{id:5,code:'PTY'}];
 const TIPOS = [{id:1,code:'AAD'},{id:2,code:'AAY'},{id:3,code:'SUELTA'},{id:4,code:'PALLETS'},{id:5,code:'ULD-AAD'},{id:6,code:'ULD-AAY'}];
