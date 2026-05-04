@@ -383,11 +383,6 @@ table.bulk-tbl input, table.bulk-tbl select {
 }
 table.bulk-tbl input:focus, table.bulk-tbl select:focus { outline: 0; background: var(--zb-cyan-lt); box-shadow: inset 0 0 0 2px var(--zb-cyan); }
 table.bulk-tbl input.invalid { background: var(--zb-error-bg); }
-table.bulk-tbl input.b-master { min-width: 150px; font-variant-numeric: tabular-nums; }
-table.bulk-tbl input.b-master.fmt-bad { background: var(--zb-error-bg); color: var(--zb-error); }
-.modal-body input.fmt-bad { background: var(--zb-error-bg); border-color: var(--zb-error); color: var(--zb-error); }
-.fmt-hint { font-size: 11px; color: var(--zb-error); font-weight: 600; margin-top: 4px; }
-.fmt-hint:empty { display: none; }
 table.bulk-tbl input::placeholder, .modal-body input::placeholder, .search-box input::placeholder {
   color: var(--zb-ink-200); font-style: italic; font-weight: 400;
 }
@@ -697,7 +692,6 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       <div class="field full">
         <label class="zb-label">Master (AWB) <span style="color:var(--zb-ink-300);font-weight:500">(opcional — se asigna RES-… si está vacío)</span></label>
         <input type="text" id="nvMaster" placeholder="406-XXXXXXXX">
-        <div class="fmt-hint" id="nvMasterHint"></div>
       </div>
       <div class="field">
         <label class="zb-label">Fecha *</label>
@@ -1404,35 +1398,6 @@ function shortPrefix(carrier) {
   return full.split(/X+/)[0] || '';
 }
 
-// Valida que el master cumpla el formato del placeholder de la aerolínea
-// (ej: UPS espera "406-XXXXXXXX" → 3 dígitos, dash, 8 dígitos).
-// Master vacío y RES- (reservas auto-generadas) son válidos.
-function masterRegex(carrier) {
-  const ph = MASTER_PREFIX[carrier] || '';
-  if (!ph) return null;
-  let pattern = '^';
-  for (const ch of ph) {
-    if (ch === 'X' || ch === 'N') pattern += '\\d';
-    else if (/[.*+?^${}()|[\]\\\-]/.test(ch)) pattern += '\\' + ch;
-    else pattern += ch;
-  }
-  pattern += '$';
-  return new RegExp(pattern);
-}
-function isValidMaster(master, carrier) {
-  if (!master || !master.trim()) return true;       // vacío → se asigna RES-
-  if (master.startsWith('RES-')) return true;        // reserva temporal
-  if (!carrier) return true;                          // sin aerolínea aún → no validamos
-  const re = masterRegex(carrier);
-  if (!re) return true;                               // sin prefijo conocido (7AIR) → no validamos
-  return re.test(master.trim());
-}
-function masterErrorHint(carrier) {
-  const ph = MASTER_PREFIX[carrier] || '';
-  if (!ph) return '';
-  return `Corregir formato — debe ser ${ph}`;
-}
-
 function populateModalSelects() {
   $('#nvCarrier').innerHTML     = `<option value="">— Seleccionar aerolínea —</option>` + AEROLINEAS.map(c => `<option value="${c}">${c}</option>`).join('');
   $('#nvTipo').innerHTML        = TIPOS_EMBARQUE.map(t => `<option value="${t}">${t || '—'}</option>`).join('');
@@ -1442,26 +1407,15 @@ function populateModalSelects() {
   $('#nvTransp').innerHTML      = `<option value="">—</option>` + TRANSPORTADORES.map(t => `<option value="${t}">${t}</option>`).join('');
   $('#nvStatus').innerHTML      = STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
   $('#nvAeropOrig').value       = AEROPUERTO_ORIGEN_DEFAULT;
-  // Al cambiar aerolínea: pre-llenar master con el prefijo + actualizar placeholder + revalidar
+  // Al cambiar aerolínea: pre-llenar master con el prefijo + actualizar placeholder
   $('#nvCarrier').addEventListener('change', () => {
     const c = $('#nvCarrier').value;
     $('#nvMaster').placeholder = masterPh(c);
+    // Solo pre-llenamos si el operario no tipeó algo distinto al prefijo de otra aerolínea
     const cur = ($('#nvMaster').value || '').trim();
     const isJustOldPrefix = !cur || AEROLINEAS.some(a => cur === shortPrefix(a));
     if (isJustOldPrefix) $('#nvMaster').value = shortPrefix(c);
-    validateMasterIndividual();
   });
-  // Validar formato del master mientras tipea
-  $('#nvMaster').addEventListener('input', validateMasterIndividual);
-}
-
-function validateMasterIndividual() {
-  const m = ($('#nvMaster').value || '').trim();
-  const c = $('#nvCarrier').value;
-  const ok = isValidMaster(m, c);
-  $('#nvMaster').classList.toggle('fmt-bad', !ok);
-  $('#nvMasterHint').textContent = ok ? '' : masterErrorHint(c);
-  return ok;
 }
 
 function setMode(mode) {
@@ -1590,26 +1544,18 @@ function genBulkRows(n) {
   $$('#bulkBody .b-transp').forEach(s => s.value = 'UPS');
   $$('#bulkBody .b-status').forEach(s => s.value = 'sin-estatus');
   $$('#bulkBody .b-factor').forEach(i => i.value = '0.40');
-  // Master se pre-llena con el prefijo al cambiar la aerolínea de la fila + valida formato
+  // Master se pre-llena con el prefijo al cambiar la aerolínea de la fila
   $$('#bulkBody tr').forEach(tr => {
     const carSel = tr.querySelector('.b-carrier');
     const masterInp = tr.querySelector('.b-master');
-    const validate = () => {
-      const ok = isValidMaster(masterInp.value, carSel.value);
-      masterInp.classList.toggle('fmt-bad', !ok);
-      masterInp.title = ok ? '' : masterErrorHint(carSel.value);
-    };
     carSel.addEventListener('change', () => {
       masterInp.placeholder = masterPh(carSel.value);
       const cur = (masterInp.value || '').trim();
       const isJustOldPrefix = !cur || AEROLINEAS.some(a => cur === shortPrefix(a));
       if (isJustOldPrefix) masterInp.value = shortPrefix(carSel.value);
-      validate();
     });
-    masterInp.addEventListener('input', validate);
     // Pre-llenar al generar las filas (carrier = UPS por default)
     masterInp.value = shortPrefix(carSel.value);
-    validate();
   });
   updateModalFootInfo();
 }
@@ -1642,7 +1588,6 @@ $('#nvSave').addEventListener('click', async () => {
     const st = $('#nvStatus').value;
     if (!f)       { toast('Falta la fecha'); return; }
     if (!$('#nvCarrier').value) { toast('Falta la aerolínea'); return; }
-    if (!validateMasterIndividual()) { toast('Master inválido — corregí el formato'); $('#nvMaster').focus(); return; }
     if (!aerOrig) { toast('Falta el aeropuerto origen'); return; }
     if (!aerDest) { toast('Falta el aeropuerto destino'); return; }
     if (!dest)    { toast('Falta el consignatario'); return; }
@@ -1717,8 +1662,6 @@ $('#nvSave').addEventListener('click', async () => {
       // Master opcional — si vacío, asigno código de reserva
       if (!m) {
         m = `RES-${new Date().toISOString().slice(0,10).replaceAll('-','')}-${String((VUELOS.filter(v=>isReserva(v.master)).length + created.filter(c=>isReserva(c.master)).length + 1)).padStart(3,'0')}`;
-      } else if (!isValidMaster(m, car)) {
-        tr.querySelector('.b-master').classList.add('invalid'); errors.push(`Fila ${i+1}: master mal formado (debe ser ${MASTER_PREFIX[car] || 'NNN-XXXXXXXX'})`); bad = true;
       } else if (VUELOS.some(v => v.master === m) || created.some(c => c.master === m)) {
         tr.querySelector('.b-master').classList.add('invalid'); errors.push(`Fila ${i+1}: master duplicado`); bad = true;
       }
