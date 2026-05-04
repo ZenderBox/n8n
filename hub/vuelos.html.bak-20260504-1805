@@ -175,27 +175,6 @@ table.vuelos tbody tr:last-child td { border-bottom: 0; }
 .pill.blocked::before { background: var(--zb-warn); animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 
-/* ───── Pagination ───── */
-.pagination {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px; border-top: 1px solid var(--zb-line); background: var(--zb-surface);
-  font-size: 12px; color: var(--zb-ink-500); font-weight: 600;
-}
-.pagination .page-info { font-variant-numeric: tabular-nums; }
-.pagination .page-ctrl { display: flex; gap: 4px; align-items: center; }
-.pagination .page-num {
-  display: inline-flex; align-items: center; padding: 0 12px;
-  font-weight: 700; color: var(--zb-navy); min-width: 110px; justify-content: center;
-}
-.pagination .page-btn {
-  border: 1px solid var(--zb-line); background: var(--zb-white);
-  border-radius: var(--radius-sm); width: 30px; height: 30px;
-  font: 700 14px/1 'Plus Jakarta Sans', sans-serif; color: var(--zb-ink-700);
-  cursor: pointer; transition: all .12s;
-}
-.pagination .page-btn:hover:not(:disabled) { border-color: var(--zb-cyan); color: var(--zb-cyan-dk); }
-.pagination .page-btn:disabled { opacity: .35; cursor: not-allowed; }
-
 /* ───── Empty state ───── */
 .empty {
   padding: 60px 20px; text-align: center; color: var(--zb-ink-500);
@@ -562,16 +541,6 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
       <h3>Sin resultados</h3>
       <p>Probá ajustando los filtros o el término de búsqueda.</p>
-    </div>
-    <div class="pagination" id="pagination">
-      <span class="page-info" id="pageInfo">—</span>
-      <div class="page-ctrl">
-        <button class="page-btn" id="pgFirst" title="Primera">«</button>
-        <button class="page-btn" id="pgPrev" title="Anterior">‹</button>
-        <span class="page-num" id="pageNum">—</span>
-        <button class="page-btn" id="pgNext" title="Siguiente">›</button>
-        <button class="page-btn" id="pgLast" title="Última">»</button>
-      </div>
     </div>
   </div>
 </main>
@@ -1008,11 +977,6 @@ function carrierTag(c) {
   return `<span class="carrier-tag ${cls}">${c}</span>`;
 }
 
-// ─────── Paginación ───────
-const PAGE_SIZE = 30; // ~1 mes de vuelos
-let currentPage = 1;
-function resetPage() { currentPage = 1; }
-
 // ─────── Render: tabla principal ───────
 function renderTable() {
   const term = $('#searchInput').value.toLowerCase().trim();
@@ -1041,25 +1005,13 @@ function renderTable() {
     return true;
   });
 
-  // Ordenar más recientes primero
-  rows.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
-
-  const total = rows.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (currentPage > totalPages) currentPage = totalPages;
-  if (currentPage < 1) currentPage = 1;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageRows = rows.slice(start, start + PAGE_SIZE);
-
   const tbody = $('#vuelosBody');
-  if (total === 0) {
+  if (rows.length === 0) {
     tbody.innerHTML = '';
     $('#emptyState').style.display = 'block';
-    $('#pagination').style.display = 'none';
   } else {
     $('#emptyState').style.display = 'none';
-    $('#pagination').style.display = 'flex';
-    tbody.innerHTML = pageRows.map(v => {
+    tbody.innerHTML = rows.map(v => {
       const neto = kgPagadosNeto(v);
       const diff = neto - (v.kgAgencias || 0);
       const diffCls = diff > 5 ? 'diff-pos' : diff < -5 ? 'diff-neg' : '';
@@ -1077,14 +1029,6 @@ function renderTable() {
         </tr>`;
     }).join('');
     $$('#vuelosBody tr').forEach(tr => tr.addEventListener('click', () => openDrawer(tr.dataset.master)));
-
-    // Paginación
-    $('#pageInfo').textContent = `${start + 1}–${Math.min(start + PAGE_SIZE, total)} de ${total} vuelos`;
-    $('#pageNum').textContent = `Página ${currentPage} de ${totalPages}`;
-    $('#pgFirst').disabled = currentPage === 1;
-    $('#pgPrev').disabled  = currentPage === 1;
-    $('#pgNext').disabled  = currentPage === totalPages;
-    $('#pgLast').disabled  = currentPage === totalPages;
   }
   renderKPIs();
 }
@@ -1819,20 +1763,13 @@ $('#modalBackdrop').addEventListener('click', e => {
 
 // ─────── Listeners ───────
 ['searchInput','filterStatus','filterAirport','filterDest','filterCarrier','filterFrom','filterTo'].forEach(id => {
-  $('#'+id).addEventListener('input', () => { resetPage(); renderTable(); });
-  $('#'+id).addEventListener('change', () => { resetPage(); renderTable(); });
+  $('#'+id).addEventListener('input', renderTable);
+  $('#'+id).addEventListener('change', renderTable);
 });
 $('#chipWeek').addEventListener('click', () => {
   $('#chipWeek').classList.toggle('on');
-  resetPage();
   renderTable();
 });
-
-// Paginación
-$('#pgFirst').addEventListener('click', () => { currentPage = 1; renderTable(); });
-$('#pgPrev').addEventListener('click',  () => { currentPage--; renderTable(); });
-$('#pgNext').addEventListener('click',  () => { currentPage++; renderTable(); });
-$('#pgLast').addEventListener('click',  () => { currentPage = 1e9; renderTable(); });
 $('#drawerClose').addEventListener('click', closeDrawer);
 $('#drawerBackdrop').addEventListener('click', closeDrawer);
 $('#btnRefresh').addEventListener('click', async () => { await loadBootstrap(); renderTable(); toast('Actualizado'); });
