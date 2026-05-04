@@ -791,12 +791,11 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
 
 <script>
 /* ============================================================
- * Aéreo · Control de Vuelos — conectado a PG vía webhooks n8n
+ * Aéreo · Control de Vuelos — FASE 1 (mock data, sin backend)
  * ============================================================ */
-const API_BASE = 'https://hub.zenderbox.com/webhook';
 
-// ─────── Catálogos (cargados desde /aereo-bootstrap; estos son fallback) ───────
-let STATUS_LIST = [
+// ─────── Catálogos ───────
+const STATUS_LIST = [
   { id: 'sin-estatus',label: 'Sin estatus',        group: 'pending', dot: '#B8B8B8' },
   { id: 'mia-bog',    label: 'MIA - BOG',          group: 'transit', dot: '#029ECB' },
   { id: 'mia-cr',     label: 'MIA - CR',           group: 'transit', dot: '#029ECB' },
@@ -807,118 +806,49 @@ let STATUS_LIST = [
   { id: 'bodega',     label: 'Bodega destino',     group: 'success', dot: '#008C31', trigger: 'habilita despacho' },
   { id: 'reajustes',  label: 'Bodega - reajustes', group: 'blocked', dot: '#B7791F', trigger: 'bloquea despacho' },
 ];
-let STATUS_MAP = Object.fromEntries(STATUS_LIST.map(s => [s.id, s]));
+const STATUS_MAP = Object.fromEntries(STATUS_LIST.map(s => [s.id, s]));
 
-let AEROLINEAS      = ['UPS', 'ATLAS', '7AIR', 'DHL'];
-let TIPOS_EMBARQUE  = ['', 'AAD', 'AAY', 'SUELTA', 'PALLETS', 'ULD-AAD', 'ULD-AAY'];
-let AEROPUERTOS     = ['MIA', 'BOG', 'SJO', 'UIO', 'PTY'];
-let CONSIGNATARIOS  = ['ENEXCOL', '472', 'CR'];
-let TRANSPORTADORES = ['UPS', 'USPS', 'FEDEX', 'DHL', 'AMAZON', 'FAST BOX CARGO', 'LASERSHIP'];
+// Catálogos (mock, vendrán de PG vía /webhook/aereo-bootstrap)
+const AEROLINEAS    = ['UPS', 'ATLAS', '7AIR', 'DHL'];
+const TIPOS_EMBARQUE= ['', 'AAD', 'AAY', 'SUELTA', 'PALLETS', 'ULD-AAD', 'ULD-AAY'];
+const AEROPUERTOS   = ['MIA', 'BOG', 'SJO', 'UIO', 'PTY']; // codigo IATA
+const CONSIGNATARIOS= ['ENEXCOL', '472', 'CR'];
+const TRANSPORTADORES = ['UPS', 'USPS', 'FEDEX', 'DHL', 'AMAZON', 'FAST BOX CARGO', 'LASERSHIP'];
+// Aeropuerto origen casi siempre MIA — se setea por default
 const AEROPUERTO_ORIGEN_DEFAULT = 'MIA';
-
-// Mapeo grupo → color de dot (para construir STATUS_LIST desde bootstrap)
-const STATUS_DOT = { pending:'#B8B8B8', transit:'#029ECB', warn:'#B7791F', success:'#008C31', blocked:'#B7791F' };
-function triggerLabel(s) {
-  if (s.dispara_despacho === true) return 'habilita despacho';
-  if (s.dispara_despacho === false) return 'bloquea despacho';
-  return undefined;
-}
-// Prefijo conocido del master por aerolínea (placeholder visual; lo puebla el bootstrap)
-let MASTER_PREFIX = { UPS: '406-XXXXXXXX', ATLAS: '369-XXXXXXXX', DHL: '992-XXXXXXXX', '7AIR': 'NNN-XXXXXXXX' };
+// Prefijo conocido del master por aerolínea (placeholder visual)
+const MASTER_PREFIX = { UPS: '406-XXXXXXXX', ATLAS: '369-XXXXXXXX', DHL: '992-XXXXXXXX', '7AIR': 'NNN-XXXXXXXX' };
 const masterPh = c => MASTER_PREFIX[c] || 'NNN-XXXXXXXX';
 
-let AGENCIAS_DEFAULT = [
+const AGENCIAS_DEFAULT = [
   'Movi', 'JL', 'LACS', 'Damak',
   'ZenderBox CR', 'ZenderBox AGENCIAS', 'ZenderBox CASILLERO', 'ZenderBox COMERCIAL'
 ];
 const SERVICIOS = ['comercial', 'casillero'];
 
-// Vuelos cargados desde PG via /aereo-bootstrap. Vacío hasta que termina la carga.
-let VUELOS = [];
+// ─────── Mock data ───────
+// Modelo nuevo (alineado al schema aereo refactor V2):
+//   vuelo: master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen,
+//          aeropuertoDestino, consignatario, transportador (opcional), piezas,
+//          consolidados, status, kgAgencias, kgPagados, pesos{agencia:[com,cas]}
+const VUELOS = [
+  mkVuelo('406-44582134', '2026-04-27', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3538 - AGE 3539',  'bodega',    1154.5, 1237, { Movi:[0,1050], LACS:[0,101], 'ZenderBox':[104.5, 0] }),
+  mkVuelo('406-44582160', '2026-04-28', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3542 - AGE 3543',  'bodega',     780.0,  820, { Movi:[0,250], JL:[0,90], 'ZenderBox CASILLERO':[180,0], Pressex:[0,80] }),
+  mkVuelo('406-44582171', '2026-04-29', 'UPS',  'AAY',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3545 - AGE 3546',  'aeropuerto', 690.0,  720, { Movi:[0,210], LACS:[0,75], JL:[0,60], 'ZenderBox CASILLERO':[150,0] }),
+  mkVuelo('406-44582182', '2026-04-30', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3548 - AGE 3549',  'aeropuerto', 540.0,    0, { Movi:[0,180], 'ZenderBox CASILLERO':[140,0], Pressex:[0,90] }),
+  mkVuelo('406-44582193', '2026-05-01', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         'CAS 3551 - AGE 3552',  'aerolinea',  420.0,    0, { Movi:[0,150], JL:[0,40], 'ZenderBox CASILLERO':[120,0] }),
+  mkVuelo('406-44585111', '2026-04-28', 'UPS',  '',      0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '2',         'COM 3540 - DG 3541',   'aeropuerto', 880.0,  942, { 'COMERCIAL MOVI':[300,0], Movi:[0,180], 'ZenderBox AGENCIAS':[210,0], 'ZenderBox CASILLERO':[130,0] }),
+  mkVuelo('992-10535383', '2026-05-01', 'DHL',  '',      1.00, 'MIA','SJO','CR',      'DHL',  '5',         'CAS 3550',             'aerolinea',  650.0,    0, { LACS:[0,180], Damak:[0,90], 'ZenderBox CASILLERO':[200,0], Pressex:[0,120] }),
+  mkVuelo('406-44592004', '2026-05-01', 'UPS',  '',      0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '5',         'COM 3544 - DG 3547',   'aerolinea', 1037.5,    0, { 'COMERCIAL MOVI':[280,0], Movi:[0,300], JL:[60,90], 'ZenderBox AGENCIAS':[200,0], 'ZenderBox CASILLERO':[150,0] }),
+  mkVuelo('235-83949611', '2026-03-01', 'ATLAS','SUELTA',0.85, 'MIA','BOG','ENEXCOL', null,   '4 pallets', '2365CAS - 2366AG',     'bodega',     878.3,  942, { Movi:[0,209], JL:[0,38.1], 'ZenderBox AGENCIAS':[261.2,0], 'ZenderBox CASILLERO':[369.9,0]}),
+  mkVuelo('976-30462876', '2025-12-23', 'UPS',  'AAD',   0.40, 'MIA','BOG','472',     'UPS',  '5 PALLETS', '2359CAS',              'bodega',    1154.5, 1237, { Movi:[0,1050], LACS:[0,101], 'ZenderBox':[104.5, 0] }),
+  mkVuelo('406-44693311', '2026-05-02', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         '',                     'sin-estatus',  0,    0, {}),
+  mkVuelo('406-44693322', '2026-05-03', 'UPS',  'AAD',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         '',                     'sin-estatus',  0,    0, {}),
+  mkVuelo('406-44693333', '2026-05-04', 'UPS',  'AAY',   0.40, 'MIA','BOG','ENEXCOL', 'UPS',  '1',         '',                     'sin-estatus',  0,    0, {}),
+];
 
 function mkVuelo(master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen, aeropuertoDestino, consignatario, transportador, piezas, cons, status, kgAgencias, kgPagados, pesos) {
   return { master, fecha, aerolinea, tipoEmbarque, factor, aeropuertoOrigen, aeropuertoDestino, consignatario, transportador, piezas, cons, status, kgAgencias, kgPagados, pesos };
-}
-
-// ─────── Backend ───────
-async function loadBootstrap() {
-  try {
-    const r = await fetch(`${API_BASE}/aereo-bootstrap`, { cache: 'no-store' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
-
-    // Catálogos
-    if (d.aerolineas)     { AEROLINEAS    = d.aerolineas.map(a => a.code); MASTER_PREFIX = Object.fromEntries(d.aerolineas.map(a => [a.code, a.master_prefix || 'NNN-XXXXXXXX'])); }
-    if (d.aeropuertos)    AEROPUERTOS    = d.aeropuertos.map(a => a.codigo_iata);
-    if (d.consignatarios) CONSIGNATARIOS = d.consignatarios.map(c => c.codigo);
-    if (d.transportadores)TRANSPORTADORES = d.transportadores.map(t => t.nombre);
-    if (d.tipos_embarque) TIPOS_EMBARQUE = ['', ...d.tipos_embarque.map(t => t.code)];
-    if (d.estados_vuelo) {
-      STATUS_LIST = d.estados_vuelo.map(s => ({
-        id: s.code, label: s.label, group: s.grupo,
-        dot: STATUS_DOT[s.grupo] || '#B8B8B8',
-        trigger: s.dispara_despacho === true ? 'habilita despacho' : (s.dispara_despacho === false ? 'bloquea despacho' : undefined)
-      }));
-      STATUS_MAP = Object.fromEntries(STATUS_LIST.map(s => [s.id, s]));
-    }
-    if (d.agencias) AGENCIAS_DEFAULT = d.agencias.filter(a => a.activa !== false).map(a => a.nombre);
-
-    // Vuelos
-    VUELOS = (d.vuelos || []).map(v => ({
-      master: v.master,
-      fecha: (v.fecha || '').slice(0, 10),
-      aerolinea: v.aerolinea,
-      tipoEmbarque: v.tipoEmbarque || '',
-      factor: v.factor != null ? +v.factor : null,
-      aeropuertoOrigen: v.aeropuertoOrigen,
-      aeropuertoDestino: v.aeropuertoDestino,
-      consignatario: v.consignatario,
-      transportador: v.transportador || null,
-      piezas: v.piezas || '',
-      cons: v.cons || '',
-      status: v.status,
-      kgAgencias: +v.kgAgencias || 0,
-      kgPagados: +v.kgPagados || 0,
-      pesos: v.pesos || {}
-    }));
-  } catch (e) {
-    toast('Error cargando datos: ' + e.message);
-    console.error(e);
-  }
-}
-
-async function saveVueloRemote(v, originalMaster) {
-  const payload = {
-    master: v.master,
-    master_original: originalMaster || v.master,
-    fecha: v.fecha,
-    aerolinea: v.aerolinea,
-    tipoEmbarque: v.tipoEmbarque || '',
-    factor: v.factor,
-    aeropuertoOrigen: v.aeropuertoOrigen || AEROPUERTO_ORIGEN_DEFAULT,
-    aeropuertoDestino: v.aeropuertoDestino,
-    consignatario: v.consignatario,
-    transportador: v.transportador || '',
-    status: v.status || 'sin-estatus',
-    piezas: v.piezas || '',
-    cons: v.cons || '',
-    kgPagados: v.kgPagados != null ? v.kgPagados : ''
-  };
-  const r = await fetch(`${API_BASE}/aereo-vuelo-save`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
-
-async function deleteVueloRemote(master) {
-  const r = await fetch(`${API_BASE}/aereo-vuelo-delete`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ master }) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
-
-async function savePesosRemote(master, pesos) {
-  const r = await fetch(`${API_BASE}/aereo-vuelo-pesos-save`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ master, pesos }) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
 }
 
 // Genera un código de reserva único cuando todavía no hay master AWB.
@@ -1091,10 +1021,8 @@ function renderStatusGrid(v) {
     </button>
   `).join('');
   $$('#statusGrid .status-opt').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const oldStatus = v.status;
+    btn.addEventListener('click', () => {
       v.status = btn.dataset.status;
-      try { await saveVueloRemote(v); } catch (e) { v.status = oldStatus; toast('Error: ' + e.message); renderStatusGrid(v); return; }
       renderStatusGrid(v);
       renderTable();
       toast(`Estatus actualizado a "${STATUS_MAP[v.status].label}"`);
@@ -1147,7 +1075,6 @@ function renderPesosTable(v) {
       $('#rowTotal').textContent = fmtNum(total);
       renderTotales(v);
       renderTable();
-      schedulePesosSave(v);
     });
   });
 
@@ -1165,7 +1092,6 @@ function renderPesosTable(v) {
     v.kgAgencias = Object.values(v.pesos).reduce((s, [c, k]) => s + (c||0) + (k||0), 0);
     renderPesosTable(v);
     renderTable();
-    schedulePesosSave(v);
     toast(`Agencia "${ag}" quitada`);
   }));
 
@@ -1215,15 +1141,6 @@ function renderTotales(v) {
   dEl.className = 'v ' + (diff>0?'pos':diff<0?'neg':'');
 
   $('#totPiezas').textContent = v.piezas || '—';
-}
-
-// ─────── Persistencia debounced de pesos ───────
-let _pesosSaveTimer = null;
-function schedulePesosSave(v) {
-  clearTimeout(_pesosSaveTimer);
-  _pesosSaveTimer = setTimeout(async () => {
-    try { await savePesosRemote(v.master, v.pesos); } catch (e) { toast('Error guardando pesos: ' + e.message); }
-  }, 600);
 }
 
 // ─────── Add agencia (al drawer) ───────
@@ -1350,13 +1267,12 @@ $('#calcGen').addEventListener('click', () => {
   renderCalcRows(n, prev);
 });
 $('#calcCancel').addEventListener('click', () => $('#calcBackdrop').classList.remove('open'));
-$('#calcSave').addEventListener('click', async () => {
+$('#calcSave').addEventListener('click', () => {
   if (!currentVuelo) return;
   const breakdown = $$('#calcRows input.kg').map(i => parseFloat(i.value) || 0);
   const total = breakdown.reduce((s, k) => s + k, 0);
   currentVuelo.kgPagados = total;
   currentVuelo.kgPagadosBreakdown = breakdown;
-  try { await saveVueloRemote(currentVuelo); } catch (e) { toast('Error: ' + e.message); return; }
   renderTotales(currentVuelo);
   renderTable();
   $('#calcBackdrop').classList.remove('open');
@@ -1443,18 +1359,15 @@ $('#btnEditVuelo').addEventListener('click', () => {
   if (!currentVuelo) return;
   openVueloForEdit(currentVuelo.master);
 });
-$('#btnDeleteVuelo').addEventListener('click', async () => {
+$('#btnDeleteVuelo').addEventListener('click', () => {
   if (!currentVuelo) return;
   const m = currentVuelo.master;
   if (!confirm(`¿Eliminar el vuelo ${m}? Esta acción no se puede deshacer.`)) return;
-  try {
-    await deleteVueloRemote(m);
-    const idx = VUELOS.findIndex(x => x.master === m);
-    if (idx >= 0) VUELOS.splice(idx, 1);
-    closeDrawer();
-    renderTable();
-    toast(`Vuelo ${m} eliminado`);
-  } catch (e) { toast('Error eliminando: ' + e.message); }
+  const idx = VUELOS.findIndex(x => x.master === m);
+  if (idx >= 0) VUELOS.splice(idx, 1);
+  closeDrawer();
+  renderTable();
+  toast(`Vuelo ${m} eliminado`);
 });
 
 $('#btnNuevoVuelo').addEventListener('click', () => {
@@ -1534,7 +1447,7 @@ $('#bulkGen').addEventListener('click', () => {
 });
 
 // ── Save ──
-$('#nvSave').addEventListener('click', async () => {
+$('#nvSave').addEventListener('click', () => {
   if (modalMode === 'single') {
     let m = $('#nvMaster').value.trim();
     const f = $('#nvFecha').value;
@@ -1554,45 +1467,50 @@ $('#nvSave').addEventListener('click', async () => {
     if (m !== editingMaster && VUELOS.some(v => v.master === m)) {
       toast('Ya existe ese master'); return;
     }
-    const vNew = mkVuelo(
-      m, f, $('#nvCarrier').value, $('#nvTipo').value,
-      parseFloat($('#nvFactor').value) || null,
-      aerOrig, aerDest, dest, $('#nvTransp').value || null,
-      $('#nvPiezas').value, $('#nvCons').value, st,
-      editingMaster ? (VUELOS.find(x=>x.master===editingMaster)?.kgAgencias || 0) : 0,
-      editingMaster ? (VUELOS.find(x=>x.master===editingMaster)?.kgPagados || 0) : 0,
-      editingMaster ? (VUELOS.find(x=>x.master===editingMaster)?.pesos || {}) : {}
-    );
-    try {
-      await saveVueloRemote(vNew, editingMaster);
-    } catch (e) { toast('Error guardando: ' + e.message); return; }
-
     if (editingMaster) {
-      // EDITAR — actualizar local
-      const idx = VUELOS.findIndex(x => x.master === editingMaster);
-      if (idx >= 0) VUELOS[idx] = vNew;
+      // EDITAR
+      const v = VUELOS.find(x => x.master === editingMaster);
+      if (!v) { toast('No se encontró el vuelo a editar'); return; }
+      v.master            = m;
+      v.fecha             = f;
+      v.aerolinea         = $('#nvCarrier').value;
+      v.tipoEmbarque      = $('#nvTipo').value;
+      v.factor            = parseFloat($('#nvFactor').value) || null;
+      v.aeropuertoOrigen  = aerOrig;
+      v.aeropuertoDestino = aerDest;
+      v.consignatario     = dest;
+      v.transportador     = $('#nvTransp').value || null;
+      v.status            = st;
+      v.piezas            = $('#nvPiezas').value;
+      v.cons              = $('#nvCons').value;
       $('#modalBackdrop').classList.remove('open');
       $('#modeToggle').style.display = '';
       const newMaster = m;
       editingMaster = null;
-      currentVuelo = vNew;
-      $('#drawerTitle').textContent = vNew.master;
+      // Refrescar drawer con los nuevos datos
+      currentVuelo = v;
+      $('#drawerTitle').textContent = v.master;
       $('#drawerMeta').innerHTML = `
-        <span>📅 <strong>${formatFecha(vNew.fecha)}</strong></span>
-        <span>✈ <strong>${vNew.aerolinea}</strong></span>
-        <span>🛫 <strong>${vNew.aeropuertoOrigen || '—'} → ${vNew.aeropuertoDestino || '—'}</strong></span>
-        <span>📍 <strong>${vNew.consignatario || '—'}</strong></span>
-        ${vNew.transportador ? `<span>🚚 <strong>${vNew.transportador}</strong></span>` : ''}
-        <span>📦 <strong>${vNew.piezas || '—'}</strong></span>
-        <span>🔢 Cons. <strong>${vNew.cons || '—'}</strong></span>
+        <span>📅 <strong>${formatFecha(v.fecha)}</strong></span>
+        <span>✈ <strong>${v.aerolinea}</strong></span>
+        <span>🛫 <strong>${v.aeropuertoOrigen || '—'} → ${v.aeropuertoDestino || '—'}</strong></span>
+        <span>📍 <strong>${v.consignatario || '—'}</strong></span>
+        ${v.transportador ? `<span>🚚 <strong>${v.transportador}</strong></span>` : ''}
+        <span>📦 <strong>${v.piezas || '—'}</strong></span>
+        <span>🔢 Cons. <strong>${v.cons || '—'}</strong></span>
       `;
-      renderStatusGrid(vNew);
-      renderPesosTable(vNew);
+      renderStatusGrid(v);
+      renderPesosTable(v);
       renderTable();
       toast(`Vuelo ${newMaster} actualizado`);
     } else {
       // CREAR
-      VUELOS.unshift(vNew);
+      VUELOS.unshift(mkVuelo(
+        m, f, $('#nvCarrier').value, $('#nvTipo').value,
+        parseFloat($('#nvFactor').value) || null,
+        aerOrig, aerDest, dest, $('#nvTransp').value || null,
+        $('#nvPiezas').value, $('#nvCons').value, st, 0, 0, {}
+      ));
       $('#modalBackdrop').classList.remove('open');
       clearVueloForm();
       renderTable();
@@ -1639,16 +1557,11 @@ $('#nvSave').addEventListener('click', async () => {
       ));
     });
     if (errors.length) { toast(errors[0]); return; }
-    let okCount = 0, failed = [];
-    for (const v of created) {
-      try { await saveVueloRemote(v); okCount++; } catch (e) { failed.push(v.master); }
-    }
-    if (failed.length) toast(`${failed.length} fallaron: ${failed.join(', ')}`);
     created.reverse().forEach(v => VUELOS.unshift(v));
     $('#modalBackdrop').classList.remove('open');
     $('#bulkBody').innerHTML = '';
     renderTable();
-    toast(`${okCount} vuelo${okCount>1?'s':''} creado${okCount>1?'s':''}`);
+    toast(`${created.length} vuelo${created.length>1?'s':''} creado${created.length>1?'s':''}`);
   }
 });
 $('#modalBackdrop').addEventListener('click', e => {
@@ -1670,7 +1583,7 @@ $('#chipWeek').addEventListener('click', () => {
 });
 $('#drawerClose').addEventListener('click', closeDrawer);
 $('#drawerBackdrop').addEventListener('click', closeDrawer);
-$('#btnRefresh').addEventListener('click', async () => { await loadBootstrap(); renderTable(); toast('Actualizado'); });
+$('#btnRefresh').addEventListener('click', () => { renderTable(); toast('Actualizado'); });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if      ($('#margenBackdrop').classList.contains('open')) $('#margenBackdrop').classList.remove('open');
@@ -1687,12 +1600,9 @@ function toast(msg) {
 }
 
 // ─────── Init ───────
-(async () => {
-  await loadBootstrap();
-  populateModalSelects();
-  populateFilters();
-  renderTable();
-})();
+populateModalSelects();
+populateFilters();
+renderTable();
 </script>
 
 </body>
