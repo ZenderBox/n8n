@@ -1117,34 +1117,30 @@ function renderPesosTable(v) {
   const agencias = Object.keys(v.pesos).length ? Object.keys(v.pesos) : AGENCIAS_DEFAULT.slice();
   agencias.forEach(a => { if (!v.pesos[a]) v.pesos[a] = [0, 0]; });
 
-  // Calcular qué servicios tiene activos cada agencia (idx 0=comercial, 1=casillero)
-  const agSvcs = Object.fromEntries(agencias.map(a => [
-    a,
-    [0, 1].filter(idx => agenciaTieneServicio(a, idx))
-  ]));
-  // Filtrar agencias que quedaron sin ningún servicio activo
-  const agenciasVisibles = agencias.filter(a => agSvcs[a].length > 0);
-
   const t = $('#pesosTable');
   let head = `<thead>
     <tr>
       <th rowspan="2" style="position:sticky;left:0;z-index:2;background:var(--zb-surface)">Agencia</th>
-      ${agenciasVisibles.map(a => `<th class="agency-h" colspan="${agSvcs[a].length}">${a}<button class="ag-del" data-ag="${a}" title="Quitar agencia del vuelo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></th>`).join('')}
+      ${agencias.map(a => `<th class="agency-h" colspan="${SERVICIOS.length}">${a}<button class="ag-del" data-ag="${a}" title="Quitar agencia del vuelo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></th>`).join('')}
       <th rowspan="2" class="num">Total</th>
     </tr>
     <tr class="svcrow">
-      ${agenciasVisibles.map(a => agSvcs[a].map(idx => `<th>${SERVICIOS[idx]}</th>`).join('')).join('')}
+      ${agencias.map(() => SERVICIOS.map(s => `<th>${s}</th>`).join('')).join('')}
     </tr>
   </thead>`;
 
-  // Solo renderizamos cells para los servicios activos de cada agencia
-  const cells = agenciasVisibles.map(a => {
-    const pesos = v.pesos[a] || [0,0];
-    return agSvcs[a].map(idx =>
-      `<td><input class="peso" data-ag="${a}" data-svc="${idx}" type="number" step="0.1" value="${pesos[idx] || ''}"></td>`
-    ).join('');
+  // Una sola fila editable: kg por (agencia × servicio). Celdas deshabilitadas si la
+  // agencia no ofrece ese servicio (ej: Damak solo casillero).
+  const cells = agencias.map(a => {
+    const [com, cas] = v.pesos[a] || [0,0];
+    const tieneCom = agenciaTieneServicio(a, 0);
+    const tieneCas = agenciaTieneServicio(a, 1);
+    const td = (idx, val, tiene) => tiene
+      ? `<td><input class="peso" data-ag="${a}" data-svc="${idx}" type="number" step="0.1" value="${val || ''}"></td>`
+      : `<td title="Agencia no ofrece este servicio" style="background:#FAFAFA;color:var(--zb-ink-200);text-align:center;font-style:italic;font-size:11px">—</td>`;
+    return td(0, com, tieneCom) + td(1, cas, tieneCas);
   }).join('');
-  const totalRow = agenciasVisibles.reduce((s,a) => s + agSvcs[a].reduce((s2,idx) => s2 + (v.pesos[a][idx]||0), 0), 0);
+  const totalRow = agencias.reduce((s,a) => s + (v.pesos[a][0]||0) + (v.pesos[a][1]||0), 0);
 
   t.innerHTML = head + `
     <tbody>
@@ -1160,7 +1156,7 @@ function renderPesosTable(v) {
     inp.addEventListener('input', () => {
       const a = inp.dataset.ag, idx = +inp.dataset.svc;
       v.pesos[a][idx] = parseFloat(inp.value) || 0;
-      const total = agenciasVisibles.reduce((s,ag) => s + agSvcs[ag].reduce((s2,i) => s2 + (v.pesos[ag][i]||0), 0), 0);
+      const total = agencias.reduce((s,ag) => s + v.pesos[ag][0] + v.pesos[ag][1], 0);
       v.kgAgencias = total;
       $('#rowTotal').textContent = fmtNum(total);
       renderTotales(v);
