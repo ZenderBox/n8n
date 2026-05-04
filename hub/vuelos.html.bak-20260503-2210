@@ -833,13 +833,13 @@ let AGENCIAS_DEFAULT = [
 ];
 // Mapa nombre → [serviciosIds] (1=comercial, 2=casillero). Se puebla con el bootstrap.
 let AGENCIAS_SERVICIOS = {};
-// Devuelve true si la agencia ofrece ese servicio (idx 0=comercial, 1=casillero, 2=agencias)
+// Devuelve true si la agencia ofrece ese servicio (idx 0 = comercial, 1 = casillero)
 function agenciaTieneServicio(nombre, idx) {
   const svcs = AGENCIAS_SERVICIOS[nombre];
-  if (!svcs) return idx < 2; // Agencia ad-hoc: solo comercial+casillero por defecto
-  return svcs.includes(idx + 1); // idx N → servicio_id N+1
+  if (!svcs) return true; // Agencia ad-hoc (no en catálogo): permitir ambos
+  return svcs.includes(idx + 1); // idx 0 → servicio_id 1, idx 1 → servicio_id 2
 }
-const SERVICIOS = ['comercial', 'casillero', 'agencias']; // idx + 1 = servicio_id
+const SERVICIOS = ['comercial', 'casillero'];
 
 // Vuelos cargados desde PG via /aereo-bootstrap. Vacío hasta que termina la carga.
 let VUELOS = [];
@@ -1115,16 +1115,12 @@ function renderStatusGrid(v) {
 
 function renderPesosTable(v) {
   const agencias = Object.keys(v.pesos).length ? Object.keys(v.pesos) : AGENCIAS_DEFAULT.slice();
-  // Asegurar que cada agencia tenga array de SERVICIOS.length (rellenar con 0 si falta)
-  agencias.forEach(a => {
-    if (!v.pesos[a]) v.pesos[a] = new Array(SERVICIOS.length).fill(0);
-    while (v.pesos[a].length < SERVICIOS.length) v.pesos[a].push(0);
-  });
+  agencias.forEach(a => { if (!v.pesos[a]) v.pesos[a] = [0, 0]; });
 
-  // Calcular qué servicios tiene activos cada agencia (idx 0..N-1)
+  // Calcular qué servicios tiene activos cada agencia (idx 0=comercial, 1=casillero)
   const agSvcs = Object.fromEntries(agencias.map(a => [
     a,
-    SERVICIOS.map((_, idx) => idx).filter(idx => agenciaTieneServicio(a, idx))
+    [0, 1].filter(idx => agenciaTieneServicio(a, idx))
   ]));
   // Filtrar agencias que quedaron sin ningún servicio activo
   const agenciasVisibles = agencias.filter(a => agSvcs[a].length > 0);
@@ -1143,7 +1139,7 @@ function renderPesosTable(v) {
 
   // Solo renderizamos cells para los servicios activos de cada agencia
   const cells = agenciasVisibles.map(a => {
-    const pesos = v.pesos[a] || new Array(SERVICIOS.length).fill(0);
+    const pesos = v.pesos[a] || [0,0];
     return agSvcs[a].map(idx =>
       `<td><input class="peso" data-ag="${a}" data-svc="${idx}" type="number" step="0.1" value="${pesos[idx] || ''}"></td>`
     ).join('');
@@ -1177,14 +1173,14 @@ function renderPesosTable(v) {
   $$('#pesosTable .ag-del').forEach(btn => btn.addEventListener('click', e => {
     e.stopPropagation();
     const ag = btn.dataset.ag;
-    const arr = v.pesos[ag] || [];
-    const sumKg = arr.reduce((s, k) => s + (+k || 0), 0);
-    const msg = sumKg > 0
-      ? `Quitar "${ag}" del vuelo? Tiene ${fmtNum(sumKg)} kg cargados que se perderán.`
+    const [com, cas] = v.pesos[ag] || [0,0];
+    const tieneKg = (com || 0) + (cas || 0) > 0;
+    const msg = tieneKg
+      ? `Quitar "${ag}" del vuelo? Tiene ${fmtNum(com+cas)} kg cargados que se perderán.`
       : `Quitar "${ag}" del vuelo?`;
     if (!confirm(msg)) return;
     delete v.pesos[ag];
-    v.kgAgencias = Object.values(v.pesos).reduce((s, kgs) => s + kgs.reduce((s2,k) => s2 + (+k||0), 0), 0);
+    v.kgAgencias = Object.values(v.pesos).reduce((s, [c, k]) => s + (c||0) + (k||0), 0);
     renderPesosTable(v);
     renderTable();
     schedulePesosSave(v);
@@ -1254,7 +1250,7 @@ $('#btnAddAgencia').addEventListener('click', () => {
   const name = prompt('Nombre de la agencia (ej: Cargo Express)');
   if (!name) return;
   if (currentVuelo.pesos[name]) { toast('Esa agencia ya está cargada'); return; }
-  currentVuelo.pesos[name] = new Array(SERVICIOS.length).fill(0);
+  currentVuelo.pesos[name] = [0, 0];
   renderPesosTable(currentVuelo);
   toast(`Agencia "${name}" agregada`);
 });

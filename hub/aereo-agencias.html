@@ -96,20 +96,18 @@ tbody td{padding:13px 14px;border-bottom:1px solid var(--zb-line);vertical-align
 
 <script>
 const FETCH_REAL=true; const API_BASE='https://hub.zenderbox.com/webhook';
-const SERVICIOS = [{id:1,code:'comercial',label:'Comercial'},{id:2,code:'casillero',label:'Casillero'}];
+const SERVICIOS = [
+  {id:1,code:'comercial',label:'Comercial'},
+  {id:2,code:'casillero',label:'Casillero'},
+  {id:3,code:'agencias',label:'Agencias'}
+];
+// Mock fallback. La fuente de verdad es PG vía /webhook/aereo-agencias-list cuando FETCH_REAL=true
 let DATA = [
-  { id:1,  nombre:'Movi',           servicios:[1,2], activa:true },
-  { id:2,  nombre:'JL',             servicios:[1,2], activa:true },
-  { id:3,  nombre:'MSL',            servicios:[1,2], activa:true },
-  { id:4,  nombre:'LACS',           servicios:[1,2], activa:true },
-  { id:5,  nombre:'Damak',          servicios:[1,2], activa:true },
-  { id:6,  nombre:'Aerocasilleros', servicios:[1,2], activa:true },
-  { id:7,  nombre:'Globus',         servicios:[1,2], activa:true },
-  { id:8,  nombre:'Pressex',        servicios:[1,2], activa:true },
-  { id:9,  nombre:'Lockerbox',      servicios:[1,2], activa:true },
-  { id:10, nombre:'Josué',          servicios:[1,2], activa:true },
-  { id:11, nombre:'ZenderBox',      servicios:[1,2], activa:true },
-  { id:12, nombre:'Aeropostal',     servicios:[1,2], activa:true },
+  { id:1,  nombre:'Movi',           servicios:[2],     activa:true },
+  { id:2,  nombre:'JL',             servicios:[1,2],   activa:true },
+  { id:4,  nombre:'LACS',           servicios:[2],     activa:true },
+  { id:5,  nombre:'Damak',          servicios:[2],     activa:true },
+  { id:11, nombre:'ZenderBox',      servicios:[1,2,3], activa:true },
 ];
 let editingId=null;
 const $=(s,c=document)=>c.querySelector(s); const $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
