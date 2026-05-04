@@ -1068,8 +1068,10 @@ function renderTable() {
     return true;
   });
 
-  // Ordenar más recientes primero
-  rows.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+  // Vista semanal: orden cronológico (lun → dom). Vista regular: más recientes primero.
+  rows.sort((a, b) => weekOn
+    ? (a.fecha || '').localeCompare(b.fecha || '')
+    : (b.fecha || '').localeCompare(a.fecha || ''));
 
   const total = rows.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
