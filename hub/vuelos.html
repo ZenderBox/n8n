@@ -868,6 +868,24 @@ function triggerLabel(s) {
 let MASTER_PREFIX = { UPS: '406-XXXXXXXX', ATLAS: '369-XXXXXXXX', DHL: '992-XXXXXXXX', '7AIR': 'NNN-XXXXXXXX' };
 const masterPh = c => MASTER_PREFIX[c] || 'NNN-XXXXXXXX';
 
+// Defaults razonables por aerolínea (basado en patrón histórico)
+const CARRIER_DEFAULTS = {
+  UPS:    { aeropuerto: 'BOG', consignatario: 'ENEXCOL', transportador: 'UPS'   },
+  ATLAS:  { aeropuerto: 'BOG', consignatario: 'ENEXCOL', transportador: ''      },
+  DHL:    { aeropuerto: 'SJO', consignatario: 'CR',      transportador: 'DHL'   },
+  '7AIR': { aeropuerto: 'SJO', consignatario: 'CR',      transportador: ''      },
+};
+// Aplica los defaults a un set de selects si los valores actuales coinciden con defaults
+// de OTRA aerolínea (es decir, el operario aún no eligió manualmente algo distinto)
+function applyCarrierDefaults(carrier, selects) {
+  const def = CARRIER_DEFAULTS[carrier]; if (!def) return;
+  const allDefaults = Object.values(CARRIER_DEFAULTS);
+  const isDefaultOfAnother = (field, val) => !val || allDefaults.some(d => d[field] === val);
+  if (selects.aeropuerto    && isDefaultOfAnother('aeropuerto',    selects.aeropuerto.value))    selects.aeropuerto.value    = def.aeropuerto;
+  if (selects.consignatario && isDefaultOfAnother('consignatario', selects.consignatario.value)) selects.consignatario.value = def.consignatario;
+  if (selects.transportador && isDefaultOfAnother('transportador', selects.transportador.value)) selects.transportador.value = def.transportador;
+}
+
 let AGENCIAS_DEFAULT = [
   'Movi', 'JL', 'LACS', 'Damak',
   'ZenderBox CR', 'ZenderBox AGENCIAS', 'ZenderBox CASILLERO', 'ZenderBox COMERCIAL'
@@ -1502,13 +1520,18 @@ function populateModalSelects() {
   $('#nvTransp').innerHTML      = `<option value="">—</option>` + TRANSPORTADORES.map(t => `<option value="${t}">${t}</option>`).join('');
   $('#nvStatus').innerHTML      = STATUS_LIST.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
   $('#nvAeropOrig').value       = AEROPUERTO_ORIGEN_DEFAULT;
-  // Al cambiar aerolínea: pre-llenar master con el prefijo + actualizar placeholder + revalidar
+  // Al cambiar aerolínea: pre-llenar master con el prefijo + actualizar placeholder + defaults + revalidar
   $('#nvCarrier').addEventListener('change', () => {
     const c = $('#nvCarrier').value;
     $('#nvMaster').placeholder = masterPh(c);
     const cur = ($('#nvMaster').value || '').trim();
     const isJustOldPrefix = !cur || AEROLINEAS.some(a => cur === shortPrefix(a));
     if (isJustOldPrefix) $('#nvMaster').value = shortPrefix(c);
+    applyCarrierDefaults(c, {
+      aeropuerto:    $('#nvAeropDest'),
+      consignatario: $('#nvDestinoCode'),
+      transportador: $('#nvTransp'),
+    });
     validateMasterIndividual();
   });
   // Validar formato del master mientras tipea
@@ -1651,7 +1674,7 @@ function genBulkRows(n) {
   $$('#bulkBody .b-transp').forEach(s => s.value = 'UPS');
   $$('#bulkBody .b-status').forEach(s => s.value = 'sin-estatus');
   $$('#bulkBody .b-factor').forEach(i => i.value = '0.40');
-  // Master se pre-llena con el prefijo al cambiar la aerolínea de la fila + valida formato
+  // Master se pre-llena con el prefijo al cambiar la aerolínea de la fila + defaults + valida formato
   $$('#bulkBody tr').forEach(tr => {
     const carSel = tr.querySelector('.b-carrier');
     const masterInp = tr.querySelector('.b-master');
@@ -1665,6 +1688,11 @@ function genBulkRows(n) {
       const cur = (masterInp.value || '').trim();
       const isJustOldPrefix = !cur || AEROLINEAS.some(a => cur === shortPrefix(a));
       if (isJustOldPrefix) masterInp.value = shortPrefix(carSel.value);
+      applyCarrierDefaults(carSel.value, {
+        aeropuerto:    tr.querySelector('.b-aerop'),
+        consignatario: tr.querySelector('.b-destino'),
+        transportador: tr.querySelector('.b-transp'),
+      });
       validate();
     });
     masterInp.addEventListener('input', validate);
@@ -1732,6 +1760,11 @@ $('#bulkAddOne').addEventListener('click', () => {
     const cur = (masterInp.value || '').trim();
     const isJustOldPrefix = !cur || AEROLINEAS.some(a => cur === shortPrefix(a));
     if (isJustOldPrefix) masterInp.value = shortPrefix(carSel.value);
+    applyCarrierDefaults(carSel.value, {
+      aeropuerto:    tr.querySelector('.b-aerop'),
+      consignatario: tr.querySelector('.b-destino'),
+      transportador: tr.querySelector('.b-transp'),
+    });
     validate();
   });
   masterInp.addEventListener('input', validate);
