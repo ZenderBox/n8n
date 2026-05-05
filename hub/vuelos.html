@@ -1089,8 +1089,10 @@ function renderTable() {
     $('#emptyState').style.display = 'none';
     $('#pagination').style.display = 'flex';
     tbody.innerHTML = pageRows.map(v => {
-      const neto = kgPagadosNeto(v);
-      const diff = neto - (v.kgAgencias || 0);
+      const agTot = floorKg(v.kgAgencias);
+      const neto  = floorKg(kgPagadosNeto(v));
+      const bruto = floorKg(kgBruto(v));
+      const diff  = neto - agTot;
       const diffCls = diff > 5 ? 'diff-pos' : diff < -5 ? 'diff-neg' : '';
       return `
         <tr data-master="${v.master}">
@@ -1100,9 +1102,9 @@ function renderTable() {
           <td>${carrierTag(v.aerolinea)}</td>
           <td>${pillFor(v.status)}</td>
           <td class="num">${v.piezas || '—'}</td>
-          <td class="num">${fmt(v.kgAgencias)}</td>
-          <td class="num">${v.kgPagados ? fmtNum(neto) : '—'}</td>
-          <td class="num ${diffCls}">${v.kgPagados ? (diff>0?'+':'') + fmtNum(diff) : '—'}</td>
+          <td class="num">${agTot ? fmtNum(agTot) : '—'}</td>
+          <td class="num">${bruto ? fmtNum(neto) : '—'}</td>
+          <td class="num ${diffCls}">${bruto ? (diff>0?'+':'') + fmtNum(diff) : '—'}</td>
         </tr>`;
     }).join('');
     $$('#vuelosBody tr').forEach(tr => tr.addEventListener('click', () => openDrawer(tr.dataset.master)));
@@ -1284,34 +1286,42 @@ function renderPesosTable(v) {
   renderTotales(v);
 }
 
-// Calcula el descuento del margen en kg.
-// Si el vuelo tiene margenKg fijo, usa ese.
-// Si no, aplica margenPct (default 5) sobre el bruto.
+// Floor → redondeo hacia abajo (paga menos kg al carrier)
+const floorKg = n => Math.floor(+n || 0);
+
+// Si el operario cargó kg manualmente (calculadora con desglose), ese prevalece.
+// Si no, el "bruto" es el total kg agencias (asumimos peso real).
+function kgBruto(v) {
+  if (v.kgPagadosManual && v.kgPagados) return +v.kgPagados;
+  return +v.kgAgencias || 0;
+}
+// Calcula el descuento del margen en kg sobre el bruto.
 function margenKgDescuento(v) {
-  const bruto = +v.kgPagados || 0;
+  const bruto = kgBruto(v);
   if (!bruto) return 0;
   if (v.margenKg != null && v.margenKg !== '') return Math.min(+v.margenKg, bruto);
   const pct = v.margenPct != null ? +v.margenPct : 5;
   return +(bruto * pct / 100);
 }
 function kgPagadosNeto(v) {
-  return Math.max(0, (+v.kgPagados || 0) - margenKgDescuento(v));
+  return Math.max(0, kgBruto(v) - margenKgDescuento(v));
 }
 
 function renderTotales(v) {
-  const agTot = v.kgAgencias || 0;
-  const bruto = +v.kgPagados || 0;
-  const desc  = margenKgDescuento(v);
-  const neto  = kgPagadosNeto(v);
-  const diff  = neto - agTot;
+  const agTot  = floorKg(v.kgAgencias);
+  const bruto  = floorKg(kgBruto(v));
+  const desc   = floorKg(margenKgDescuento(v));
+  const neto   = floorKg(kgPagadosNeto(v));
+  const diff   = neto - agTot;
+  const fuente = v.kgPagadosManual ? 'desglose manual' : 'usa total agencias';
 
   $('#totAgencias').textContent = fmtNum(agTot);
 
-  // Kg pagados (neto) + sub con bruto y descuento
-  $('#totPagados').textContent = bruto ? fmtNum(neto) : '—';
+  // Kg pagados (neto) — siempre muestra valor (default = total agencias con margen)
+  $('#totPagados').textContent = bruto ? fmtNum(neto) : '0';
   $('#totPagadosSub').textContent = bruto
-    ? `bruto ${fmtNum(bruto)} · −${fmtNum(desc)} kg`
-    : 'sin desglose';
+    ? `bruto ${fmtNum(bruto)} · −${fmtNum(desc)} kg · ${fuente}`
+    : 'cargá pesos por agencia';
 
   // Margen — muestra % o "X kg" + sub con kg descontado
   const mgEl = $('#totMargen');
@@ -1466,13 +1476,22 @@ $('#calcSave').addEventListener('click', async () => {
   if (!currentVuelo) return;
   const breakdown = $$('#calcRows input.kg').map(i => parseFloat(i.value) || 0);
   const total = breakdown.reduce((s, k) => s + k, 0);
-  currentVuelo.kgPagados = total;
-  currentVuelo.kgPagadosBreakdown = breakdown;
+  // Si todo el desglose es 0 → vuelve al modo "default" (usar total agencias)
+  if (total === 0) {
+    currentVuelo.kgPagados = 0;
+    currentVuelo.kgPagadosBreakdown = null;
+    currentVuelo.kgPagadosManual = false;
+    toast('Desglose vacío — kg pagados vuelve a usar total agencias');
+  } else {
+    currentVuelo.kgPagados = total;
+    currentVuelo.kgPagadosBreakdown = breakdown;
+    currentVuelo.kgPagadosManual = true;
+    toast(`Kg pagados manual: ${fmtNum(floorKg(total))} (${breakdown.length} pieza${breakdown.length>1?'s':''})`);
+  }
   try { await saveVueloRemote(currentVuelo); } catch (e) { toast('Error: ' + e.message); return; }
   renderTotales(currentVuelo);
   renderTable();
   $('#calcBackdrop').classList.remove('open');
-  toast(`Kg pagados: ${fmtNum(total)} (${breakdown.length} pieza${breakdown.length>1?'s':''})`);
 });
 $('#calcBackdrop').addEventListener('click', e => { if (e.target.id === 'calcBackdrop') $('#calcBackdrop').classList.remove('open'); });
 
