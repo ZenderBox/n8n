@@ -547,7 +547,9 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <tr>
           <th>Master</th>
           <th>Fecha</th>
-          <th>Destino · Consignatario · Aeropuerto</th>
+          <th>Destinatario</th>
+          <th>Destino</th>
+          <th>Aerolínea</th>
           <th>Consolidados</th>
           <th>Estatus</th>
           <th class="num">Piezas</th>
@@ -1099,7 +1101,9 @@ function renderTable() {
         <tr data-master="${v.master}">
           <td class="master-cell ${isReserva(v.master) ? 'reserva' : ''}" title="${isReserva(v.master) ? 'Reserva temporal — falta master AWB real' : ''}">${v.master}</td>
           <td>${formatFecha(v.fecha)}</td>
-          <td>${composeDestino(v)}</td>
+          <td><strong style="color:var(--zb-navy)">${v.consignatario || '—'}</strong>${v.tipoEmbarque ? ` <span style="color:var(--zb-ink-500);font-size:11px;font-weight:600">· ${v.tipoEmbarque}</span>` : ''}${v.factor != null ? ` <span style="color:var(--zb-ink-500);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums">· ${Number(v.factor).toFixed(2)}</span>` : ''}</td>
+          <td>${v.aeropuertoDestino ? `<strong style="color:var(--zb-navy)">${v.aeropuertoDestino}</strong>` : '<span style="color:var(--zb-ink-200);font-style:italic">—</span>'}</td>
+          <td>${carrierTag(v.aerolinea)}</td>
           <td>${v.cons || '<span style="color:var(--zb-ink-200);font-style:italic">—</span>'}</td>
           <td>${pillFor(v.status)}</td>
           <td class="num">${v.piezas || '—'}</td>
