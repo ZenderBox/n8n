@@ -737,7 +737,13 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
     <!-- Modo Individual -->
     <div class="modal-body" id="modeSingle">
       <div class="field full">
-        <label class="zb-label">Master (AWB) <span style="color:var(--zb-ink-300);font-weight:500">(opcional — se asigna RES-… si está vacío)</span></label>
+        <label class="zb-label" style="display:flex;align-items:center;gap:10px;justify-content:space-between">
+          <span>Master (AWB) <span id="nvMasterHelp" style="color:var(--zb-ink-300);font-weight:500">(opcional — se asigna RES-… si está vacío)</span></span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-weight:500;font-size:12px;color:var(--zb-ink-500);cursor:pointer" title="Vuelo adelantado: sin master, sin aerolínea, sin reserva. Se podrá completar después.">
+            <input type="checkbox" id="nvSinReserva" style="margin:0">
+            Sin reserva
+          </span>
+        </label>
         <input type="text" id="nvMaster" placeholder="406-XXXXXXXX">
         <div class="fmt-hint" id="nvMasterHint"></div>
       </div>
@@ -746,7 +752,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <input type="date" id="nvFecha">
       </div>
       <div class="field">
-        <label class="zb-label">Aerolínea *</label>
+        <label class="zb-label" id="nvCarrierLbl">Aerolínea *</label>
         <select id="nvCarrier"></select>
       </div>
       <div class="field">
@@ -758,19 +764,19 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <input type="number" step="0.01" id="nvFactor" placeholder="0.40">
       </div>
       <div class="field">
-        <label class="zb-label">Aeropuerto origen *</label>
+        <label class="zb-label" id="nvAeropOrigLbl">Aeropuerto origen *</label>
         <select id="nvAeropOrig"></select>
       </div>
       <div class="field">
-        <label class="zb-label">Aeropuerto destino *</label>
+        <label class="zb-label" id="nvAeropDestLbl">Aeropuerto destino *</label>
         <select id="nvAeropDest"></select>
       </div>
       <div class="field">
-        <label class="zb-label">Consignatario *</label>
+        <label class="zb-label" id="nvDestinoCodeLbl">Consignatario *</label>
         <select id="nvDestinoCode"></select>
       </div>
       <div class="field">
-        <label class="zb-label">Estatus *</label>
+        <label class="zb-label" id="nvStatusLbl">Estatus *</label>
         <select id="nvStatus"></select>
       </div>
       <div class="field">
@@ -1025,7 +1031,19 @@ function genReservaCode() {
   const next = (usados.length ? Math.max(...usados) : 0) + 1;
   return prefix + String(next).padStart(3, '0');
 }
-const isReserva = m => typeof m === 'string' && m.startsWith('RES-');
+const isReserva = m => typeof m === 'string' && (m.startsWith('RES-') || m.startsWith('SIN-'));
+
+// Vuelo adelantado: sin master, sin aerolínea, sin reserva. Código SIN-YYYYMMDD-NNN.
+function genSinReservaCode() {
+  const today = localDateISO().replaceAll('-','');
+  const prefix = `SIN-${today}-`;
+  const usados = VUELOS
+    .filter(v => v.master && v.master.startsWith(prefix))
+    .map(v => parseInt(v.master.slice(prefix.length), 10))
+    .filter(n => !isNaN(n));
+  const next = (usados.length ? Math.max(...usados) : 0) + 1;
+  return prefix + String(next).padStart(3, '0');
+}
 
 // Reconstruye el destino tipo "UPS - AAD - 0.40 ENEXCOL · BOG" desde sus partes
 function composeDestino(v) {
@@ -1657,6 +1675,8 @@ function setMode(mode) {
   updateModalFootInfo();
 }
 $$('#modeToggle button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+// Toggle "Sin reserva" en modo individual
+if ($('#nvSinReserva')) $('#nvSinReserva').addEventListener('change', applySinReservaUI);
 
 function clearVueloForm() {
   ['nvMaster','nvPiezas','nvCons','nvFactor'].forEach(id => $('#'+id).value = '');
@@ -1669,6 +1689,38 @@ function clearVueloForm() {
   // nvTransp removido
   $('#nvStatus').value = 'sin-estatus';
   $('#nvMaster').placeholder = 'Elegí aerolínea para ver el prefijo';
+  if ($('#nvSinReserva')) { $('#nvSinReserva').checked = false; applySinReservaUI(); }
+}
+
+// Aplica el modo "Sin reserva" a los inputs del formulario individual
+function applySinReservaUI() {
+  const on = $('#nvSinReserva') && $('#nvSinReserva').checked;
+  const m = $('#nvMaster');
+  const help = $('#nvMasterHelp');
+  if (on) {
+    m.value = '';
+    m.disabled = true;
+    m.classList.remove('fmt-bad');
+    m.placeholder = 'Se asigna automáticamente (SIN-…)';
+    if (help) help.textContent = '(vuelo adelantado — se completa después)';
+    // Quitar asteriscos
+    $('#nvCarrierLbl').textContent     = 'Aerolínea';
+    $('#nvAeropOrigLbl').textContent   = 'Aeropuerto origen';
+    $('#nvAeropDestLbl').textContent   = 'Aeropuerto destino';
+    $('#nvDestinoCodeLbl').textContent = 'Consignatario';
+    $('#nvStatusLbl').textContent      = 'Estatus';
+  } else {
+    m.disabled = false;
+    if (help) help.textContent = '(opcional — se asigna RES-… si está vacío)';
+    $('#nvCarrierLbl').textContent     = 'Aerolínea *';
+    $('#nvAeropOrigLbl').textContent   = 'Aeropuerto origen *';
+    $('#nvAeropDestLbl').textContent   = 'Aeropuerto destino *';
+    $('#nvDestinoCodeLbl').textContent = 'Consignatario *';
+    $('#nvStatusLbl').textContent      = 'Estatus *';
+    // Restaurar placeholder según carrier
+    const car = $('#nvCarrier').value;
+    m.placeholder = car ? masterPh(car) : 'Elegí aerolínea para ver el prefijo';
+  }
 }
 
 function openVueloForEdit(master) {
@@ -1690,6 +1742,8 @@ function openVueloForEdit(master) {
   $('#nvPiezas').value      = v.piezas || '';
   $('#nvCons').value        = v.cons || '';
   $('#nvMaster').placeholder = masterPh(v.aerolinea);
+  // En edición, desactivar "Sin reserva" (el vuelo ya existe)
+  if ($('#nvSinReserva')) { $('#nvSinReserva').checked = false; applySinReservaUI(); }
   setMode('single');
   $('#modalBackdrop').classList.add('open');
   setTimeout(() => $('#nvMaster').focus(), 50);
@@ -1879,15 +1933,18 @@ $('#nvSave').addEventListener('click', async () => {
     const aerOrig = $('#nvAeropOrig').value;
     const aerDest = $('#nvAeropDest').value;
     const st = $('#nvStatus').value;
+    const sinReserva = !!($('#nvSinReserva') && $('#nvSinReserva').checked);
     if (!f)       { toast('Falta la fecha'); return; }
-    if (!$('#nvCarrier').value) { toast('Falta la aerolínea'); return; }
-    if (!validateMasterIndividual()) { toast('Master inválido — corregí el formato'); $('#nvMaster').focus(); return; }
-    if (!aerOrig) { toast('Falta el aeropuerto origen'); return; }
-    if (!aerDest) { toast('Falta el aeropuerto destino'); return; }
-    if (!dest)    { toast('Falta el consignatario'); return; }
-    if (!st)      { toast('Falta el estatus'); return; }
-    // Master opcional: si vacío y es creación, asigno código de reserva
-    if (!m && !editingMaster) m = genReservaCode();
+    if (!sinReserva) {
+      if (!$('#nvCarrier').value) { toast('Falta la aerolínea'); return; }
+      if (!validateMasterIndividual()) { toast('Master inválido — corregí el formato'); $('#nvMaster').focus(); return; }
+      if (!aerOrig) { toast('Falta el aeropuerto origen'); return; }
+      if (!aerDest) { toast('Falta el aeropuerto destino'); return; }
+      if (!dest)    { toast('Falta el consignatario'); return; }
+      if (!st)      { toast('Falta el estatus'); return; }
+    }
+    // Master opcional: si vacío y es creación → RES-… (o SIN-… si "sin reserva")
+    if (!m && !editingMaster) m = sinReserva ? genSinReservaCode() : genReservaCode();
     if (!m && editingMaster)  m = editingMaster; // en edit, vacío = no cambia
     // Validar duplicado de master (solo si es create o si cambió en edit)
     if (m !== editingMaster && VUELOS.some(v => v.master === m)) {
