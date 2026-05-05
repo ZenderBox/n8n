@@ -629,7 +629,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
         <div class="tot editable" id="totMargenBtn" title="Click para ajustar margen de descuento (pallets, embalaje)">
           <svg class="pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           <label>Margen / Descuento</label>
-          <div class="v" id="totMargen">5%</div>
+          <div class="v" id="totMargen">0%</div>
           <div class="sub" id="totMargenSub">—</div>
         </div>
         <div class="tot diff"><label>Diferencia</label><div class="v" id="totDiff">0</div></div>
@@ -650,7 +650,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div class="field">
           <label style="font-size:11px;font-weight:700;color:var(--zb-ink-700)">Porcentaje (%)</label>
-          <input type="number" step="0.5" id="mgPct" placeholder="5" style="padding:10px 12px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:600 14px 'Plus Jakarta Sans',sans-serif;text-align:right;font-variant-numeric:tabular-nums">
+          <input type="number" step="0.5" id="mgPct" placeholder="0" style="padding:10px 12px;border:1px solid var(--zb-line);border-radius:var(--radius-sm);font:600 14px 'Plus Jakarta Sans',sans-serif;text-align:right;font-variant-numeric:tabular-nums">
         </div>
         <div class="field">
           <label style="font-size:11px;font-weight:700;color:var(--zb-ink-700)">o Kg fijos</label>
@@ -1300,7 +1300,7 @@ function margenKgDescuento(v) {
   const bruto = kgBruto(v);
   if (!bruto) return 0;
   if (v.margenKg != null && v.margenKg !== '') return Math.min(+v.margenKg, bruto);
-  const pct = v.margenPct != null ? +v.margenPct : 5;
+  const pct = v.margenPct != null ? +v.margenPct : 0;
   return +(bruto * pct / 100);
 }
 function kgPagadosNeto(v) {
@@ -1328,7 +1328,7 @@ function renderTotales(v) {
   if (v.margenKg != null && v.margenKg !== '') {
     mgEl.textContent = `${fmtNum(v.margenKg)} kg`;
   } else {
-    mgEl.textContent = `${(v.margenPct != null ? v.margenPct : 5)}%`;
+    mgEl.textContent = `${(v.margenPct != null ? v.margenPct : 0)}%`;
   }
   $('#totMargenSub').textContent = bruto ? `= −${fmtNum(desc)} kg` : '—';
 
@@ -1414,7 +1414,7 @@ function openMargenModal() {
   const v = currentVuelo;
   const bruto = +v.kgPagados || 0;
   $('#mgBruto').textContent = bruto ? fmtNum(bruto) + ' kg' : '—';
-  $('#mgPct').value = v.margenPct != null ? v.margenPct : (v.margenKg != null ? '' : 5);
+  $('#mgPct').value = v.margenPct != null ? v.margenPct : (v.margenKg != null ? '' : 0);
   $('#mgKg').value  = v.margenKg  != null ? v.margenKg  : '';
   updateMargenPreview();
   $('#margenBackdrop').classList.add('open');
