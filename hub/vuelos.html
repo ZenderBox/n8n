@@ -702,6 +702,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
     <div class="calc-modal-foot">
       <div class="left" id="calcInfo">Master: <strong id="calcMaster">—</strong></div>
       <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" id="calcReset" title="Borra el desglose y vuelve a usar el total kg agencias" style="color:var(--zb-error)">Borrar (usar total)</button>
         <button class="btn btn-ghost btn-sm" id="calcCancel">Cancelar</button>
         <button class="btn btn-primary btn-sm" id="calcSave">Guardar</button>
       </div>
@@ -1472,6 +1473,20 @@ $('#calcGen').addEventListener('click', () => {
   renderCalcRows(n, prev);
 });
 $('#calcCancel').addEventListener('click', () => $('#calcBackdrop').classList.remove('open'));
+
+// Borrar desglose → vuelve al modo default (kg pagados = total agencias)
+$('#calcReset').addEventListener('click', async () => {
+  if (!currentVuelo) return;
+  if (!confirm('¿Borrar el desglose y volver a usar el total kg agencias?')) return;
+  currentVuelo.kgPagados = 0;
+  currentVuelo.kgPagadosBreakdown = null;
+  currentVuelo.kgPagadosManual = false;
+  try { await saveVueloRemote(currentVuelo); } catch (e) { toast('Error: ' + e.message); return; }
+  renderTotales(currentVuelo);
+  renderTable();
+  $('#calcBackdrop').classList.remove('open');
+  toast('Kg pagados vuelve al total agencias');
+});
 $('#calcSave').addEventListener('click', async () => {
   if (!currentVuelo) return;
   const breakdown = $$('#calcRows input.kg').map(i => parseFloat(i.value) || 0);
