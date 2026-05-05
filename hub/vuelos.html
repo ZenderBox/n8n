@@ -1057,10 +1057,11 @@ function renderTable() {
   const weekOn = $('#chipWeek').classList.contains('on');
   const week = weekOn ? currentWeekRange() : null;
 
-  // Por default, ocultamos vuelos anteriores a la semana actual (data legacy del
-  // import). Si el operario fija un "Desde" en los filtros, respetamos su elección.
+  // Hay filtros activos? (cualquiera de ellos overridea la vista default)
+  const hasFilters = !!(term || fStatus || fAirport || fDest || fCarrier || fFrom || fTo || weekOn);
   const rows = VUELOS.filter(v => {
-    if (!fFrom && isHistorical(v)) return false;
+    // Sin filtros → solo vuelos de hoy en adelante (no-legacy). Con filtros → mostrar lo que matchee.
+    if (!hasFilters && isHistorical(v)) return false;
     if (fStatus  && v.status !== fStatus) return false;
     if (fAirport && v.aeropuertoDestino !== fAirport) return false;
     if (fDest    && v.consignatario !== fDest) return false;
@@ -1144,15 +1145,14 @@ function currentWeekRange() {
   const iso = d => d.toISOString().slice(0, 10);
   return { from: iso(mon), to: iso(sun) };
 }
-// Un vuelo es "histórico" (no-mostrable por default) si:
-//   1. Tiene flag legacy=true (importado del Excel histórico), O
-//   2. Su fecha es anterior al lunes de la semana en curso
-// La data queda en PG para reportes/analytics.
+// Default view = vuelos de hoy en adelante (sin contar legacy del import).
+// Si el operario aplica un filtro (Desde, búsqueda, status…) se muestra todo
+// lo que matchee, sin esta restricción.
 function isHistorical(v) {
   if (!v || typeof v === 'string') return false;
   if (v.legacy === true) return true;
-  const week = currentWeekRange();
-  return v.fecha && v.fecha < week.from;
+  const today = new Date().toISOString().slice(0, 10);
+  return v.fecha && v.fecha < today;
 }
 
 function renderKPIs() {
