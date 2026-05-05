@@ -1144,14 +1144,15 @@ function currentWeekRange() {
   const iso = d => d.toISOString().slice(0, 10);
   return { from: iso(mon), to: iso(sun) };
 }
-// Vuelos legacy = importados del Excel histórico. Tienen el flag v.legacy = true
-// (marcado en PG por UPDATE WHERE destino_raw IS NOT NULL). No se muestran en la
-// tabla — la data queda en PG para los reportes/analytics.
+// Un vuelo es "histórico" (no-mostrable por default) si:
+//   1. Tiene flag legacy=true (importado del Excel histórico), O
+//   2. Su fecha es anterior al lunes de la semana en curso
+// La data queda en PG para reportes/analytics.
 function isHistorical(v) {
-  if (!v) return false;
-  // Acepta tanto un objeto vuelo como una fecha string (compat con código viejo)
-  if (typeof v === 'string') return false;
-  return v.legacy === true;
+  if (!v || typeof v === 'string') return false;
+  if (v.legacy === true) return true;
+  const week = currentWeekRange();
+  return v.fecha && v.fecha < week.from;
 }
 
 function renderKPIs() {
