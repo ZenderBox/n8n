@@ -1092,13 +1092,18 @@ function renderTable() {
     $('#emptyState').style.display = 'none';
     $('#pagination').style.display = 'flex';
     tbody.innerHTML = pageRows.map(v => {
+      const historical = isHistorical(v.fecha);
       const agTot = floorKg(v.kgAgencias);
       const neto  = floorKg(kgPagadosNeto(v));
       const bruto = floorKg(kgBruto(v));
       const diff  = neto - agTot;
       const diffCls = diff > 5 ? 'diff-pos' : diff < -5 ? 'diff-neg' : '';
+      const dash = '<span style="color:var(--zb-ink-200);font-style:italic">—</span>';
+      const kgAgCell  = historical ? dash : (agTot ? fmtNum(agTot) : '—');
+      const kgPagCell = historical ? dash : (bruto ? fmtNum(neto) : '—');
+      const diffCell  = historical ? dash : (bruto ? (diff>0?'+':'') + fmtNum(diff) : '—');
       return `
-        <tr data-master="${v.master}">
+        <tr data-master="${v.master}" ${historical ? 'title="Vuelo histórico — kg quedan en PG para analytics"' : ''}>
           <td class="master-cell ${isReserva(v.master) ? 'reserva' : ''}" title="${isReserva(v.master) ? 'Reserva temporal — falta master AWB real' : ''}">${v.master}</td>
           <td>${formatFecha(v.fecha)}</td>
           <td><strong style="color:var(--zb-navy)">${v.consignatario || '—'}</strong>${v.tipoEmbarque ? ` <span style="color:var(--zb-ink-500);font-size:11px;font-weight:600">· ${v.tipoEmbarque}</span>` : ''}</td>
@@ -1107,9 +1112,9 @@ function renderTable() {
           <td>${v.cons || '<span style="color:var(--zb-ink-200);font-style:italic">—</span>'}</td>
           <td>${pillFor(v.status)}</td>
           <td class="num">${v.piezas || '—'}</td>
-          <td class="num">${agTot ? fmtNum(agTot) : '—'}</td>
-          <td class="num">${bruto ? fmtNum(neto) : '—'}</td>
-          <td class="num ${diffCls}">${bruto ? (diff>0?'+':'') + fmtNum(diff) : '—'}</td>
+          <td class="num">${kgAgCell}</td>
+          <td class="num">${kgPagCell}</td>
+          <td class="num ${historical ? '' : diffCls}">${diffCell}</td>
         </tr>`;
     }).join('');
     $$('#vuelosBody tr').forEach(tr => tr.addEventListener('click', () => openDrawer(tr.dataset.master)));
@@ -1139,6 +1144,14 @@ function currentWeekRange() {
   const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
   const iso = d => d.toISOString().slice(0, 10);
   return { from: iso(mon), to: iso(sun) };
+}
+// Vuelos anteriores a la semana actual = histórico legacy. Su data de kg viene del
+// import del Excel y está desordenada — no la mostramos en la tabla, queda en PG
+// para los reportes/analytics futuros.
+function isHistorical(fecha) {
+  if (!fecha) return false;
+  const week = currentWeekRange();
+  return fecha < week.from;
 }
 
 function renderKPIs() {
