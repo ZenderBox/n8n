@@ -961,6 +961,9 @@ async function loadBootstrap() {
       status: v.status,
       kgAgencias: +v.kgAgencias || 0,
       kgPagados: +v.kgPagados || 0,
+      kgPagadosManual: v.kgPagados != null && +v.kgPagados > 0,
+      margenPct: v.margenPct != null ? +v.margenPct : null,
+      margenKg:  v.margenKg  != null ? +v.margenKg  : null,
       pesos: v.pesos || {},
       legacy: v.legacy === true
     }));
@@ -985,7 +988,9 @@ async function saveVueloRemote(v, originalMaster) {
     status: v.status || 'sin-estatus',
     piezas: v.piezas || '',
     cons: v.cons || '',
-    kgPagados: v.kgPagados != null ? v.kgPagados : ''
+    kgPagados: v.kgPagados != null ? v.kgPagados : '',
+    margenPct: v.margenPct != null ? v.margenPct : '',
+    margenKg:  v.margenKg  != null ? v.margenKg  : ''
   };
   const r = await fetch(`${API_BASE}/aereo-vuelo-save`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
   if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1463,16 +1468,17 @@ $('#mgKg').addEventListener('input',  () => { if ($('#mgKg').value)  $('#mgPct')
 $('#mgPct').addEventListener('input', () => { if ($('#mgPct').value) $('#mgKg').value  = ''; updateMargenPreview(); });
 $('#totMargenBtn').addEventListener('click', openMargenModal);
 $('#mgCancel').addEventListener('click', () => $('#margenBackdrop').classList.remove('open'));
-$('#mgClear').addEventListener('click', () => {
+$('#mgClear').addEventListener('click', async () => {
   if (!currentVuelo) return;
   currentVuelo.margenPct = 0;
   currentVuelo.margenKg  = null;
+  try { await saveVueloRemote(currentVuelo); } catch (e) { toast('Error: ' + e.message); return; }
   $('#margenBackdrop').classList.remove('open');
   renderTotales(currentVuelo);
   renderTable();
   toast('Margen quitado');
 });
-$('#mgSave').addEventListener('click', () => {
+$('#mgSave').addEventListener('click', async () => {
   if (!currentVuelo) return;
   const kgVal  = parseFloat($('#mgKg').value);
   const pctVal = parseFloat($('#mgPct').value);
@@ -1486,6 +1492,7 @@ $('#mgSave').addEventListener('click', () => {
     currentVuelo.margenPct = 0;
     currentVuelo.margenKg  = null;
   }
+  try { await saveVueloRemote(currentVuelo); } catch (e) { toast('Error: ' + e.message); return; }
   $('#margenBackdrop').classList.remove('open');
   renderTotales(currentVuelo);
   renderTable();
