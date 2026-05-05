@@ -957,7 +957,8 @@ async function loadBootstrap() {
       status: v.status,
       kgAgencias: +v.kgAgencias || 0,
       kgPagados: +v.kgPagados || 0,
-      pesos: v.pesos || {}
+      pesos: v.pesos || {},
+      legacy: v.legacy === true
     }));
   } catch (e) {
     toast('Error cargando datos: ' + e.message);
@@ -1059,7 +1060,7 @@ function renderTable() {
   // Por default, ocultamos vuelos anteriores a la semana actual (data legacy del
   // import). Si el operario fija un "Desde" en los filtros, respetamos su elección.
   const rows = VUELOS.filter(v => {
-    if (!fFrom && isHistorical(v.fecha)) return false;
+    if (!fFrom && isHistorical(v)) return false;
     if (fStatus  && v.status !== fStatus) return false;
     if (fAirport && v.aeropuertoDestino !== fAirport) return false;
     if (fDest    && v.consignatario !== fDest) return false;
@@ -1143,19 +1144,20 @@ function currentWeekRange() {
   const iso = d => d.toISOString().slice(0, 10);
   return { from: iso(mon), to: iso(sun) };
 }
-// Vuelos anteriores a la semana actual = histórico legacy. Su data de kg viene del
-// import del Excel y está desordenada — no la mostramos en la tabla, queda en PG
-// para los reportes/analytics futuros.
-function isHistorical(fecha) {
-  if (!fecha) return false;
-  const week = currentWeekRange();
-  return fecha < week.from;
+// Vuelos legacy = importados del Excel histórico. Tienen el flag v.legacy = true
+// (marcado en PG por UPDATE WHERE destino_raw IS NOT NULL). No se muestran en la
+// tabla — la data queda en PG para los reportes/analytics.
+function isHistorical(v) {
+  if (!v) return false;
+  // Acepta tanto un objeto vuelo como una fecha string (compat con código viejo)
+  if (typeof v === 'string') return false;
+  return v.legacy === true;
 }
 
 function renderKPIs() {
   // KPIs solo sobre vuelos no históricos (semana actual y futuras) — mismo
   // criterio que la tabla. La data legacy queda en PG para analytics aparte.
-  const activosSet = VUELOS.filter(v => !isHistorical(v.fecha) && v.status !== 'liquidado');
+  const activosSet = VUELOS.filter(v => !isHistorical(v) && v.status !== 'liquidado');
   const activos  = activosSet.length;
   const kg       = activosSet.reduce((s,v) => s + (v.kgAgencias||0), 0);
   const reaj     = activosSet.filter(v => v.status === 'reajustes').length;
