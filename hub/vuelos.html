@@ -548,7 +548,7 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
           <th>Master</th>
           <th>Fecha</th>
           <th>Destino · Consignatario · Aeropuerto</th>
-          <th>Aerolínea</th>
+          <th>Consolidados</th>
           <th>Estatus</th>
           <th class="num">Piezas</th>
           <th class="num">Kg Agencias</th>
@@ -1100,7 +1100,7 @@ function renderTable() {
           <td class="master-cell ${isReserva(v.master) ? 'reserva' : ''}" title="${isReserva(v.master) ? 'Reserva temporal — falta master AWB real' : ''}">${v.master}</td>
           <td>${formatFecha(v.fecha)}</td>
           <td>${composeDestino(v)}</td>
-          <td>${carrierTag(v.aerolinea)}</td>
+          <td>${v.cons || '<span style="color:var(--zb-ink-200);font-style:italic">—</span>'}</td>
           <td>${pillFor(v.status)}</td>
           <td class="num">${v.piezas || '—'}</td>
           <td class="num">${agTot ? fmtNum(agTot) : '—'}</td>
