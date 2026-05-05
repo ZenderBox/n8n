@@ -1056,7 +1056,10 @@ function renderTable() {
   const weekOn = $('#chipWeek').classList.contains('on');
   const week = weekOn ? currentWeekRange() : null;
 
+  // Por default, ocultamos vuelos anteriores a la semana actual (data legacy del
+  // import). Si el operario fija un "Desde" en los filtros, respetamos su elección.
   const rows = VUELOS.filter(v => {
+    if (!fFrom && isHistorical(v.fecha)) return false;
     if (fStatus  && v.status !== fStatus) return false;
     if (fAirport && v.aeropuertoDestino !== fAirport) return false;
     if (fDest    && v.consignatario !== fDest) return false;
@@ -1092,18 +1095,13 @@ function renderTable() {
     $('#emptyState').style.display = 'none';
     $('#pagination').style.display = 'flex';
     tbody.innerHTML = pageRows.map(v => {
-      const historical = isHistorical(v.fecha);
       const agTot = floorKg(v.kgAgencias);
       const neto  = floorKg(kgPagadosNeto(v));
       const bruto = floorKg(kgBruto(v));
       const diff  = neto - agTot;
       const diffCls = diff > 5 ? 'diff-pos' : diff < -5 ? 'diff-neg' : '';
-      const dash = '<span style="color:var(--zb-ink-200);font-style:italic">—</span>';
-      const kgAgCell  = historical ? dash : (agTot ? fmtNum(agTot) : '—');
-      const kgPagCell = historical ? dash : (bruto ? fmtNum(neto) : '—');
-      const diffCell  = historical ? dash : (bruto ? (diff>0?'+':'') + fmtNum(diff) : '—');
       return `
-        <tr data-master="${v.master}" ${historical ? 'title="Vuelo histórico — kg quedan en PG para analytics"' : ''}>
+        <tr data-master="${v.master}">
           <td class="master-cell ${isReserva(v.master) ? 'reserva' : ''}" title="${isReserva(v.master) ? 'Reserva temporal — falta master AWB real' : ''}">${v.master}</td>
           <td>${formatFecha(v.fecha)}</td>
           <td><strong style="color:var(--zb-navy)">${v.consignatario || '—'}</strong>${v.tipoEmbarque ? ` <span style="color:var(--zb-ink-500);font-size:11px;font-weight:600">· ${v.tipoEmbarque}</span>` : ''}</td>
@@ -1112,9 +1110,9 @@ function renderTable() {
           <td>${v.cons || '<span style="color:var(--zb-ink-200);font-style:italic">—</span>'}</td>
           <td>${pillFor(v.status)}</td>
           <td class="num">${v.piezas || '—'}</td>
-          <td class="num">${kgAgCell}</td>
-          <td class="num">${kgPagCell}</td>
-          <td class="num ${historical ? '' : diffCls}">${diffCell}</td>
+          <td class="num">${agTot ? fmtNum(agTot) : '—'}</td>
+          <td class="num">${bruto ? fmtNum(neto) : '—'}</td>
+          <td class="num ${diffCls}">${bruto ? (diff>0?'+':'') + fmtNum(diff) : '—'}</td>
         </tr>`;
     }).join('');
     $$('#vuelosBody tr').forEach(tr => tr.addEventListener('click', () => openDrawer(tr.dataset.master)));
@@ -1155,10 +1153,13 @@ function isHistorical(fecha) {
 }
 
 function renderKPIs() {
-  const activos  = VUELOS.filter(v => v.status !== 'liquidado').length;
-  const kg       = VUELOS.filter(v => !['liquidado'].includes(v.status)).reduce((s,v)=>s + (v.kgAgencias||0), 0);
-  const reaj     = VUELOS.filter(v => v.status === 'reajustes').length;
-  const diff     = VUELOS.reduce((s,v) => s + ((v.kgPagados||0) - (v.kgAgencias||0)), 0);
+  // KPIs solo sobre vuelos no históricos (semana actual y futuras) — mismo
+  // criterio que la tabla. La data legacy queda en PG para analytics aparte.
+  const activosSet = VUELOS.filter(v => !isHistorical(v.fecha) && v.status !== 'liquidado');
+  const activos  = activosSet.length;
+  const kg       = activosSet.reduce((s,v) => s + (v.kgAgencias||0), 0);
+  const reaj     = activosSet.filter(v => v.status === 'reajustes').length;
+  const diff     = activosSet.reduce((s,v) => s + ((v.kgPagados||0) - (v.kgAgencias||0)), 0);
   $('#kpiActivos').textContent = activos;
   $('#kpiKg').textContent = fmtNum(kg);
   $('#kpiReaj').textContent = reaj;
