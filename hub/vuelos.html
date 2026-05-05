@@ -1148,23 +1148,30 @@ function formatFecha(iso) {
   return `${d}/${m}/${y.slice(2)}`;
 }
 
-// Lunes-domingo de la semana en curso (ISO yyyy-mm-dd)
+// Lunes-domingo de la semana en curso (ISO yyyy-mm-dd, fecha local)
 function currentWeekRange() {
   const now = new Date();
   const dow = (now.getDay() + 6) % 7; // 0 = lunes
   const mon = new Date(now); mon.setDate(now.getDate() - dow); mon.setHours(0,0,0,0);
   const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-  const iso = d => d.toISOString().slice(0, 10);
-  return { from: iso(mon), to: iso(sun) };
+  return { from: localDateISO(mon), to: localDateISO(sun) };
 }
-// Default view = vuelos de hoy en adelante (sin contar legacy del import).
-// Si el operario aplica un filtro (Desde, búsqueda, status…) se muestra todo
-// lo que matchee, sin esta restricción.
+// Devuelve fecha local en formato YYYY-MM-DD (sin shift de timezone como toISOString)
+function localDateISO(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+// Default view = vuelos de AYER en adelante (sin contar legacy del import).
+// Cutoff es ayer porque vuelos del día pueden seguir en operación (peso pendiente,
+// pesos de agencias entrando, etc.). Si el operario aplica filtro, override.
 function isHistorical(v) {
   if (!v || typeof v === 'string') return false;
   if (v.legacy === true) return true;
-  const today = new Date().toISOString().slice(0, 10);
-  return v.fecha && v.fecha < today;
+  const ayer = new Date();
+  ayer.setDate(ayer.getDate() - 1);
+  return v.fecha && v.fecha < localDateISO(ayer);
 }
 
 function renderKPIs() {
