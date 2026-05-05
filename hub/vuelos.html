@@ -534,6 +534,10 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
       <label>Hasta</label>
       <input type="date" id="filterTo">
     </div>
+    <button class="chip-toggle" id="chipToday" type="button" title="Mostrar solo vuelos de hoy (para reportar al finalizar el día)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Hoy
+    </button>
     <button class="chip-toggle" id="chipWeek" type="button" title="Mostrar solo vuelos de esta semana (lun-dom)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Esta semana
@@ -1065,9 +1069,11 @@ function renderTable() {
 
   const weekOn = $('#chipWeek').classList.contains('on');
   const week = weekOn ? currentWeekRange() : null;
+  const todayOn = $('#chipToday').classList.contains('on');
+  const todayStr = localDateISO();
 
   // Hay filtros activos? (cualquiera de ellos overridea la vista default)
-  const hasFilters = !!(term || fStatus || fAirport || fDest || fCarrier || fFrom || fTo || weekOn);
+  const hasFilters = !!(term || fStatus || fAirport || fDest || fCarrier || fFrom || fTo || weekOn || todayOn);
   // Mostrar/ocultar botón "Limpiar filtros"
   const clearBtn = $('#chipClear');
   if (clearBtn) clearBtn.style.display = hasFilters ? '' : 'none';
@@ -1081,6 +1087,7 @@ function renderTable() {
     if (fFrom && v.fecha < fFrom) return false;
     if (fTo   && v.fecha > fTo) return false;
     if (week && (v.fecha < week.from || v.fecha > week.to)) return false;
+    if (todayOn && v.fecha !== todayStr) return false;
     if (term) {
       const blob = `${v.master} ${composeDestino(v)} ${v.cons} ${v.piezas} ${v.tipoEmbarque||''} ${v.transportador||''}`.toLowerCase();
       if (!blob.includes(term)) return false;
@@ -1999,6 +2006,13 @@ $('#modalBackdrop').addEventListener('click', e => {
 });
 $('#chipWeek').addEventListener('click', () => {
   $('#chipWeek').classList.toggle('on');
+  $('#chipToday').classList.remove('on'); // mutuamente excluyentes
+  resetPage();
+  renderTable();
+});
+$('#chipToday').addEventListener('click', () => {
+  $('#chipToday').classList.toggle('on');
+  $('#chipWeek').classList.remove('on'); // mutuamente excluyentes
   resetPage();
   renderTable();
 });
@@ -2008,6 +2022,7 @@ $('#chipClear').addEventListener('click', () => {
   ['searchInput','filterStatus','filterAirport','filterDest','filterCarrier','filterFrom','filterTo']
     .forEach(id => { const el = $('#'+id); if (el) el.value = ''; });
   $('#chipWeek').classList.remove('on');
+  $('#chipToday').classList.remove('on');
   resetPage();
   renderTable();
   toast('Filtros limpiados');
