@@ -238,6 +238,28 @@ table.vuelos tbody tr:last-child td { border-bottom: 0; }
   color: var(--zb-ink-500); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
 }
 .drawer-section-title button { font-size: 11px; }
+/* Popover de "Agregar agencia" */
+.ag-pop-wrap { position: relative; display: inline-block; }
+.ag-pop {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
+  width: 260px; background: #fff; border: 1px solid var(--zb-ink-200);
+  border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  padding: 8px; display: flex; flex-direction: column; gap: 6px;
+}
+.ag-pop input.ag-search {
+  width: 100%; padding: 7px 10px; font: inherit; font-size: 12px;
+  border: 1px solid var(--zb-ink-200); border-radius: 7px; outline: none;
+}
+.ag-pop input.ag-search:focus { border-color: var(--zb-cyan); }
+.ag-list { max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; }
+.ag-list .ag-item {
+  text-align: left; background: transparent; border: none; cursor: pointer;
+  padding: 8px 10px; border-radius: 6px; font: inherit; font-size: 13px;
+  color: var(--zb-ink-700); text-transform: none; letter-spacing: 0;
+}
+.ag-list .ag-item:hover { background: var(--zb-ink-100); color: var(--zb-navy); }
+.ag-list .ag-item .svc { font-size: 10px; color: var(--zb-ink-400); display: block; margin-top: 2px; }
+.ag-empty { padding: 16px 10px; text-align: center; font-size: 12px; color: var(--zb-ink-400); }
 
 /* status selector dentro del drawer */
 .status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
@@ -620,10 +642,17 @@ table.bulk-tbl .row-del:hover { background: var(--zb-error-bg); color: var(--zb-
     <div class="drawer-section">
       <div class="drawer-section-title">
         <span>Pesos por Agencia</span>
-        <button class="btn btn-ghost btn-sm" id="btnAddAgencia">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          Agregar agencia
-        </button>
+        <div class="ag-pop-wrap">
+          <button class="btn btn-ghost btn-sm" id="btnAddAgencia">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Agregar agencia
+          </button>
+          <div class="ag-pop" id="agPop" style="display:none">
+            <input type="text" id="agSearch" class="ag-search" placeholder="Buscar agencia activa…" autocomplete="off">
+            <div class="ag-list" id="agList"></div>
+            <div class="ag-empty" id="agEmpty" style="display:none">No hay agencias disponibles</div>
+          </div>
+        </div>
       </div>
       <div class="pesos-table-wrap">
         <table class="pesos" id="pesosTable"></table>
@@ -1415,14 +1444,69 @@ function schedulePesosSave(v) {
 }
 
 // ─────── Add agencia (al drawer) ───────
-$('#btnAddAgencia').addEventListener('click', () => {
+// ── Popover "Agregar agencia": solo agencias activas del catálogo ──
+function renderAgPopList(filter = '') {
   if (!currentVuelo) return;
-  const name = prompt('Nombre de la agencia (ej: Cargo Express)');
-  if (!name) return;
-  if (currentVuelo.pesos[name]) { toast('Esa agencia ya está cargada'); return; }
-  currentVuelo.pesos[name] = new Array(SERVICIOS.length).fill(0);
-  renderPesosTable(currentVuelo);
-  toast(`Agencia "${name}" agregada`);
+  const yaCargadas = new Set(Object.keys(currentVuelo.pesos || {}));
+  const q = filter.trim().toLowerCase();
+  const opts = AGENCIAS_DEFAULT
+    .filter(n => !yaCargadas.has(n))
+    .filter(n => !q || n.toLowerCase().includes(q))
+    .sort((a, b) => a.localeCompare(b, 'es'));
+  const listEl = $('#agList');
+  if (!opts.length) {
+    listEl.innerHTML = '';
+    $('#agEmpty').style.display = '';
+    $('#agEmpty').textContent = q
+      ? 'Sin coincidencias'
+      : (yaCargadas.size >= AGENCIAS_DEFAULT.length
+          ? 'Todas las agencias activas ya están cargadas'
+          : 'No hay agencias disponibles');
+    return;
+  }
+  $('#agEmpty').style.display = 'none';
+  listEl.innerHTML = opts.map(n => {
+    const svcs = (AGENCIAS_SERVICIOS[n] || []).join(' · ');
+    return `<button type="button" class="ag-item" data-name="${n.replace(/"/g,'&quot;')}">
+      ${n}${svcs ? `<span class="svc">${svcs}</span>` : ''}
+    </button>`;
+  }).join('');
+  listEl.querySelectorAll('.ag-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.name;
+      currentVuelo.pesos[name] = new Array(SERVICIOS.length).fill(0);
+      renderPesosTable(currentVuelo);
+      closeAgPop();
+      toast(`Agencia "${name}" agregada`);
+    });
+  });
+}
+function openAgPop() {
+  if (!currentVuelo) return;
+  $('#agSearch').value = '';
+  renderAgPopList('');
+  $('#agPop').style.display = '';
+  setTimeout(() => $('#agSearch').focus(), 30);
+  setTimeout(() => document.addEventListener('click', onAgPopOutside), 0);
+}
+function closeAgPop() {
+  $('#agPop').style.display = 'none';
+  document.removeEventListener('click', onAgPopOutside);
+}
+function onAgPopOutside(e) {
+  if (!e.target.closest('.ag-pop-wrap')) closeAgPop();
+}
+$('#btnAddAgencia').addEventListener('click', e => {
+  e.stopPropagation();
+  if ($('#agPop').style.display === 'none') openAgPop(); else closeAgPop();
+});
+$('#agSearch').addEventListener('input', e => renderAgPopList(e.target.value));
+$('#agSearch').addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAgPop();
+  if (e.key === 'Enter') {
+    const first = $('#agList .ag-item');
+    if (first) first.click();
+  }
 });
 
 // ─────── Calculadora de Kg Pagados (modal) ───────
